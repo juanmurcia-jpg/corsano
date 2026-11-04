@@ -1,0 +1,11 @@
+TEA_Base_tesis_21856t_L1_Vino_de_pi_a.xlsx VPN py -20674.1 xl -20674.1 dRel 2.029669352234183e-15
+TEA_Base_tesis_21856t_L2_Vino_premium.xlsx VPN py -22028.6 xl -22028.6 dRel 1.7317030291226295e-15
+TEA_Base_tesis_21856t_L3_Vinagre.xlsx VPN py 752.1 xl 752.1 dRel 1.1095819732737576e-15
+TEA_Base_tesis_21856t_L4_Bromela_na.xlsx VPN py 2436.5 xl 2436.5 dRel 1.565667836228443e-15
+TEA_Base_tesis_21856t_L5_Harina_de_c_scara.xlsx VPN py 8888.7 xl 8888.7 dRel 6.437451637884621e-16
+TEA_Base_tesis_21856t_L6_Etanol.xlsx VPN py -7515.2 xl -7515.2 dRel 7.613991940709924e-16
+TEA_Base_tesis_21856t_L7a_Gasificaci_n.xlsx VPN py -5439.0 xl -5439.0 dRel 7.01361245531276e-16
+TEA_Base_tesis_21856t_L7b_Caldera.xlsx VPN py -350.8 xl -350.8 dRel 1.0195217099147347e-15
+TEA_Base_tesis_21856t_Planta_integrada_TRL_9.xlsx VPN py -3655.8 xl -3655.8 dRel 1.826076090684317e-15
+TEA_Choco2022_Plan_Choco_2022_harina_con_residuos_de_procesador.xlsx VPN py 1582.4 xl 1582.4 dRel 2.109429507411979e-15
+TEA_Choco2022_Plan_Choco_2022_vino_harina_vino_3_000_COP_L.xlsx VPN py 1154.3 xl 1154.3 dRel 5.576990121794628e-15

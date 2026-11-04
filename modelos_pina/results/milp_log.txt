@@ -1,0 +1,25 @@
+Chocó 2022 completo (6 146 t) | fruta 400 COP/kg, vino 1 600 optimal obj 0 MM COP/año fruta 0 frente None {}
+Chocó 2022 completo (6 146 t) | fruta 400 COP/kg, vino 3 000 optimal obj 555 MM COP/año fruta 5733 frente 6200 {'vino': (2580, 6200), 'harina': (1720, 6200)}
+Chocó 2022 completo (6 146 t) | residuos de procesador, 80 COP/kg optimal obj 88 MM COP/año fruta 5733 frente None {'harina': (1720, 6200)}
+50 % de Chocó 2022 | fruta 400 COP/kg, vino 1 600 optimal obj 0 MM COP/año fruta 0 frente None {}
+50 % de Chocó 2022 | fruta 400 COP/kg, vino 3 000 optimal obj 0 MM COP/año fruta 0 frente None {}
+50 % de Chocó 2022 | residuos de procesador, 80 COP/kg optimal obj 0 MM COP/año fruta 0 frente None {}
+Pérdida poscosecha 25 % (1 537 t) | fruta 400 COP/kg, vino 1 600 optimal obj 0 MM COP/año fruta 0 frente None {}
+Pérdida poscosecha 25 % (1 537 t) | fruta 400 COP/kg, vino 3 000 optimal obj 0 MM COP/año fruta 0 frente None {}
+Pérdida poscosecha 25 % (1 537 t) | residuos de procesador, 80 COP/kg optimal obj 0 MM COP/año fruta 0 frente None {}
+Base de la tesis (21 856 t) | fruta 400 COP/kg, vino 1 600 optimal obj 471 MM COP/año fruta 20368 frente 22000 {'vino': (9165, 22000), 'vinagre': (1261, 22000), 'bromelaina': (2037, 22000), 'harina': (6110, 22000), 'caldera': (3055, 22000)}
+Base de la tesis (21 856 t) | fruta 400 COP/kg, vino 3 000 optimal obj 9,648 MM COP/año fruta 20368 frente 22000 {'vino': (9165, 22000), 'bromelaina': (2037, 22000), 'harina': (6110, 22000), 'caldera': (3055, 22000)}
+Base de la tesis (21 856 t) | residuos de procesador, 80 COP/kg optimal obj 4,856 MM COP/año fruta 20368 frente None {'bromelaina': (2037, 22000), 'harina': (6110, 22000), 'caldera': (3055, 22000)}
+barrido fruta 1600.0 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 516]
+barrido fruta 2200.0 [0, 0, 0, 0, 0, 0, 0, 0, 348, 1854, 4162]
+barrido fruta 3000.0 [0, 0, 0, 0, 0, 76, 555, 1206, 3317, 5330, 9728]
+barrido fruta 4000.0 [0, 0, 0, 326, 1024, 1655, 2506, 3861, 7028, 9675, 16685]
+barrido residuos 1600.0 [0, 0, 0, 0, 0, 0, 88, 331, 1555, 2657, 4894]
+barrido residuos 2200.0 [0, 0, 0, 0, 0, 0, 88, 331, 1555, 2657, 4894]
+barrido residuos 3000.0 [0, 0, 0, 0, 0, 0, 88, 331, 1555, 2657, 4894]
+barrido residuos 4000.0 [0, 0, 0, 0, 0, 0, 88, 331, 1555, 2657, 4894]
+TEA plan Chocó 2022 completo (6 146 t) | fruta 400 COP/kg, vino 3 000 ['vino', 'harina'] FCI 13,203 | VPN 1,154 MM | MIRR 0.11002818496175748 | P(VPN>0) 0.44
+TEA plan Chocó 2022 completo (6 146 t) | residuos de procesador, 80 COP/kg ['harina'] FCI 4,224 | VPN 1,582 MM | MIRR 0.1391687888040758 | P(VPN>0) 0.94
+TEA plan Base de la tesis (21 856 t) | fruta 400 COP/kg, vino 1 600 ['vino', 'vinagre', 'bromelaina', 'harina', 'caldera'] FCI 49,493 | VPN 426 MM | MIRR 0.10102953291247352 | P(VPN>0) 0.30
+TEA plan Base de la tesis (21 856 t) | fruta 400 COP/kg, vino 3 000 ['vino', 'bromelaina', 'harina', 'caldera'] FCI 44,944 | VPN 32,292 MM | MIRR 0.17059592293796078 | P(VPN>0) 0.99
+TEA plan Base de la tesis (21 856 t) | residuos de procesador, 80 COP/kg ['bromelaina', 'harina', 'caldera'] FCI 19,986 | VPN 24,589 MM | MIRR 0.21050944848541753 | P(VPN>0) 1.00

@@ -1,0 +1,327 @@
+<title>Modelos Corsano para la piña</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600;7..72,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: columna de lectura de informe técnico (≈70ch) con figuras que se ensanchan a 1100px; tablas con desplazamiento propio */
+:root{
+  --bg:#f6f7f4; --paper:#ffffff; --fg:#17201b; --fg2:#4c5650; --rule:#d9ddd6;
+  --accent:#1f6b52; --accent-soft:#e3efe9; --amber:#9a6a00; --amber-soft:#fbf1da; --code:#eef1ec;
+  --f-display:"Literata", Georgia, "Times New Roman", serif;
+  --f-body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#111613; --paper:#171d19; --fg:#e7ece8; --fg2:#a9b3ad; --rule:#2c3530;
+  --accent:#5fc29b; --accent-soft:#1c2e26; --amber:#e3b54a; --amber-soft:#2d2614; --code:#1d2420; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#111613; --paper:#171d19; --fg:#e7ece8; --fg2:#a9b3ad; --rule:#2c3530;
+  --accent:#5fc29b; --accent-soft:#1c2e26; --amber:#e3b54a; --amber-soft:#2d2614; --code:#1d2420; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+main{max-width:1100px;margin:0 auto}
+.prose{max-width:72ch}
+header.top{padding-block:48px 28px;border-bottom:1px solid var(--rule);margin-bottom:28px}
+.kicker{font-family:var(--f-mono);font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin:0 0 10px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.2;margin:0}
+h1{font-size:clamp(30px,4.6vw,44px);font-weight:700;max-width:22ch}
+h2{font-size:clamp(23px,2.8vw,29px);font-weight:600;margin-top:56px;padding-top:20px;border-top:1px solid var(--rule)}
+h3{font-size:19px;font-weight:600;margin-top:32px}
+p{margin:12px 0}
+.lede{font-size:18px;color:var(--fg2);max-width:68ch;margin-top:16px}
+.meta{font-family:var(--f-mono);font-size:12.5px;color:var(--fg2);margin-top:18px;display:flex;flex-wrap:wrap;gap:6px 20px}
+a{color:var(--accent)}
+code,.mono{font-family:var(--f-mono);font-size:.9em;background:var(--code);padding:1px 5px;border-radius:3px}
+pre.eq{font-family:var(--f-mono);font-size:13.5px;line-height:1.55;background:var(--code);padding:14px 16px;border-radius:4px;overflow-x:auto;margin:16px 0;max-width:100%}
+.findings{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px;margin:22px 0}
+.finding{background:var(--paper);border:1px solid var(--rule);border-radius:4px;padding:14px 16px;min-width:0}
+.finding .n{font-family:var(--f-mono);font-size:22px;font-weight:500;color:var(--accent);font-variant-numeric:tabular-nums}
+.finding .t{font-size:14.5px;margin-top:4px}
+.finding .s{font-family:var(--f-mono);font-size:11.5px;color:var(--fg2);margin-top:6px}
+figure{margin:24px 0;background:#fcfcfb;border:1px solid var(--rule);border-radius:4px;padding:10px}
+figure img{display:block;width:100%;height:auto}
+figcaption{font-size:14px;color:#3b433e;padding:8px 4px 2px;max-width:90ch}
+.tbl{overflow-x:auto;margin:16px 0;border:1px solid var(--rule);border-radius:4px;background:var(--paper)}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--fg2);font-weight:500;background:var(--code)}
+td.num{text-align:right;font-family:var(--f-mono);font-size:13px;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.note{background:var(--amber-soft);border-left:3px solid var(--amber);padding:12px 16px;border-radius:0 4px 4px 0;margin:18px 0;max-width:80ch}
+.note strong{color:var(--amber)}
+.tag{font-family:var(--f-mono);font-size:11.5px;padding:1px 6px;border-radius:3px;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+nav.toc{font-size:14.5px;columns:2 260px;column-gap:32px;margin:18px 0 0;padding:0;list-style:none}
+nav.toc li{break-inside:avoid;margin:4px 0}
+ol.edits li,ul.tight li{margin:8px 0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+
+<main>
+<header class="top">
+  <p class="kicker">Tesis doctoral · Biorrefinería de piña · Bajo Atrato (Chocó)</p>
+  <h1>Modelos de superestructura de Corsano adaptados a la biorrefinería de piña</h1>
+  <p class="lede">Cuatro modelos en Python reproducen los marcos de Corsano, Montagna, Iribarren y Aguirre (2004, 2006a, 2006b, 2006c, 2007; libro de 2009). Están adaptados al tren de vino de pulpa, a la línea de etanol del hub de azúcares y a la comparación entre complejo multiplanta y planta multiproducto que la tesis deja abierta en §6.10, §9.6 y §11.3.</p>
+  <div class="meta"><span>CasADi 3.8 · IPOPT · Bonmin · SALib</span><span>Discretización trapezoidal dentro del NLP</span><span>≈ 3 000 optimizaciones resueltas</span></div>
+  <ul class="toc" id="toc">
+    <li><a href="#hallazgos">Hallazgos principales</a></li>
+    <li><a href="#mapa">Qué se implementó y dónde encaja en la tesis</a></li>
+    <li><a href="#base">Base de diseño y procedencia de los datos</a></li>
+    <li><a href="#m1">Modelo 1 · Superestructura NLP del tren de vino</a></li>
+    <li><a href="#m2">Modelo 2 · Etanol del hub con reciclo de vinaza</a></li>
+    <li><a href="#m3">Modelo 3 · Campañas mixtas</a></li>
+    <li><a href="#m4">Modelo 4 · Multiplanta vs multiproducto</a></li>
+    <li><a href="#tesis">Cambios concretos que sugiere a la tesis</a></li>
+    <li><a href="#limites">Validez y límites</a></li>
+    <li><a href="#repro">Reproducibilidad</a></li>
+  </ul>
+</header>
+
+<section id="hallazgos">
+<h2>Hallazgos principales</h2>
+<div class="findings">
+  <div class="finding"><div class="n">12 fermentadores</div><div class="t">La configuración de la tesis (§4.2.4) aparece sin variables binarias cuando el tiempo de llenado se limita a 1 h. Esa protección contra la oxidación cuesta +17,8 % de TAC frente al óptimo libre.</div><div class="s">Modelo 1 · Fig. 6</div></div>
+  <div class="finding"><div class="n">10 óptimos locales</div><div class="t">25 arranques del mismo NLP convergen a 10 estructuras distintas, con TAC entre 338,9 y 394,5 k USD/año (16 % de dispersión). En un subproblema certificado con SCIP, Bonmin B-OA (análogo de DICOPT) queda 2–3 % por encima del óptimo global. Esto respalda empíricamente la crítica de §6.10 al uso de CONOPT.</div><div class="s">Modelo 1 · Fig. 5 y tabla E7</div></div>
+  <div class="finding"><div class="n">7–9 %</div><div class="t">Ahorro de la optimización simultánea de Corsano frente a la cadena jerárquica actual de la tesis (cinética, luego tiempo de ciclo fijo, luego dimensionamiento). Con llenado de 1 h, la cadena jerárquica ni siquiera tiene solución con 12 fermentadores. Cuantifica la brecha que §6.10 solo enuncia.</div><div class="s">Modelo 1 · Fig. 8</div></div>
+  <div class="finding"><div class="n">f ≥ 2</div><div class="t">El reciclo de vinaza de Corsano (2006b) solo se vuelve óptimo si el hub entrega azúcar concentrado al menos 2×. Con las corrientes diluidas de la piña (60–110 g/L), reciclar no compensa.</div><div class="s">Modelo 2 · Fig. 10</div></div>
+  <div class="finding"><div class="n">η = 0,905</div><div class="t">Recuperación de etanol en destilación cuando el etanol residual cuenta como DBO en la ec. 38. Sin ese término, el óptimo bota el 20 % del etanol en la vinaza.</div><div class="s">Modelo 2</div></div>
+  <div class="finding"><div class="n">+56 k USD/año</div><div class="t">Ventaja de la planta multiproducto con campaña AB frente al complejo multiplanta, incluida la mano de obra (9 frente a 15 operarios). Sin mano de obra, la ventaja cae a 11 k USD/año (0,4 % del beneficio). Igual que en el libro, la diferencia económica es pequeña y la decide el personal.</div><div class="s">Modelos 3–4 · Figs. 14–15</div></div>
+  <div class="finding"><div class="n">1,02 USD/kg</div><div class="t">Costo medio del etanol del hub con el modelo detallado de Corsano 2006b, por encima del precio supuesto (0,85 USD/kg). El orden de uso del hub lo fija la concentración de cada corriente, no su costo por kg de azúcar.</div><div class="s">Modelo 2 · Fig. 13</div></div>
+</div>
+<div class="note"><strong>Cómo leer las cifras.</strong> Los costos unitarios, las concentraciones y disponibilidades del hub, el precio del etanol y del vinagre y el salario son supuestos ilustrativos, marcados <span class="tag">[S]</span> en <code>params.py</code>. Son robustas en los barridos las conclusiones estructurales: qué arquitectura gana, por qué y cuándo cambia. Las cifras absolutas en USD no deben citarse como resultados de la tesis hasta reemplazar esos supuestos por datos del proyecto.</div>
+</section>
+
+<section id="mapa">
+<h2>Qué se implementó y dónde encaja en la tesis</h2>
+<div class="tbl"><table>
+<thead><tr><th>Modelo</th><th>Fuente de Corsano</th><th>Mecanismo reproducido</th><th>Adaptación a la piña</th><th>Sección de la tesis</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>2004 (I&amp;ECR 43:4211); 2006a (Appl. Math. Model. 30:974); libro cap. 3</td><td>Superestructura NLP con alternativas en serie y en paralelo fuera de fase; ZW; ODE discretizadas por trapecios; costo cóncavo que anula las alternativas no óptimas</td><td>Propagación aerobia y fermentación del jugo de pulpa (158,83 g/L), calibradas con Murcia Palacios (2013); restricción de llenado por oxidación; vino seco ≤ 4 g/L</td><td>§4.2.3, §4.2.4, §6.10</td></tr>
+<tr><td>2</td><td>2006b (ChERD 84:932)</td><td>Mezcla de sustratos con rendimiento no lineal (ec. 6), reciclo de vinaza, penalización (ec. 37–38), centrífuga y destilación por lotes (ec. 24–31)</td><td>Melaza, jugo de filtros y vinaza pasan a ser jugo de cáscara, hidrolizado de hojas/corona, permeado UF de tallo+corazón y vinaza. La mezcla reproduce el término bilineal del hub</td><td>§4.6, §6.3, §6.6</td></tr>
+<tr><td>3</td><td>2007 (I&amp;ECR 46:2769); libro cap. 4</td><td>Heurística de campañas mixtas: SPC, razón de lotes, campañas candidatas, un NLP por campaña</td><td>Vino (A) y bioetanol (B) comparten propagador, fermentador y centrífuga; el vinagre (C) es subproducto de A</td><td>§6.10 (alternativa MP), §9.6</td></tr>
+<tr><td>4</td><td>Libro cap. 5 (ec. 4.1–4.13); 2006c (I&amp;ECR 45:4256)</td><td>Complejo multiplanta: planta madre con recursos producidos, suministrados y exportados</td><td>La planta madre es el fraccionamiento, el hub y la isla de gasificación; el respaldo es diésel ZNI y el excedente se exporta a la microrred local. Se añade la mano de obra, que Corsano no valoró</td><td>§6.10, §9.6, §11.2, §11.3 (punto 7)</td></tr>
+</tbody></table></div>
+<p class="prose">El libro confirma las cifras que la tesis cita en §6.10 y §9.6 (Tabla 4.3, p. 78): inversión MC = 2 610 750 USD frente a MP = 2 188 500 USD, beneficios parciales de 3 654 000 frente a 3 636 000 USD, y 15 frente a 9 trabajadores (p. 77). Esas cifras pueden dejar de marcarse como pendientes de verificar.</p>
+</section>
+
+<section id="base">
+<h2>Base de diseño y procedencia de los datos</h2>
+<div class="tbl"><table>
+<thead><tr><th>Parámetro</th><th>Valor</th><th>Fuente</th></tr></thead>
+<tbody>
+<tr><td>Producción de vino</td><td class="num">78 300 hL/año → 68,2 kg etanol/h</td><td><span class="tag">[T]</span> §4.2.5</td></tr>
+<tr><td>Azúcar fermentable del jugo (fruta de rechazo)</td><td class="num">158,83 g/L</td><td><span class="tag">[T]</span> §3.2.1, Murcia Palacios (2013)</td></tr>
+<tr><td>Título y tiempo de referencia (30 °C, pH 4,5)</td><td class="num">65,31 g/L en 12,5 h</td><td><span class="tag">[T]</span> §4.2.3</td></tr>
+<tr><td>Y<sub>P/S</sub> consistente con el título</td><td class="num">0,4164 g/g (la tesis redondea a 0,41)</td><td><span class="tag">[T]</span></td></tr>
+<tr><td>µ<sub>max</sub> calibrado (X<sub>0</sub> = 0,2 g/L supuesto)</td><td class="num">0,436 h⁻¹</td><td>Calibración; ver Fig. 3</td></tr>
+<tr><td>K<sub>s</sub>, P<sub>max</sub>, Y<sub>X/S</sub>, k<sub>d</sub></td><td class="num">1 g/L, 95 g/L, 0,08, 0,01 h⁻¹</td><td><span class="tag">[L]</span></td></tr>
+<tr><td>Horizonte, CCF</td><td class="num">7 500 h/año, 0,225</td><td><span class="tag">[C]</span> 2004, 2006b</td></tr>
+<tr><td>Costo instalado de fermentador</td><td class="num">25 000·V<sup>0,6</sup> USD</td><td><span class="tag">[S]</span> exponente <span class="tag">[T]</span> §4.2.4</td></tr>
+<tr><td>Electricidad ZNI (diésel)</td><td class="num">0,35 USD/kWh</td><td><span class="tag">[S]</span> contexto §1.2</td></tr>
+<tr><td>Hub: cáscara / hidrolizado / permeado</td><td class="num">110 / 60 / 80 g/L; 6 / 9 / 3 USD/m³</td><td><span class="tag">[S]</span> estructura <span class="tag">[T]</span> §4.6</td></tr>
+<tr><td>Acetificación estática / acetador</td><td class="num">50 g/L en 30 d / ≈50 kg/m³·d</td><td><span class="tag">[T]</span> Roda 2017a; Emde 2017</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="m1">
+<h2>Modelo 1 · Superestructura NLP del tren de vino</h2>
+<div class="prose">
+<h3>Formulación</h3>
+<p>Siguiendo a Corsano et al. (2006a), la superestructura contiene todas las alternativas explícitamente. La operación 1 (propagación aerobia) admite 1 unidad, 2 en serie o 2 en paralelo. La operación 2 (fermentación alcohólica) admite 1, 2, 3, 4, 6, 8 o 12 unidades fuera de fase, 2 en serie o 2×2. Cada unidad lleva su propio modelo dinámico discretizado:</p>
+</div>
+<pre class="eq">X_{i+1} = X_i + h/2·[f_X(X_i,S_i,P_i) + f_X(X_{i+1},S_{i+1},P_{i+1})]        (trapecios, Corsano 2004 ec. 8–11)
+µ = µmax · S/(Ks+S) · (1 − P/Pmax);   f_X = µX − kd·X;   f_S = −µX/Yxs;   f_P = Yps·µX/Yxs
+
+min TAC = CCF · Σ_a Σ_j M_aj · A · V_aj^b  +  (H/TL) · [c_jugo·ΣF + c_LSA·Σinóculo + c_elec·kW·ΣV·T]   (2006a ec. 1)
+s.a.  TL ≥ T_aj / M_aj        (ZW, fuera de fase)            Σ_a P_a·V_a ≥ PR·TL      (producción)
+      TL ≤ τ_llenado          (oxidación, tesis §4.2.4)       Σ_a S_a·V_a ≤ 4·Σ_a V_a  (vino seco)
+      X0·V = Xpool·B_in + inóculo;   Xpool·ΣV = ΣX_fin·V_fin   (pool bilineal entre operaciones)</pre>
+<div class="prose">
+<p>Como b &lt; 1, mantener dos estructuras a la vez siempre cuesta más que concentrar todo el volumen en una sola. Por eso el óptimo lleva a V → 0 las alternativas sobrantes y el problema no necesita binarias. El NLP base tiene 688 variables y 1 957 restricciones y se resuelve en unos 2 s.</p>
+<h3>Cinética, discretización e identificabilidad</h3>
+</div>
+<figure><img src="figs/fig01_cinetica_discretizacion.png" alt="Perfiles de biomasa, azúcar y etanol: LSODA frente a trapecios con 3, 5 y 15 nodos"><figcaption>Fig. 1. Con 15 nodos el método trapezoidal reproduce LSODA. Con 5 nodos, el etanol final se desvía 5,4 g/L (8 %).</figcaption></figure>
+<div class="prose">
+<p>Corsano et al. (2004, Fig. 2) afirman que 5 nodos bastan porque el método coincide con el simulador en el último punto. Con la cinética inhibida por etanol que exige el vino, eso no se cumple: el error en el punto final es de 5,4 g/L de etanol y 13 g/L de azúcar con 5 nodos, y cae a 0,14 y 0,35 g/L con 15 nodos (Fig. 2). Por eso todos los modelos usan 15 nodos y se verificaron a posteriori. Al resimular con LSODA la operación óptima, el NLP coincide en etanol final dentro de 0,15 % y en azúcar residual dentro de 0,2 g/L. La tesis no debería heredar la afirmación de los 5 nodos.</p>
+</div>
+<figure><img src="figs/fig02_error_discretizacion.png" alt="Error absoluto del etanol y el azúcar finales frente al número de nodos" style="max-width:520px"><figcaption>Fig. 2. Error en t = T frente al número de nodos (escala log-log).</figcaption></figure>
+<figure><img src="figs/fig03_identificabilidad.png" alt="Mapa de azúcar residual sobre el plano mu max – X0 y tiempo de diseño a lo largo de la curva de calibración"><figcaption>Fig. 3. Hay una familia continua de pares (µmax, X0), desde (0,55; 0,05 g/L) hasta (0,24; 2 g/L), que reproduce igual de bien el único punto medido. Para un pie de cuba de 2 g/L, el tiempo de fermentación de diseño varía entre 5,3 y 12,3 h según el par elegido.</figcaption></figure>
+<div class="prose">
+<p>El dato de Murcia Palacios (2013) es un único punto final: 65,31 g/L a 12,5 h. Un punto no puede identificar a la vez µmax y la dosis efectiva de inóculo. La Fig. 3 muestra que la ambigüedad tiene consecuencias de diseño: el tiempo de ciclo, y con él el volumen de los fermentadores, cambia 2,3 veces dentro del conjunto de parámetros compatibles con el dato. Recomendación metodológica: medir una curva temporal de al menos 6 puntos (azúcar, etanol, biomasa) y registrar la dosis de levadura viable. Hasta entonces, propagar µmax como incertidumbre, que es lo que hace el análisis de Sobol más abajo.</p>
+<h3>Óptimo base: el modelo reinventa el pie de cuba</h3>
+</div>
+<figure><img src="figs/fig04_m1_optimo_base.png" alt="Diagrama de Gantt y perfiles de concentración del óptimo base"><figcaption>Fig. 4. Óptimo base de la superestructura original (11 alternativas): una cascada de propagación y dos fermentadores en serie de 0,55 m³ y 10,72 m³, con TL = 10,38 h y TAC = 338,9 k USD/año (8,7 % capital, 91,3 % operación). Al añadir la alternativa de 3 en serie (Fig. 7), el óptimo baja a 337,2 k USD/año.</figcaption></figure>
+<div class="prose">
+<p>La estructura elegida es la de Corsano et al. (2006b), con una unidad de biomasa y dos fermentadores en serie, y en enología corresponde al pie de cuba. Un fermentador pequeño (5 % del volumen) recibe el cultivo del propagador y mosto sin diluir, llega a X ≈ 11,7 g/L y siembra el fermentador principal con X<sub>0</sub> ≈ 0,6 g/L. El optimizador llega a esa práctica industrial sin que nadie se la imponga. El capital pesa poco (8,7 %): el TAC lo dominan el jugo y el inóculo, así que la estructura óptima se decide sobre todo por el uso del sustrato y no por el tamaño de los equipos.</p>
+</div>
+<figure><img src="figs/fig05_m1_multiarranque.png" alt="TAC de 25 arranques ordenados y coloreados por estructura"><figcaption>Fig. 5. Multiarranque con 25 inicializaciones aleatorias: aparecen 10 estructuras localmente óptimas, y el mejor valor se alcanza en 5 de 25 arranques.</figcaption></figure>
+<div class="prose">
+<p>Esta es la evidencia cuantitativa de lo que §6.10 afirma de forma cualitativa: Corsano resuelve con CONOPT, un solver local, y sus óptimos no tienen garantía global. En el modelo de la piña, una sola corrida con una inicialización arbitraria puede quedar hasta un 16 % por encima del mejor óptimo encontrado, y con otra estructura. El protocolo de verificación de §6.9 (multiarranque, cotas y solver global) no es un lujo para este tipo de modelos.</p>
+<h3>Oxidación del mosto: el costo de los 12 fermentadores</h3>
+</div>
+<figure><img src="figs/fig06_m1_llenado_oxidacion.png" alt="TAC y número de fermentadores frente al tiempo máximo de llenado"><figcaption>Fig. 6. Si cada fermentador debe llenarse en menos de τ horas, la superestructura pasa de 2 en serie a 2×2, luego a 6, 8 y 12 en paralelo. El costo sube de forma no lineal.</figcaption></figure>
+<div class="prose">
+<p>La tesis elige 12 fermentadores más pequeños para acortar el llenado (§4.2.4). Aquí esa decisión sale del modelo: con τ = 1 h, la estructura óptima es exactamente 12 unidades fuera de fase (TL = 12,5/12 ≈ 1 h). Su costo frente al óptimo libre es de +60,3 k USD/año (+17,8 %); el capital anualizado pasa de 29 a 72 k USD/año. La curva es convexa: bajar el llenado de 7 a 3 h cuesta solo +4,4 %, mientras que bajar de 2 a 1 h cuesta +6,1 %. Esto da a §4.2.4 un argumento cuantitativo. Si el glutatión cuesta un orden de magnitud menos que el sobrecosto de capital (como estima la tesis), la combinación racional es un llenado moderado (3–4 h, 2×2 fermentadores) más dosificación de antioxidante, y no 12 fermentadores.</p>
+<h3>Mapa de estructuras: exponente de costo y escala</h3>
+</div>
+<figure><img src="figs/fig07_m1_mapa_b_escala.png" alt="Mapa de la estructura óptima según el exponente de costo y la escala de producción"><figcaption>Fig. 7. Estructura de fermentación óptima en 32 combinaciones (b, escala), después de reoptimizar cada celda con cada estructura candidata fija.</figcaption></figure>
+<div class="prose"><p>El NLP completo con 5 arranques por celda dio un mapa ruidoso. Se pulió reoptimizando cada celda con cada estructura candidata fija (8 estructuras × 2 arranques; problemas más pequeños y mejor condicionados) y tomando el mínimo, como hace Corsano (2006a, §5) con su secuencia de MINLP. El pulido mejoró 17 de las 32 celdas en más de 1 % (1,8 % en promedio y hasta 8,1 %). Detectó además que la superestructura del caso base no incluía la alternativa <b>3 en serie</b>, que resulta la mejor para b ≥ 0,5. Con ella el caso base baja de 338,9 a 337,2 k USD/año (−0,5 %) y la propagación separada desaparece: la cascada de tres fermentadores siembra con levadura seca y hace de pie de cuba.</p>
+<p>El mapa pulido es monótono y tiene interpretación física. Con b ≤ 0,4 la concavidad es tan fuerte que una unidad pequeña cuesta casi lo mismo que una grande, y el óptimo usa solo 2 fermentadores en serie. Con b ≥ 0,5 conviene un tercero. La propagación aerobia separada solo vuelve a aparecer con b ≥ 0,7, cuando los equipos pequeños dejan de ser caros. La prueba de consistencia también se cumple: con b = 1, sin economía de escala, el TAC por unidad de producción es idéntico en las cuatro escalas.</p>
+<p>Lección metodológica para §6.1 y §6.9: la superestructura sin binarias es tan buena como su lista de alternativas. Corsano (2004) fija la cota superior de unidades en serie resolviendo primero un problema relajado; omitir ese paso, como hizo aquí la primera corrida, deja fuera el óptimo sin aviso. El protocolo de verificación de la tesis debería incluir una prueba explícita de completitud de la superestructura.</p></div>
+
+<div class="prose"><h3>Jerárquico frente a simultáneo: el costo de la cadena actual de la tesis</h3></div>
+<figure><img src="figs/fig08_m1_jerarquico_vs_simultaneo.png" alt="TAC de las estrategias jerárquica, intermedia y simultánea para tres tiempos de llenado"><figcaption>Fig. 8. Jerárquico: la cinética fija T = 12,5 h y X<sub>0</sub> = 0,2 g/L de levadura seca, y después se dimensiona. Intermedio: T fijo, inóculo libre. Simultáneo: Corsano.</figcaption></figure>
+<div class="prose"><div class="tbl"><table>
+<thead><tr><th>τ llenado</th><th>Jerárquico</th><th>Intermedio</th><th>Simultáneo</th><th>Ahorro total</th><th>Parte por inóculo y propagación</th><th>Parte por tiempo y estructura</th></tr></thead>
+<tbody>
+<tr><td>12,5 h</td><td class="num">364,6 (1 unidad)</td><td class="num">343,5</td><td class="num">338,9 (2 en serie)</td><td class="num">−7,1 %</td><td class="num">82 %</td><td class="num">18 %</td></tr>
+<tr><td>3 h</td><td class="num">391,8 (6 en paralelo)</td><td class="num">374,5</td><td class="num">356,4 (2×2)</td><td class="num">−9,0 %</td><td class="num">49 %</td><td class="num">51 %</td></tr>
+<tr><td>1 h</td><td class="num">infactible</td><td class="num">infactible</td><td class="num">399,2 (12 en paralelo)</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+</tbody></table></div>
+<p>TAC en k USD/año. La cadena jerárquica, que es la de la tesis (§4.2 y §6.10), cuesta entre 7,1 y 9,0 % más que la formulación simultánea de Corsano. La descomposición muestra dónde está la pérdida. Sin restricción de llenado, el 82 % del ahorro viene de optimizar el inóculo y la propagación: la cadena jerárquica fija X<sub>0</sub> = 0,2 g/L de levadura seca. Cuando la restricción de oxidación se activa (τ = 3 h), la mitad del ahorro viene de optimizar a la vez el tiempo de fermentación y la estructura: el óptimo simultáneo pasa de 6 unidades en paralelo a un arreglo 2×2. Con τ = 1 h la cadena jerárquica no tiene solución. Con T fijo en 12,5 h necesitaría al menos 13 unidades; la optimización simultánea acorta la fermentación a 12 h y cumple con 12.</p>
+<p>Esto responde la pregunta que §6.10 deja abierta, si el compromiso entre tiempo de ciclo y tamaño de reactor existe en la cinética de la tesis: sí existe, y vale entre 7 y 9 % del TAC. La justificación de tractabilidad de Kallrath (2021) sigue siendo válida para el MINLP completo. Pero la pérdida ya no es hipotética, y la tesis puede citarla como costo cuantificado de la decisión polilítica.</p></div>
+
+<div class="prose"><h3>NLP sin binarias frente a MINLP</h3>
+<p>Para comparar como en §5 de Corsano (2006a), se fijó una etapa por operación y el número de unidades en paralelo se dejó como entero (Bonmin):</p></div>
+<div class="tbl"><table>
+<thead><tr><th>τ llenado</th><th>Método</th><th>Estructura</th><th>TAC (k USD/año)</th><th>CPU (s)</th></tr></thead>
+<tbody>
+<tr><td>12,5 h</td><td>NLP superestructura, 9 arranques</td><td>Prop 1 · Ferm 2 en paralelo</td><td class="num">352,1</td><td class="num">13,3</td></tr>
+<tr><td>12,5 h</td><td>MINLP Bonmin B-BB</td><td>M = 1 · M = 1</td><td class="num">342,6</td><td class="num">0,2</td></tr>
+<tr><td>12,5 h</td><td>MINLP Bonmin B-OA</td><td>M = 1 · M = 1</td><td class="num">342,6</td><td class="num">0,1</td></tr>
+<tr><td>3 h</td><td>NLP superestructura, 9 arranques</td><td>Prop 2 en paralelo · Ferm 4 en paralelo</td><td class="num">366,4</td><td class="num">20,6</td></tr>
+<tr><td>3 h</td><td>MINLP Bonmin B-BB</td><td>M = 3 · M = 4</td><td class="num">365,0</td><td class="num">0,4</td></tr>
+<tr><td>3 h</td><td>MINLP Bonmin B-OA</td><td>M = 2 · M = 2</td><td class="num">402,7</td><td class="num">0,2</td></tr>
+</tbody></table></div>
+<div class="prose">
+<p>Ninguno de los dos enfoques es confiable por sí solo. Con 9 arranques, el NLP sin binarias no encontró en el espacio de una etapa el óptimo M = 1 que sí halló Bonmin (2,8 % peor). A su vez, la aproximación externa de Bonmin (B-OA) se detuvo en una solución 10 % peor que B-BB, por la misma razón por la que Corsano desconfiaba de DICOPT: los cortes lineales sobre regiones no convexas excluyen el óptimo. Con 11 alternativas, el modelo NLP completo del caso base llegó a 338,9 k, mejor que ambos, porque admite series. Para la tesis: el argumento de §6.10 a favor de BARON y de una brecha de optimalidad certificable no depende de usar binarias o no, sino de la no convexidad, que está presente en ambos casos.</p>
+<h3>Certificación global con SCIP</h3>
+<p>Para probar si la certificación es viable, se reformuló un subproblema: una etapa de fermentación con M ∈ {1…12} entero, inóculo directo y 10 nodos trapezoidales, con la tasa de Monod como variable auxiliar y bilineales explícitos. Se resolvió a optimalidad global con SCIP 10 (ramificación espacial). El mismo problema discretizado se resolvió también con los métodos locales:</p>
+</div>
+<div class="tbl"><table>
+<thead><tr><th>τ llenado</th><th>Método</th><th>TAC (k USD/año)</th><th>M</th><th>Brecha frente al global</th><th>CPU (s)</th></tr></thead>
+<tbody>
+<tr><td>12,5 h</td><td>SCIP global (brecha certificada 0 %)</td><td class="num">355,56</td><td class="num">2</td><td class="num">—</td><td class="num">7,5</td></tr>
+<tr><td>12,5 h</td><td>Bonmin B-BB, 3 arranques</td><td class="num">355,56</td><td class="num">2</td><td class="num">0,0 %</td><td class="num">&lt; 1</td></tr>
+<tr><td>12,5 h</td><td>Bonmin B-OA, 3 arranques</td><td class="num">362,86</td><td class="num">1</td><td class="num">+2,1 %</td><td class="num">&lt; 1</td></tr>
+<tr><td>12,5 h</td><td>IPOPT + enumeración de M (48 NLP)</td><td class="num">355,56</td><td class="num">2</td><td class="num">0,0 %</td><td class="num">≈ 10</td></tr>
+<tr><td>3 h</td><td>SCIP global (brecha certificada 0,009 %)</td><td class="num">375,00</td><td class="num">5</td><td class="num">—</td><td class="num">7,5</td></tr>
+<tr><td>3 h</td><td>Bonmin B-BB, 3 arranques</td><td class="num">375,00</td><td class="num">5</td><td class="num">0,0 %</td><td class="num">&lt; 1</td></tr>
+<tr><td>3 h</td><td>Bonmin B-OA, 3 arranques</td><td class="num">386,99</td><td class="num">4</td><td class="num">+3,2 %</td><td class="num">&lt; 1</td></tr>
+<tr><td>3 h</td><td>IPOPT + enumeración de M (48 NLP)</td><td class="num">375,00</td><td class="num">5</td><td class="num">0,0 %</td><td class="num">≈ 10</td></tr>
+</tbody></table></div>
+<div class="prose">
+<p>Tres conclusiones para §6.8–6.9. Primera: la certificación global de los subproblemas de una unidad es barata (segundos), así que la tesis puede exigirla, al menos para los subproblemas por tren. Segunda: B-OA, el análogo de DICOPT, falla de forma sistemática en este tipo de modelos, y B-BB o la enumeración con IPOPT aciertan. Tercera: el subproblema elige el inóculo mínimo (0,05 g/L) y alarga la fermentación (16,4 h). Sin propagación, el costo del inóculo empuja hacia ciclos largos, y el modelo completo resuelve ese mismo compromiso con la cascada del pie de cuba.</p>
+<h3>Sensibilidad global (Sobol)</h3>
+</div>
+<figure><img src="figs/fig09_m1_sobol.png" alt="Índices de Sobol de primer orden y totales del TAC óptimo"><figcaption>Fig. 9. Cada muestra de Saltelli es una reoptimización completa de la superestructura con 2 arranques. Así se mide la sensibilidad del óptimo, no la de un diseño fijo.</figcaption></figure>
+<div class="prose"><p>Se hicieron 640 reoptimizaciones (muestreo de Saltelli, N = 64, 8 factores) sin fallos de convergencia. El TAC óptimo varía entre 210 y 496 k USD/año (percentiles 5–95; coeficiente de variación 26 %). Los índices separan dos preguntas distintas:</p>
+<ul class="tight">
+<li><b>Cuánto cuesta.</b> El costo del jugo de rechazo explica casi toda la varianza del TAC (S1 = 0,955; ST = 0,942). Cada USD/m³ de jugo suma 7 838 USD/año. Ningún otro factor pasa de ST = 0,03: Y<sub>P/S</sub> llega a 0,029 y los parámetros de costo de equipos, el exponente b y la electricidad quedan por debajo de 0,01. El índice del jugo tiene un intervalo de confianza amplio (±0,25) por el tamaño de muestra, pero su dominancia no depende de esa incertidumbre.</li>
+<li><b>Qué se construye.</b> El número de fermentadores óptimo no depende de los precios. Depende de la cinética: correlación de −0,36 con µmax y −0,28 con Pmax. Una levadura más lenta o más sensible al etanol pide más unidades (Fig. 9, derecha). En 54 % de las muestras el óptimo tiene 2 fermentadores, en 18 % tiene 4, en 14 % uno solo y en 13 % tres.</li>
+</ul>
+<p>Para la tesis: el precio del jugo de fruta de rechazo, y con él la logística de acopio en el Bajo Atrato (§3.3), es la variable económica que más importa medir. La calibración cinética del punto 2 de la sección de cambios es la que más importa para el diseño físico.</p></div>
+</section>
+
+<section id="m2">
+<h2>Modelo 2 · Etanol del hub con reciclo de vinaza</h2>
+<div class="prose">
+<p>El modelo reproduce la planta de Corsano et al. (2006b) completa: propagación, fermentación con alternativas en serie y paralelo, centrífuga semicontinua y destilación por lotes. La destilación usa Fenske para N<sub>min</sub>, la aproximación de Underwood del artículo para R<sub>min</sub> y la correlación de la ec. 26 para R con 20 etapas. Cada fermentador decide cuánto toma de cada corriente del hub, cuánta vinaza recicla (hasta φ = 40 % de su volumen, por acumulación de sales) y cuánta agua añade. El rendimiento de biomasa depende de la mezcla, como en la ec. 6 de Corsano. El hidrolizado reduce µ<sub>max</sub> en proporción a su participación (furfural/HMF). La concentración de azúcar en la vinaza, S<sub>W</sub>, es una variable de optimización, igual que en el artículo.</p>
+</div>
+<pre class="eq">x_k · S0 · V  =  F_k · S_k  +  x_k,prev · S_prev · V_prev          (bilineal: el balance de propiedad del hub de §4.6, a escala de fermentador)
+Yxs(x) = Σ a_k x_k + Σ b_kl x_k x_l                                 (Corsano 2004 ec. 6, coeficientes [S])
+Z_res  = (H/CT) · [ (Ze+ZT) + (S_W + NF + 1,95·P_W)/Os · Z_BO ] · V_res   (2006b ec. 38 + etanol residual como DBO)</pre>
+<div class="prose"><h3>Resultados base</h3>
+<p>Con el hub tal como sale de los trenes (f = 1) y la penalización de la ec. 38, el óptimo repite la estructura de Corsano (2006b): una cascada de propagación y dos fermentadores en serie. El TAC es de 305,3 k USD/año, todo el azúcar se consume (S<sub>W</sub> → 0) y la columna opera con η = 0,905, R = 3,7 y N<sub>min</sub> = 2,3 sobre 20 etapas, con 3 683 t/año de vapor. Casi no se recicla vinaza (1 %).</p>
+<div class="tbl"><table>
+<thead><tr><th>Penalización de la vinaza</th><th>TAC (k USD/año)</th><th>Recuperación de etanol η</th><th>Reflujo R</th><th>Vinaza vertida (m³/año)</th></tr></thead>
+<tbody>
+<tr><td>Ninguna</td><td class="num">209,1</td><td class="num">0,800 (cota)</td><td class="num">2,19</td><td class="num">5 636</td></tr>
+<tr><td>Ec. 37 (solo volumen)</td><td class="num">220,4</td><td class="num">0,800 (cota)</td><td class="num">2,19</td><td class="num">5 635</td></tr>
+<tr><td>Ec. 38 (volumen + DBO; aquí con etanol)</td><td class="num">305,3</td><td class="num">0,905</td><td class="num">3,73</td><td class="num">4 942</td></tr>
+</tbody></table></div>
+<p>Esta tabla muestra un punto que Corsano no discute: la forma de la penalización ambiental decide el diseño de la destilación. Si la vinaza solo se cobra por volumen, o si su carga orgánica no incluye el etanol residual, el óptimo económico lleva la recuperación a su cota mínima y deja el 20 % del etanol en el efluente. Para la tesis esto tiene una consecuencia directa: el inventario de §7.4 y el objetivo ambiental de §6.6 deben contar el etanol residual como carga orgánica. Si no, la frontera de Pareto NPV–GWP premiará columnas que contaminan más.</p>
+<h3>La concentración del hub decide si conviene reciclar</h3>
+<p>Con f entre 1 y 5, la fracción reciclada pasa de 1 % a 10 % (f = 2), 61 % (f = 3) y 92 % (f = 5). La vinaza vertida cae de 4 942 a 248 m³/año (−95 %) y el TAC baja de 305,3 a 215,2 k USD/año, ya pagada la evaporación. La explicación es física. Corsano recicla vinaza porque su melaza (779 g/L) necesita agua de dilución, y la vinaza la sustituye. Las corrientes del hub de la piña ya vienen diluidas (60–110 g/L): no hay agua que sustituir, y reciclar solo diluye el mosto, baja el título y encarece la destilación. Por eso la concentración del hub, C<sub>H</sub> en §4.6, no es solo un problema de pooling: decide la estrategia de efluentes.</p></div>
+<figure><img src="figs/fig10_m2_concentracion_hub.png" alt="Reciclo, balance hídrico y composición del TAC frente al factor de concentración del hub"><figcaption>Fig. 10. Se concentran todas las corrientes del hub por un factor f, con evaporación de múltiple efecto a 0,35 t de vapor por t de agua, manteniendo el costo por kilogramo de azúcar.</figcaption></figure>
+<figure><img src="figs/fig11_m2_Sw.png" alt="TAC y fracción reciclada frente al azúcar residual de la vinaza"><figcaption>Fig. 11. TAC frente a S<sub>W</sub> fijo. Con hub diluido (f = 1), dejar azúcar sin fermentar es caro porque no se recicla. Con hub concentrado (f = 3), el reciclo recupera ese azúcar y la curva es casi plana.</figcaption></figure>
+<figure><img src="figs/fig12_m2_pareto.png" alt="Frontera de Pareto entre TAC y vinaza descargada" style="max-width:700px"><figcaption>Fig. 12. Frontera costo–descarga por ε-restricción sobre el volumen anual de vinaza vertida, sin penalización en el objetivo.</figcaption></figure>
+<figure><img src="figs/fig13_m2_asignacion_hub.png" alt="Participación del hidrolizado en el azúcar fermentado según la inhibición y el costo" style="max-width:760px"><figcaption>Fig. 13. Porcentaje del azúcar fermentado que proviene del hidrolizado de hojas/corona, según la inhibición α y su costo.</figcaption></figure>
+<div class="prose"><p><b>S<sub>W</sub> y reciclo (Fig. 11).</b> Con hub diluido, dejar azúcar sin fermentar es caro: el TAC sube de 307 a 463 k USD/año entre 0,5 y 30 g/L, y solo a 40 g/L el modelo recurre al reciclo (58 %). Con f = 3 la curva es casi plana (228 → 260 k USD/año) porque el reciclo recupera ese azúcar. Esto coincide con lo que encontró Corsano (2006b): un S<sub>W</sub> óptimo alto (41,4 g/L) solo tiene sentido cuando la vinaza se recicla.</p>
+<p><b>Frontera costo–descarga (Fig. 12).</b> Con f = 1, bajar la descarga un 20 % (de 4 942 a 3 954 m³/año) cuesta 46 USD por m³ evitado. Eso es tres veces el costo de tratamiento implícito en la ec. 38 (≈15–21 USD/m³). Con hub diluido, la decisión racional es tratar la vinaza, no reciclarla. Concentrar el hub reduce la vinaza en el origen: el punto de partida con f = 3 ya vierte 79 % menos.</p>
+<p><b>Límite de reciclo φ.</b> Con f = 3, pasar de φ = 0 a φ = 0,3 baja el TAC de 255,7 a 231,1 k USD/año. Por encima de 0,3 casi no hay ganancia. La tolerancia de la levadura a la vinaza reciclada (sales e inhibidores) es entonces un dato experimental de alto valor para la tesis.</p>
+<p><b>Asignación del hub bajo escasez (Fig. 13).</b> Al subir la producción exigida, el óptimo agota primero el jugo de cáscara (110 g/L), después el permeado UF (80 g/L) y al final el hidrolizado (60 g/L). Ese orden sigue la concentración y no el costo por kg de azúcar: el permeado es el más barato y entra segundo. El costo marginal del etanol sube por escalones: 0,88–0,90 USD/kg con cáscara, 1,02 con permeado, 1,39–1,58 con hidrolizado. La inhibición del hidrolizado casi no importa (+0,4 % de TAC con α = 0,6) porque el tiempo de fermentación la compensa. Con estos supuestos de costo, el etanol del hub cuesta en promedio 1,02 USD/kg frente a un precio supuesto de 0,85. Esto es coherente con el criterio de densidad de valor de §3.4: el azúcar diluido del hub rinde más en productos de mayor valor (ácido cítrico, xantana) que en etanol carburante.</p></div>
+</section>
+
+<section id="m3">
+<h2>Modelo 3 · Campañas mixtas</h2>
+<div class="prose">
+<p>Vino (A) y bioetanol del hub (B) comparten propagador, fermentador y centrífuga. La destilación es solo de B; el acetador y los tanques de envejecimiento de 90 días son solo de A. Con espera cero en un flow-shop, el retardo mínimo entre el inicio de un lote i y el siguiente k se obtiene así:</p>
+</div>
+<pre class="eq">d_ik ≥ s_ij + t_ij − s_kj      para toda etapa compartida j   (s_ij: inicio de la etapa j en el lote i)
+SPC:       N_A·d_AA + N_B·d_BB ≤ H
+Campaña c: N_c · Σ_q d(c_q, c_q+1) ≤ H,    N_A = n_A(c)·N_c,   N_B = n_B(c)·N_c</pre>
+<div class="prose">
+<p>Se aplicó la heurística de cuatro pasos de Corsano (2007). Primero se resolvió el modelo SPC, que dio una razón N<sub>A</sub>/N<sub>B</sub> = 0,62 (335 lotes de vino y 539 de etanol al año). Luego se generaron las secuencias cíclicas primitivas de hasta 6 posiciones, se eligieron las 11 más cercanas a esa razón y se resolvió un NLP por campaña con 5 arranques cada uno. La campaña <b>AB</b> gana: 2,989 M USD/año frente a 2,963 M USD/año con SPC (+25,3 k USD/año). La mejora no viene de un ciclo más corto. Al intercalar los lotes (Fig. 14), los equipos compartidos se dimensionan para lotes más parecidos: el fermentador baja de 27,9 a 22,1 m³ (−21 %), el propagador de 2,8 a 2,2 m³ y la inversión de 3,970 a 3,864 M USD. Mientras tanto, la destilación, exclusiva de B, trabaja en paralelo con los lotes de A (ciclo AB de 17,8 h).</p>
+<p>Hay una diferencia de fondo con el artículo: con espera cero, el modelo SPC no es una relajación de las campañas mixtas, porque d<sub>AB</sub> + d<sub>BA</sub> puede ser menor que d<sub>AA</sub> + d<sub>BB</sub>. Corsano lo presenta como una relajación; aquí funciona como estimador de la razón de lotes, que es su papel real dentro de la heurística.</p>
+</div>
+<figure><img src="figs/fig14_m3_campanas.png" alt="Beneficio de cada campaña candidata y diagramas de Gantt de SPC y de la campaña AB"><figcaption>Fig. 14. Beneficio de las 12 campañas candidatas y Gantt de SPC frente a la mejor campaña mixta.</figcaption></figure>
+</section>
+
+<section id="m4">
+<h2>Modelo 4 · Multiplanta vs multiproducto</h2>
+<div class="prose">
+<p>El complejo multiplanta (MC) sigue las ec. 4.1–4.13 del libro. La planta 1 produce vino y vinagre, y la planta 2 etanol, cada una con sus propios equipos, tiempo de ciclo y restricción N<sub>l</sub>·CT<sub>l</sub> ≤ H. La planta madre entrega jugo, azúcar del hub, electricidad (60 kW del gasificador a 0,08 USD/kWh) y vapor. El respaldo es diésel y el excedente eléctrico se exporta a la microrred a 0,20 USD/kWh. Ambas configuraciones alcanzan las mismas producciones (7 830 m³ de vino, 1 500 m³ de vinagre y 300 t de etanol por año), así que la comparación es solo de costos, como en la Tabla 4.3 del libro.</p>
+</div>
+<div class="tbl"><table>
+<thead><tr><th>Concepto (USD/año)</th><th>MC (2 plantas)</th><th>MP campaña AB</th><th>Diferencia</th></tr></thead>
+<tbody>
+<tr><td>Inversión total</td><td class="num">3 913 233</td><td class="num">3 864 103</td><td class="num">−1,3 %</td></tr>
+<tr><td>Capital anualizado</td><td class="num">880 477</td><td class="num">869 423</td><td class="num">−11 054</td></tr>
+<tr><td>Materias primas</td><td class="num">385 835</td><td class="num">386 132</td><td class="num">+297</td></tr>
+<tr><td>Energía (costo − exportación)</td><td class="num">−32 033</td><td class="num">−32 218</td><td class="num">−185</td></tr>
+<tr><td>Beneficio sin mano de obra</td><td class="num">2 977 721</td><td class="num">2 988 663</td><td class="num">+10 942</td></tr>
+<tr><td>Operarios (regla del libro, 3 turnos)</td><td class="num">15</td><td class="num">9</td><td class="num">−6</td></tr>
+<tr><td>Beneficio con mano de obra (7 500 USD/operario)</td><td class="num">2 865 221</td><td class="num">2 921 163</td><td class="num">+55 942</td></tr>
+<tr><td>Ídem con 4,2 dotaciones (24/7 real)</td><td class="num">2 820 221</td><td class="num">2 894 163</td><td class="num">+73 942</td></tr>
+</tbody></table></div>
+<figure><img src="figs/fig15_m4_MC_vs_MP.png" alt="Desglose de costos MC frente a MP y ventaja de MP según la escala y el salario"><figcaption>Fig. 15. Izquierda: desglose de costos. Derecha: ventaja de MP sobre MC según la escala y el salario por operario.</figcaption></figure>
+<div class="prose">
+<p>El resultado reproduce la conclusión cualitativa de Corsano: las dos arquitecturas quedan económicamente cerca (0,4 % del beneficio sin mano de obra) y la decisión la inclina el personal, que el libro menciona pero no valora. En la piña, la ventaja de MP en inversión es mucho menor que el 19 % del libro (1,3 %). La razón es que buena parte del capital está en equipos dedicados que no se comparten en ninguna de las dos configuraciones: tanques de envejecimiento de 90 días, destilación y acetador. La ventaja de MP crece con la escala (Fig. 15) porque el ahorro por compartir equipos escala con V<sup>0,6</sup> y la mano de obra es fija por turno.</p>
+<p>Esto delimita qué puede afirmar la tesis en §9.6. Confirmar H1 (hub compartido frente a trenes independientes) no dice nada sobre el tercer punto del espectro, compartir también los equipos. Ese tercer punto resulta favorable pero pequeño en recursos materiales, y su signo lo decide un factor social (empleo rural) que tiene peso propio en el contexto del Bajo Atrato. Allí 6 empleos adicionales en el esquema MC pueden ser un objetivo de política (§10.2), no solo un costo.</p>
+</div>
+</section>
+
+<section id="tesis">
+<h2>Cambios concretos que sugiere a la tesis</h2>
+<ol class="edits prose">
+<li><b>§4.2.4.</b> Sustituir el argumento cerrado del número de trenes por el resultado de la Fig. 6: la curva TAC–τ y la estructura que emerge en cada nivel. Presentar 12 fermentadores como el caso τ = 1 h y no como el diseño recomendado, si el glutatión cubre el riesgo de oxidación.</li>
+<li><b>§4.2.3.</b> Declarar que el dato cinético de Murcia Palacios (2013) es un punto final que no identifica µmax ni la dosis de inóculo (Fig. 3) y que el tiempo de diseño cambia 2,3 veces dentro del conjunto compatible. Añadirlo a la incertidumbre de §6.7.</li>
+<li><b>§6.9.</b> Incorporar como evidencia del protocolo los 10 óptimos locales en 25 arranques (Fig. 5), el desacuerdo entre B-BB y B-OA y la verificación a posteriori con LSODA (error &lt; 0,2 %).</li>
+<li><b>§6.10.</b> Reemplazar "no se ha cuantificado" por la cifra de la Fig. 8: costo de la cadena jerárquica frente a la simultánea. Corregir la idea heredada de que 5 nodos trapezoidales bastan (Fig. 1–2). Marcar como verificadas las cifras de la Tabla 4.3 del libro.</li>
+<li><b>§4.6 y §6.3.</b> Usar la Fig. 10 para argumentar que la concentración del hub (C<sub>H</sub>) no es solo una variable del pooling: decide si el reciclo de efluentes es rentable. Es un acoplamiento hub–ambiente que la tesis no tiene explícito.</li>
+<li><b>§6.6 y §7.</b> Incluir el etanol residual de la vinaza en la carga orgánica penalizada. Sin ese término, el óptimo económico lleva la recuperación de etanol a su cota mínima.</li>
+<li><b>§9.6 y §11.3, punto 7.</b> Pasar el benchmark MC–MP de "trabajo futuro" a "realizado en forma exploratoria" (Modelo 4, Fig. 15), con la advertencia de parámetros [S].</li>
+</ol>
+</section>
+
+<section id="limites">
+<h2>Validez y límites</h2>
+<ul class="tight prose">
+<li>Costos unitarios, propiedades del hub, coeficientes del rendimiento de mezcla y precios de etanol y vinagre son supuestos <span class="tag">[S]</span>. Las estructuras óptimas se mantuvieron en los barridos, pero las cifras absolutas no son resultados.</li>
+<li>La cinética del vino no incluye nitrógeno asimilable ni temperatura. Hereda la limitación que la tesis ya declara para Moresi (§4.2.5).</li>
+<li>En los Modelos 3–4 cada etapa tiene una sola unidad, para aislar el efecto de compartir equipos. El número de lotes se trata como continuo, como en Corsano. La destilación usa un costo simplificado (factor de vapor ∝ 1/título), más favorable al etanol que el modelo detallado del Modelo 2. Por eso el beneficio absoluto de esos modelos lo dominan las ventas de vino.</li>
+<li>El inóculo se limita a ≤ 10 % del lote, con pitching ≥ 0,5 g/L, y el vino se exige ≥ 55 g/L de etanol (7,0 % v/v). Sin esas restricciones, el modelo multiproducto diluía el vino con el mosto del propagador.</li>
+<li>Solo el subproblema de una etapa tiene certificado de optimalidad global (SCIP). Para los modelos completos, el multiarranque y el pulido por estructura reducen el riesgo, pero no lo eliminan. El paso siguiente natural es llevar la formulación reformulada de <code>m1_global.py</code> a la superestructura completa con SCIP o BARON.</li>
+<li>El SPC no es una relajación de las campañas mixtas bajo espera cero (ver Modelo 3).</li>
+<li>Los experimentos E3, E4, E6 y E8 del Modelo 1 usan la superestructura original, sin la alternativa de 3 en serie. Según el pulido de la Fig. 7, incluirla baja el TAC entre 0,2 % y 8 % según la celda (0,5 % en el caso base). Las conclusiones de esos experimentos no cambian, pero las cifras absolutas quedan ligeramente sobreestimadas.</li>
+</ul>
+</section>
+
+<section id="repro">
+<h2>Reproducibilidad</h2>
+<div class="prose">
+<p>El código está en <code>corsano_pina/</code>: <code>params.py</code> (base de diseño con procedencias), <code>kinetics.py</code>, los cuatro modelos, cuatro scripts de experimentos y <code>figuras.py</code>. Los resultados crudos de cada experimento quedan en <code>results/*.json</code>. Las instrucciones de ejecución están en <code>README.md</code>. Tiempo total aproximado: 35 minutos con 4 núcleos.</p>
+</div>
+</section>
+</main>

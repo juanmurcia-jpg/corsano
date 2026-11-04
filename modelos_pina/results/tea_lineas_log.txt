@@ -1,0 +1,27 @@
+Base tesis (78 300 hL) L1 Vino de piña (rápido, 30 °C) FCI 24,959 MM | VPN -20,674 MM | MIRR -7.9 % | CN 2,142 vs P 1,600 | PE 2,295 | P(VPN>0) 0.00
+Base tesis (78 300 hL) L2 Vino premium (15–22 °C, 5 d) FCI 26,044 MM | VPN -22,029 MM | MIRR -8.9 % | CN 2,179 vs P 1,600 | PE 2,338 | P(VPN>0) 0.00
+Base tesis (78 300 hL) L3 Vinagre (acetador sumergido) FCI 4,549 MM | VPN 752 MM | MIRR 11.8 % | CN 1,986 vs P 2,200 | PE 2,094 | P(VPN>0) 0.51
+Base tesis (78 300 hL) L4 Bromelaína + polvo nutracéutico FCI 9,798 MM | VPN 2,436 MM | MIRR 12.8 % | CN 138,132 vs P 300,000 | PE 199,198 | P(VPN>0) 0.77
+Base tesis (78 300 hL) L5 Harina de fibra de cáscara FCI 7,543 MM | VPN 8,889 MM | MIRR 20.3 % | CN 8,416 vs P 12,000 | PE 8,841 | P(VPN>0) 0.94
+Base tesis (78 300 hL) L6 Etanol hidratado (jugo de cáscara) FCI 3,691 MM | VPN -7,515 MM | MIRR nan % | CN 10,693 vs P 4,000 | PE 11,554 | P(VPN>0) 0.00
+Base tesis (78 300 hL) L7a Isla de gasificación (TRL 8) FCI 3,984 MM | VPN -5,439 MM | MIRR nan % | CN 3,708 vs P 1,400 | PE 4,151 | P(VPN>0) 0.00
+Base tesis (78 300 hL) L7b Caldera de biomasa (TRL 9) FCI 2,644 MM | VPN -351 MM | MIRR 8.4 % | CN 156 vs P 159 | PE 171 | P(VPN>0) 0.20
+Base tesis (78 300 hL) Planta integrada TRL-9 FCI 53,184 MM | VPN -3,656 MM | MIRR 9.2 % | CN inf vs P 1 | PE nan | P(VPN>0) 0.23
+Chocó 2022 (6 146 t) L1 Vino de piña (rápido, 30 °C) FCI 8,978 MM | VPN -11,293 MM | MIRR nan % | CN 2,663 vs P 1,600 | PE 2,875 | P(VPN>0) 0.00
+Chocó 2022 (6 146 t) L2 Vino premium (15–22 °C, 5 d) FCI 9,221 MM | VPN -11,585 MM | MIRR nan % | CN 2,691 vs P 1,600 | PE 2,908 | P(VPN>0) 0.00
+Chocó 2022 (6 146 t) L3 Vinagre (acetador sumergido) FCI 2,592 MM | VPN -2,888 MM | MIRR -31.3 % | CN 3,095 vs P 2,200 | PE 3,336 | P(VPN>0) 0.00
+Chocó 2022 (6 146 t) L4 Bromelaína + polvo nutracéutico FCI 4,362 MM | VPN -2,384 MM | MIRR 1.5 % | CN 503,854 vs P 300,000 | PE 609,329 | P(VPN>0) 0.00
+Chocó 2022 (6 146 t) L5 Harina de fibra de cáscara FCI 4,224 MM | VPN -803 MM | MIRR 7.6 % | CN 12,116 vs P 12,000 | PE 13,008 | P(VPN>0) 0.20
+Chocó 2022 (6 146 t) L6 Etanol hidratado (jugo de cáscara) FCI 1,885 MM | VPN -4,859 MM | MIRR nan % | CN 19,280 vs P 4,000 | PE 21,109 | P(VPN>0) 0.00
+Chocó 2022 (6 146 t) L7a Isla de gasificación (TRL 8) FCI 1,455 MM | VPN -3,541 MM | MIRR nan % | CN 6,742 vs P 1,400 | PE 7,491 | P(VPN>0) 0.00
+Chocó 2022 (6 146 t) L7b Caldera de biomasa (TRL 9) FCI 1,201 MM | VPN -1,664 MM | MIRR nan % | CN 282 vs P 159 | PE 311 | P(VPN>0) 0.00
+Chocó 2022 (6 146 t) Planta integrada TRL-9 FCI 23,243 MM | VPN -16,715 MM | MIRR -3.3 % | CN inf vs P 1 | PE nan | P(VPN>0) 0.00
+Pérdida poscosecha Chocó (1 537 t) L1 Vino de piña (rápido, 30 °C) FCI 4,436 MM | VPN -8,645 MM | MIRR nan % | CN 4,875 vs P 1,600 | PE 5,347 | P(VPN>0) 0.00
+Pérdida poscosecha Chocó (1 537 t) L2 Vino premium (15–22 °C, 5 d) FCI 4,438 MM | VPN -8,634 MM | MIRR nan % | CN 4,870 vs P 1,600 | PE 5,343 | P(VPN>0) 0.00
+Pérdida poscosecha Chocó (1 537 t) L3 Vinagre (acetador sumergido) FCI 1,256 MM | VPN -3,192 MM | MIRR nan % | CN 6,282 vs P 2,200 | PE 6,866 | P(VPN>0) 0.00
+Pérdida poscosecha Chocó (1 537 t) L4 Bromelaína + polvo nutracéutico FCI 2,858 MM | VPN -4,781 MM | MIRR nan % | CN 2,104,642 vs P 300,000 | PE 2,402,938 | P(VPN>0) 0.00
+Pérdida poscosecha Chocó (1 537 t) L5 Harina de fibra de cáscara FCI 2,633 MM | VPN -3,939 MM | MIRR nan % | CN 24,613 vs P 12,000 | PE 27,024 | P(VPN>0) 0.00
+Pérdida poscosecha Chocó (1 537 t) L6 Etanol hidratado (jugo de cáscara) FCI 1,885 MM | VPN -4,838 MM | MIRR nan % | CN 64,834 vs P 4,000 | PE 72,119 | P(VPN>0) 0.00
+Pérdida poscosecha Chocó (1 537 t) L7a Isla de gasificación (TRL 8) FCI 1,285 MM | VPN -3,805 MM | MIRR nan % | CN 24,512 vs P 1,400 | PE 27,282 | P(VPN>0) 0.00
+Pérdida poscosecha Chocó (1 537 t) L7b Caldera de biomasa (TRL 9) FCI 645 MM | VPN -1,936 MM | MIRR nan % | CN 750 vs P 159 | PE 829 | P(VPN>0) 0.00
+Pérdida poscosecha Chocó (1 537 t) Planta integrada TRL-9 FCI 13,713 MM | VPN -21,439 MM | MIRR nan % | CN inf vs P 1 | PE nan | P(VPN>0) 0.00

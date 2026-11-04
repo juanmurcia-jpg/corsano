@@ -12,7 +12,14 @@ Corsano, Montagna, Iribarren y Aguirre, adaptados a la tesis *Biorrefinería de 
 | `m1_experimentos.py`, `m1_post.py`, `m2_experimentos.py`, `m2_F5.py`, `m34_experimentos.py` | — | Experimentos numéricos (multiarranque, barridos, Pareto, Sobol, MINLP, pulido por estructura) |
 | `m1_global.py` | — | Certificación global (SCIP) de un subproblema y comparación con Bonmin B-BB / B-OA e IPOPT |
 | `informe.html` | — | Informe técnico con figuras y análisis |
-| `figuras.py` | — | Figuras 1-15 en `figs/` |
+| `moresi.py`, `moresi_experimentos.py`, `moresi_pina.py` | Moresi (1989a, b) | Réplica cinética y de costos (Tabla 3) y aplicación al vino de piña |
+| `capacidad.py` | — | Balance fruta → fracciones → productos; oferta EVA 2022; cuellos de botella |
+| `planta_trl9.py` | — | Diseño TRL-9: catálogo de tecnologías y dimensionamiento con tamaños discretos |
+| `tea_burk.py`, `tea_lineas.py` | Burk (estructura de los TEA de asaí v5.19 y coco v12) | TEA por línea y planta integrada; tornado; Monte Carlo LHS + Iman–Conover |
+| `excel_export.py`, `tea_excel_run.py` | — | Libros Excel con fórmulas vivas en `TEA_excel/`, verificados con LibreOffice |
+| `planificacion_milp.py` | Grossmann (2021), cap. 6, 7, 10 | MILP de síntesis y planificación mensual: qué procesar con la oferta actual |
+| `programacion_stn.py` | Maravelias (2021), cap. 7.2.2 | Programa semanal STN en tiempo discreto (prensa compartida) |
+| `figuras.py`, `figuras_v2.py`, `gen_informe_v2.py` | — | Figuras 1-22 e informe HTML (v2) |
 | `params.py` | — | Base de diseño con la procedencia de cada parámetro: [T] tesis, [C] Corsano, [L] literatura, [S] supuesto |
 
 ## Reproducir
@@ -26,6 +33,10 @@ python m2_experimentos.py && python m2_F5.py
 python m1_global.py
 python m34_experimentos.py
 python figuras.py
+python moresi_experimentos.py && python moresi_pina.py
+python capacidad.py && python tea_lineas.py && python tea_excel_run.py
+python planificacion_milp.py && python programacion_stn.py
+python figuras_v2.py && python gen_informe_v2.py
 ```
 
 ## Advertencia sobre los parámetros
