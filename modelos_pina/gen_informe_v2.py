@@ -146,6 +146,46 @@ if anu:
         anu_rows.append([E(k), r["status"], n1(sum(r["loss_month"])), n0(r["changeovers"]), n0(r["products"]["vino_m3"]),
                          n0(r["products"]["harina_t"]), n0(r["products"].get("bromelaina_kg", 0)), bott])
 
+# ------------------------------------------------------------------------------ v4: dimensionamiento óptimo
+dim = R("dimensionamiento.json") if os.path.exists("results/dimensionamiento.json") else {}
+UN = ["Frente", "Prensa", "Prensa cáscara", "MF", "Bodega", "Secador", "Almacén de mosto"]
+def sizes_txt(r, units=UN):
+    t = "; ".join(f"{u} {r['sizes'][u]}" for u in units if u in r["sizes"])
+    return t + ("; tercer turno" if r.get("turno3") else "")
+def bott_txt(sc):
+    mx = {u: max(v) for u, v in sc["util"].items()}
+    return ", ".join(f"{u} ({pct(v, 0)})" for u, v in sorted(mx.items(), key=lambda x: -x[1]) if v >= 0.95) or "ninguno ≥ 95 %"
+def absorbed(sc):
+    return 1 - sc["loss"] / sc["supply"]
+dim_e1 = [[E(k.split("|")[1]), sizes_txt(r), n0(r["FCI"]), n0(r["obj"]), pct(absorbed(r["scen"][0])), n0(r["scen"][0]["changeovers"]),
+           n0(r["scen"][0]["products"]["vino_m3"]), n0(r["scen"][0]["products"]["harina_t"]), bott_txt(r["scen"][0])]
+          for k, r in dim.items() if k.startswith("E1|") and r.get("scen")]
+dim_e2 = [[n0(r["scen"][0]["supply"]), sizes_txt(r), n0(r["FCI"]), n0(r["obj"]),
+           n0(r["FCI"] * 1e6 / r["scen"][0]["products"]["fruta_t"] / 1e3), pct(absorbed(r["scen"][0])), bott_txt(r["scen"][0])]
+          for k, r in sorted(((k, r) for k, r in dim.items() if k.startswith("E2|") and r.get("scen")), key=lambda x: float(x[0].split("|")[1]))]
+dim_e3 = [[E(k.split("|")[1]), sizes_txt(r), n0(r["FCI"]), n0(r["obj"]), pct(absorbed(r["scen"][0]))]
+          for k, r in dim.items() if k.startswith("E3|") and r.get("scen")]
+dim_e5 = [[E(k.split("|")[1]), sizes_txt(r, UN + ["Aspersión", "Prensa corazón"]), n0(r["FCI"]), n0(r["obj"]), pct(absorbed(r["scen"][0])),
+           n0(r["scen"][0]["products"]["bromelaina_kg"]), bott_txt(r["scen"][0])]
+          for k, r in dim.items() if k.startswith("E5|") and r.get("scen")]
+dim_e4 = []
+if "E4|RP" in dim and "E4|EEV" in dim and "E4|WS" in dim:
+    rp, ev, eev, ws = dim["E4|RP"], dim["E4|EV"], dim["E4|EEV"], dim["E4|WS"]
+    dim_e4 = [["RP: tamaños elegidos frente a los 3 escenarios de oferta", sizes_txt(rp), n0(rp["obj"])],
+              ["EV: tamaños para la oferta media (lo que promete)", sizes_txt(ev), n0(ev["obj"])],
+              ["EEV: tamaños del EV operados en los 3 escenarios", sizes_txt(eev), n0(eev["obj"])],
+              ["WS: tamaños a medida de cada escenario", " | ".join(f"{w['sup']:g}×: " + sizes_txt(w) for w in ws["each"]), n0(ws["obj"])],
+              ["VSS = RP − EEV", "", n0(rp["obj"] - eev["obj"])], ["EVPI = WS − RP", "", n0(ws["obj"] - rp["obj"])]]
+
+
+def _g(k):
+    return dim.get(k) if dim.get(k, {}).get("scen") else None
+d_ref, d_sh, d_opt, d_nl = _g("E1|Referencia TRL-9 (planta_trl9, 6 200 t)"), _g("E1|Referencia con prensa única de 3 t/h compartida"), _g("E1|Óptimo económico"), _g("E1|Óptimo sin pérdida de fruta")
+import dimensionamiento as dmod
+AFv, LANGv, SHIFTv = dmod.AF, dmod.LANG, dmod.shift_cost() / MM
+e3d = {k.split("|")[1]: r for k, r in dim.items() if k.startswith("E3|") and r.get("scen")}
+e5d = {k.split("|")[1]: r for k, r in dim.items() if k.startswith("E5|") and r.get("scen")}
+
 # ------------------------------------------------------------------------------ v1 (secciones previas)
 v1 = open("informe_v1.html").read()
 style = v1[v1.index("<style>"): v1.index("</style>") + 8]
@@ -160,7 +200,7 @@ html_out = f"""<title>Modelos Corsano para la piña</title>
 {style}
 <main>
 <header class="top">
-  <p class="kicker">Tesis doctoral · Biorrefinería de piña · Bajo Atrato (Chocó) · versión 3</p>
+  <p class="kicker">Tesis doctoral · Biorrefinería de piña · Bajo Atrato (Chocó) · versión 4</p>
   <h1>Moresi, capacidad, diseño TRL-9 y TEA por línea de producción</h1>
   <p class="lede">Esta versión pone en el centro las referencias de Moresi (1989a, b), dimensiona la materia prima y la planta con tecnologías TRL-9, monta un TEA por línea con la metodología Burk de sus TEA de asaí y coco, y decide qué procesar con la producción actual mediante un MILP de síntesis (Grossmann) y un programa semanal con red estado-tarea (Maravelias). Los modelos Corsano de la versión 1 siguen al final.</p>
   <div class="meta"><span>Moresi replicado contra su Tabla 3</span><span>EVA 2022 (UPRA)</span><span>11 libros TEA verificados con LibreOffice</span><span>SCIP 10</span></div>
@@ -175,6 +215,7 @@ html_out = f"""<title>Modelos Corsano para la piña</title>
     <li><a href="#excel">Libros Excel y verificación</a></li>
     <li><a href="#estocastico">Optimización estocástica (§6.7)</a></li>
     <li><a href="#anual">Programa anual y cuellos de botella</a></li>
+    <li><a href="#dimensionamiento">Dimensionamiento óptimo de equipos</a></li>
     <li><a href="#tesis2">Cambios que sugiere a la tesis</a></li>
     <li><a href="#v1-hallazgos">Modelos Corsano (versión 1)</a></li>
   </ul>
@@ -331,7 +372,7 @@ html_out = f"""<title>Modelos Corsano para la piña</title>
 <li><b>Transiciones</b> (cap. 9.3.2): limpieza de 1 h al cambiar el material de la prensa compartida.</li>
 <li><b>Inventarios</b> con capacidad χ<sub>k</sub> (cap. 8.2): fruta, 3 días de oferta pico; pulpa 1,5 t; cáscara 3 t; torta 12 t; pulmón de mosto 50 m³.</li>
 </ul>
-<p>La entrada de fruta es la tasa estacional del mes por la duración del periodo, así que es lineal en d y el modelo sigue siendo un MILP. Las unidades con personal operan el 36 % del tiempo calendario (2 turnos de lunes a sábado); la bodega y el secador, el 90 %. El programa es periódico: el inventario final del año es igual al inicial. Se comparó K = 3 y K = 6 periodos por mes para comprobar que la solución no depende de la rejilla.</p>
+<p>La entrada de fruta es la tasa estacional del mes por la duración del periodo, así que es lineal en d y el modelo sigue siendo un MILP. Las unidades con personal operan el 36 % del tiempo calendario (2 turnos de lunes a sábado); la bodega y el secador, el 90 %. El programa es periódico: el inventario final del año es igual al inicial. Se comparó K = 2 y K = 4 periodos por mes para comprobar que la solución no depende de la rejilla.</p>
 </div>
 {table(['Configuración', 'Estado', 'Fruta perdida (t/año)', 'Cambios de material', 'Vino (m³)', 'Harina (t)', 'Bromelaína (kg)', 'Cuellos de botella (máx. mensual)'], anu_rows, num_cols=(2, 3, 4, 5, 6)) if anu else ''}
 {fig('fig24_gantt_anual.png', 'Gantt anual', 'Fig. 24. Gantt anual: campañas de la prensa compartida por material, con marcas de cambio, y carga de cada unidad por periodo.') if anu else ''}
@@ -350,6 +391,63 @@ html_out = f"""<title>Modelos Corsano para la piña</title>
 </div>
 </section>
 
+
+<section id="dimensionamiento">
+<h2>Dimensionamiento óptimo de equipos para balancear los flujos</h2>
+<div class="prose">
+<p><b>Por qué hace falta.</b> El diseño TRL-9 (<code>planta_trl9.py</code>) dimensiona cada equipo por separado, con el flujo medio anual y el tamaño de catálogo más barato que lo cubre. Así cada equipo queda bien en promedio, pero los flujos no quedan balanceados: con la cosecha estacional, unos equipos topan la producción en los meses pico mientras otros pasan el año a medio uso (Fig. 25). El apartado que se propone para la tesis dimensiona todos los equipos <i>a la vez</i> y con el programa anual dentro del mismo modelo (diseño y operación simultáneos). Así el tamaño de cada equipo se elige mirando lo que pasa aguas arriba y aguas abajo en cada mes.</p>
+<p><b>Formulación</b> (<code>dimensionamiento.py</code>, MILP en SCIP):</p>
+<ul class="tight">
+<li><b>Elección de tamaño como disyunción</b> (Grossmann 2021, cap. 10): para cada equipo u, ∨<sub>s</sub>[y<sub>us</sub>; cap<sub>u</sub> = cap<sub>us</sub>; costo<sub>u</sub> = C<sub>us</sub>] con Σ<sub>s</sub> y<sub>us</sub> = 1. Los tamaños salen del catálogo de <code>planta_trl9.CAT</code>; cada opción incluye los equipos que la acompañan (por ejemplo, la prensa con su trituradora y su macerador, la MF con su pasteurizador, la bodega con su chiller y su centrífuga, el secador con su caldera y su molino).</li>
+<li><b>Producto tamaño × horas.</b> La capacidad de un periodo es cap<sub>us</sub>·y<sub>us</sub>·h<sub>t</sub>, con h<sub>t</sub> continua. Se linealiza de forma exacta con variables g<sub>ust</sub> ≤ H·y<sub>us</sub>, Σ<sub>s</sub> g<sub>ust</sub> ≤ h<sub>t</sub> (0-1 por continua acotada, Grossmann cap. 7.3). Lo mismo para la prensa en tiempo compartido y para el acoplamiento con los pulmones perecederos, donde la capacidad del frente multiplica el tiempo de campaña.</li>
+<li><b>Bodega de Moresi lineal en N<sub>F</sub>.</b> De N<sub>F</sub> = Q·Δt<sub>c</sub>/V<sub>F</sub> con Δt<sub>c</sub> = V<sub>F</sub>/Q + t<sub>proc</sub> (Moresi 1989b, con la corrección del tiempo de llenado) sale Q ≤ (N<sub>F</sub> − 1)·V<sub>F</sub>/t<sub>proc</sub>: mientras un fermentador se llena, los demás fermentan. Es lineal en el número de fermentadores.</li>
+<li><b>Operación anual</b>: la misma rejilla continua anclada a los meses, la prensa compartida con limpiezas, los inventarios periódicos y la oferta estacional del programa anual (Maravelias caps. 7.3, 8.2, 9.3.2 y 10), con K = 2 periodos por mes.</li>
+<li><b>Palancas de flujo además del tamaño.</b> Una prensa dedicada a la cáscara (evita los cambios de material), un almacén aséptico de mosto de 10 a 800 m³ (puede guardar el mosto de los meses pico para fermentarlo en los valles), un tercer turno en el frente ({n0(SHIFTv)} MM COP/año de nómina adicional con prestaciones y supervisión, la alternativa operativa a comprar equipo) y el compostaje de la cáscara que no se alcance a secar.</li>
+<li><b>Objetivo</b>: maximizar el margen anual, es decir la contribución (ingresos − costos variables del TEA de cada línea − fruta a 400 COP/kg − cambios) menos el cargo de capital de los equipos. El cargo es {pct(AFv, 1)} del costo de compra por año: factor Lang equivalente de Burk {n1(LANGv)} × (CRF del 10 % a 10 años + 5 % de mantenimiento + 3 % de impuestos locales). La nómina base y los costos fijos que no dependen del tamaño no entran, porque no cambian la elección. Por eso los márgenes de esta sección no son el VPN del TEA.</li>
+</ul>
+</div>
+{table(['Diseño', 'Tamaños', 'FCI equipos (MM COP)', 'Margen (MM COP/año)', 'Fruta procesada', 'Cambios/año', 'Vino (m³)', 'Harina (t)', 'Cuellos (≥ 95 %)'], dim_e1, num_cols=(2, 3, 4, 5, 6, 7)) if dim_e1 else ''}
+{fig('fig27_dimensionamiento.png', 'Dimensionamiento óptimo', 'Fig. 27. Ocupación mensual de cada equipo en el diseño TRL-9, en la variante con una sola prensa compartida de 3 t/h y en el diseño óptimo, e inversión por equipo.') if d_opt else ''}
+<div class="prose">
+<p><b>Qué cambia el óptimo con la oferta del Chocó 2022.</b> {('Frente al diseño TRL-9, el óptimo agranda el frente de ' + d_ref['sizes']['Frente'] + ' a ' + d_opt['sizes']['Frente'] + ', que es el cuello del diseño de referencia, y reduce el secador de ' + d_ref['sizes']['Secador'] + ' a ' + d_opt['sizes']['Secador'] + ', que pasaba el año al 18–34 %. Conserva las dos prensas dedicadas de 1 t/h, la MF de 20 m² y la bodega de 2 × 10 m³. La fruta procesada sube de ' + pct(absorbed(d_ref['scen'][0])) + ' a ' + pct(absorbed(d_opt['scen'][0])) + ' de la oferta, la inversión en equipos baja en ' + n0(d_ref['FCI'] - d_opt['FCI']) + ' MM COP y el margen anual mejora en ' + n0(d_opt['obj'] - d_ref['obj']) + ' MM COP. Después del ajuste, la prensa de pulpa y el secador son los equipos que trabajan al límite en los meses pico: es la forma barata de procesar la cosecha completa.') if d_ref and d_opt else ''}</p>
+<p><b>Prensas dedicadas o una compartida.</b> {('Reemplazar las dos prensas de 1 t/h por una sola de 3 t/h compartida cuesta más (FCI ' + n0(d_sh['FCI']) + ' frente a ' + n0(d_ref['FCI']) + ' MM COP) y rinde menos (' + n0(d_sh['obj']) + ' frente a ' + n0(d_ref['obj']) + ' MM COP/año): exige ' + n0(d_sh['scen'][0]['changeovers']) + ' cambios de material al año con su limpieza, y la fruta procesada no sube porque el cuello sigue en el frente. El cuello de la prensa compartida del programa anual se resuelve separando los materiales, no comprando una prensa más grande.') if d_sh and d_ref else ''} {('Si se exige procesar el 100 % de la fruta, el modelo cambia a una prensa compartida de ' + d_nl['sizes']['Prensa'] + ' y pierde ' + n0(d_opt['obj'] - d_nl['obj']) + ' MM COP/año frente al óptimo económico, que deja sin procesar el ' + pct(1 - absorbed(d_opt['scen'][0])) + ' de la fruta en los días pico.') if d_nl and d_opt else ''}</p>
+</div>
+{fig('fig29_flujos_almacen.png', 'Flujos e inventario', 'Fig. 29. Flujos mensuales del diseño óptimo (oferta, fruta procesada, mosto clarificado y fermentado) e inventario del pulmón de mosto, que el modelo deja en 10 m³.') if d_opt else ''}
+{fig('fig30_gantt_optimo.png', 'Gantt del diseño óptimo', 'Fig. 30. Gantt anual del diseño óptimo: ocupación de cada equipo por periodo de la rejilla continua.') if d_opt else ''}
+<h3>Regla de dimensionamiento según la oferta</h3>
+<div class="prose"><p>Se resolvió el mismo modelo desde la mitad de la oferta actual hasta la base de la tesis (21 856 t/año), con libertad total de tamaños, almacén y turnos:</p></div>
+{table(['Oferta (t/año)', 'Tamaños óptimos', 'FCI (MM COP)', 'Margen (MM COP/año)', 'FCI por t/año (miles COP)', 'Fruta procesada', 'Cuellos (≥ 95 %)'], dim_e2, num_cols=(0, 2, 3, 4, 5)) if dim_e2 else ''}
+{fig('fig28_escala_dimensionamiento.png', 'Dimensionamiento por escala', 'Fig. 28. Tamaño óptimo de cada equipo y ocupación del mes pico según la oferta; economía de escala; valor del almacén aséptico y del tercer turno a 2× la oferta actual.') if dim_e2 else ''}
+<div class="prose">
+<p><b>Lectura.</b></p>
+<ul class="tight">
+<li><b>Los equipos del frente se dimensionan por el mes pico.</b> Frente, prensas y MF trabajan con personal y siguen a la fruta, que es perecedera (3 días de patio). La bodega y el secador operan 24/7 y quedan con el mínimo de unidades que cubre el pico: 2 fermentadores de 10 m³ hasta 2× la oferta actual y 3 a la escala de la tesis. El secador crece en escalones con la cáscara.</li>
+<li><b>Prensas dedicadas desde unas 6 000 t/año.</b> Por debajo de esa oferta conviene una sola prensa compartida (dos prensas cuestan más que los cambios). Por encima, siempre se separan pulpa y cáscara.</li>
+<li><b>El tercer turno aparece desde 2× la oferta actual.</b> Es más barato pagar un turno de noche en el frente que comprar el frente y las prensas del tamaño siguiente. Entre 2,5× y 3× el modelo alterna entre las dos opciones porque cuestan casi lo mismo.</li>
+<li><b>El almacén aséptico de mosto no se elige en ninguna escala.</b> Nivelaría la bodega guardando el exceso de mosto de los meses pico, unos 50–100 m³ a la escala actual. Un tanque aséptico de ese volumen cuesta más que el fermentador adicional que hace lo mismo, y el cuello estacional está aguas arriba, donde la fruta no se puede almacenar. A 2× la oferta, prohibir el almacén no cambia nada (tabla siguiente). Nivelar la estacionalidad exigiría almacenar pulpa congelada o fruta en cámara, que no es TRL-9 para fruta de rechazo a esta escala.</li>
+<li><b>Economía de escala.</b> El FCI por tonelada procesada al año baja de unos {n0(dim_e2 and min(float(r[4].replace(' ', '')) for r in dim_e2[:1]))} a unos {n0(dim_e2 and float(dim_e2[-1][4].replace(' ', '')))} miles de COP entre los extremos del barrido.</li>
+</ul>
+</div>
+{table(['Palancas a 2× la oferta', 'Tamaños', 'FCI (MM COP)', 'Margen (MM COP/año)', 'Fruta procesada'], dim_e3, num_cols=(2, 3, 4)) if dim_e3 else ''}
+<h3>Dimensionamiento estocástico (Grossmann cap. 14)</h3>
+<div class="prose"><p>Los tamaños son de primera etapa y la operación anual de segunda etapa, en tres escenarios de oferta (0,7×, 1,0× y 1,3× la oferta actual, con probabilidades 0,25, 0,50 y 0,25, como en el programa estocástico de §6.7).</p></div>
+{table(['Problema', 'Tamaños', 'Margen esperado (MM COP/año)'], dim_e4, num_cols=(2,)) if dim_e4 else ''}
+<div class="prose"><p>{('El problema estocástico no elige los mismos equipos que el de valor medio. Frente a los tres escenarios prefiere una sola prensa compartida de ' + dim['E4|RP']['sizes']['Prensa'] + ' en lugar de las dos dedicadas de 1 t/h: paga cambios de material en los escenarios bajo y medio a cambio de capacidad de reserva para el escenario alto. Con los tamaños del valor medio (EEV) se pierde el ' + pct(1 - sum(x['supply'] * x['p'] - x['loss'] * x['p'] for x in dim['E4|EEV']['scen']) / sum(x['supply'] * x['p'] for x in dim['E4|EEV']['scen'])) + ' de la fruta esperada, porque en el escenario alto la prensa de pulpa satura. El VSS es ' + n0(dim['E4|RP']['obj'] - dim['E4|EEV']['obj']) + ' MM COP/año (' + pct((dim['E4|RP']['obj'] - dim['E4|EEV']['obj']) / dim['E4|RP']['obj']) + ' del margen) y el EVPI ' + n0(dim['E4|WS']['obj'] - dim['E4|RP']['obj']) + ' MM COP/año. Las dos configuraciones son casi equivalentes en valor esperado, así que la elección depende de cuánto pese procesar la cosecha completa en un año bueno. El valor medio promete ' + n0(dim['E4|EV']['obj']) + ' MM COP/año y su diseño rinde en realidad ' + n0(dim['E4|EEV']['obj']) + ': el mismo sesgo del valor medio de §6.7.') if dim_e4 else ''}</p></div>
+<h3>Configuración con bromelaína</h3>
+{table(['Diseño', 'Tamaños', 'FCI (MM COP)', 'Margen (MM COP/año)', 'Fruta procesada', 'Bromelaína (kg)', 'Cuellos (≥ 95 %)'], dim_e5, num_cols=(2, 3, 4, 5)) if dim_e5 else ''}
+<div class="prose"><p>{('Con bromelaína, el óptimo cambia de estrategia: frente de ' + e5d['B óptimo económico']['sizes']['Frente'] + ' con tercer turno y una sola prensa compartida de ' + e5d['B óptimo económico']['sizes']['Prensa'] + ' para pulpa, cáscara y corazón (' + n0(e5d['B óptimo económico']['scen'][0]['changeovers']) + ' cambios al año). El secador por aspersión de ' + e5d['B óptimo económico']['sizes']['Aspersión'] + ' queda al 100 % y procesa casi todo el corazón (' + n0(e5d['B óptimo económico']['scen'][0]['products']['bromelaina_kg']) + ' kg de bromelaína). El margen es ' + n0(e5d['B óptimo económico']['obj']) + ' MM COP/año, ' + n0(e5d['B óptimo económico']['obj'] - d_opt['obj']) + ' más que el óptimo sin bromelaína, con un FCI de ' + n0(e5d['B óptimo económico']['FCI']) + ' MM COP, menor que el de las tres prensas dedicadas del diseño TRL-9 (' + n0(e5d['B referencia (prensas dedicadas TRL-9)']['FCI']) + ' MM COP, margen ' + n0(e5d['B referencia (prensas dedicadas TRL-9)']['obj']) + '). Esto matiza el resultado del programa anual: la prensa compartida perdía el 26 % de la fruta con dos turnos, y con un tercer turno en el frente esa misma prensa alcanza para los tres materiales.') if e5d.get('B óptimo económico') and e5d.get('B referencia (prensas dedicadas TRL-9)') and d_opt else ''}</p></div>
+<div class="prose">
+<p><b>Cómo incluirlo en la tesis.</b> Se propone un apartado nuevo en el capítulo de diseño, después del diseño TRL-9 (§4.x «Dimensionamiento óptimo de equipos y balance de flujos»), con cuatro partes:</p>
+<ol class="tight">
+<li>la formulación disyuntiva y su linealización (tres ecuaciones y la tabla de opciones de catálogo con sus costos);</li>
+<li>la comparación con el diseño TRL-9 (tabla de E1 y Fig. 27);</li>
+<li>la regla de dimensionamiento por escala (tabla de E2 y Fig. 28), que responde qué cambia si la oferta crece;</li>
+<li>el dimensionamiento estocástico, que enlaza con §6.7.</li>
+</ol>
+<p>El TEA de Burk debe recalcularse con los tamaños óptimos; los libros de <code>TEA_excel/</code> aceptan la nueva lista de equipos sin cambiar su estructura.</p>
+</div>
+</section>
+
 <section id="tesis2">
 <h2>Cambios que sugiere a la tesis (versión 2)</h2>
 <ol class="edits prose">
@@ -361,6 +459,7 @@ html_out = f"""<title>Modelos Corsano para la piña</title>
 <li><b>Cap. 5, energía.</b> Para un diseño TRL-9, la caldera de biomasa de corona cubre el calor de secado y la gasificación no. Conviene presentar la gasificación como alternativa TRL 8.</li>
 <li><b>Cap. 8, TEA.</b> Adoptar la estructura de los TEA de asaí y coco (libros en <code>TEA_excel/</code>) y reportar el precio de equilibrio del vino (≈2 300 COP/L a la escala de la tesis) junto al precio "ilustrativo" de 400 USD/t.</li>
 <li><b>§6.7, incertidumbre.</b> Reportar RP, EEV, VSS y EVPI junto al CVaR. Con la oferta actual, el VSS es 0 y el EVPI de unos 550 MM COP/año. Lo que justifica medir antes de invertir es el sesgo del valor medio (+43 %) y la conmutación en λ* ≈ 0,2, más que la diferencia entre decisiones.</li>
+<li><b>§4.x, dimensionamiento.</b> Agregar el dimensionamiento simultáneo con el programa anual. Con la oferta actual y vino + harina, el frente de 3 t/h, las dos prensas dedicadas de 1 t/h y un secador de 100 kg de agua/h procesan el 99,9 % de la fruta con menos inversión que el diseño por flujo medio. Si se agrega bromelaína, conviene una sola prensa compartida con tercer turno en el frente. El almacén aséptico de mosto no se justifica en ninguna escala.</li>
 <li><b>Cap. 6 y 9, selección de líneas.</b> Incorporar el MILP con tamaños discretos y el STN semanal como evidencia de qué procesar con la oferta actual y de dónde están los cuellos de botella.</li>
 </ol>
 </section>

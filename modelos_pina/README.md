@@ -21,8 +21,9 @@ Corsano, Montagna, Iribarren y Aguirre, adaptados a la tesis *Biorrefinería de 
 | `programacion_stn.py` | Maravelias (2021), cap. 7.2.2 | Programa semanal STN en tiempo discreto (prensa compartida) |
 | `estocastico.py` | Grossmann (2021), cap. 14 | Programa estocástico de dos etapas (27 escenarios oferta × precios): RP, EV, EEV, VSS, WS, EVPI y media-CVaR |
 | `anual_continuo.py` | Maravelias (2021), cap. 7.3, 8.2, 9 y 10 | Programa anual en tiempo continuo con estacionalidad mensual: reparto de prensa, cambios de modo, inventarios |
-| `figuras.py`, `figuras_v2.py`, `figuras_v3.py`, `gen_informe_v2.py` | — | Figuras 1-26 (incl. Gantt anual y de bodega) e informe HTML (v3) |
-| `html2blocks.py`, `make_docx.js` | — | Conversión del informe HTML a Word (`Informe_Corsano_Moresi_TEA_pina_v3.docx`) |
+| `dimensionamiento.py` | Grossmann (2021), cap. 7, 10 y 14; Maravelias (2021); Moresi (1989b) | Dimensionamiento óptimo de equipos acoplado al programa anual: tamaños de catálogo, prensas dedicadas o compartida, almacén aséptico, tercer turno; barrido por escala y versión estocástica |
+| `figuras.py`, `figuras_v2.py`, `figuras_v3.py`, `figuras_v4.py`, `gen_informe_v2.py` | — | Figuras 1-30 (incl. Gantt anual, de bodega y del diseño óptimo) e informe HTML (v4) |
+| `html2blocks.py`, `make_docx.js` | — | Conversión del informe HTML a Word (`Informe_Corsano_Moresi_TEA_pina_v4.docx`) |
 | `params.py` | — | Base de diseño con la procedencia de cada parámetro: [T] tesis, [C] Corsano, [L] literatura, [S] supuesto |
 
 ## Reproducir
@@ -41,8 +42,9 @@ python capacidad.py && python tea_lineas.py && python tea_excel_run.py
 python planificacion_milp.py && python programacion_stn.py
 python figuras_v2.py
 python estocastico.py && python anual_continuo.py   # ~10 min (SCIP)
-python figuras_v3.py && python gen_informe_v2.py
-python html2blocks.py informe.html blocks.json && node make_docx.js blocks.json Informe_Corsano_Moresi_TEA_pina_v3.docx
+python dimensionamiento.py E1 E2 E3 E4 E5          # ~40 min (SCIP)
+python figuras_v3.py && python figuras_v4.py && python gen_informe_v2.py
+python html2blocks.py informe.html blocks.json && node make_docx.js blocks.json Informe_Corsano_Moresi_TEA_pina_v4.docx
 ```
 
 ## Advertencia sobre los parámetros
