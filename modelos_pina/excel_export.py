@@ -132,7 +132,11 @@ def export(case, res, tor, mc, be, path, flows=None, note=""):
         _t(OX, f"D{r}", f"={R(pk[u['price_key']])}" if "price_key" in u else u["price"], fmt=NUM); _t(OX, f"E{r}", f"=C{r}*D{r}", fmt=NUM); r += 1
     for w in case.get("waste", []):
         _t(OX, f"B{r}", w["name"]); _t(OX, f"C{r}", f"={w['qty_year']}*{R('Factor de producción (multiplicador)')}", fmt=NUM)
-        _t(OX, f"D{r}", f"={R('Tratamiento de aguas residuales')}", fmt=NUM); _t(OX, f"E{r}", f"=C{r}*D{r}", fmt=NUM); r += 1
+        if abs(w["price"] - c["ARD_COP_t"]) < 1e-9:
+            _t(OX, f"D{r}", f"={R('Tratamiento de aguas residuales')}", fmt=NUM)
+        else:
+            _t(OX, f"D{r}", w["price"], fill=INPUT, fmt=NUM)
+        _t(OX, f"E{r}", f"=C{r}*D{r}", fmt=NUM); r += 1
     var_end = r - 1
     _t(OX, f"B{r}", "Costos variables totales", BOLD); _t(OX, f"E{r}", f"=SUM(E{var_start}:E{var_end})", fmt=NUM); VAR = f"'OpEx & Ingresos'!$E${r}"; r += 2
     # nómina (plantilla)

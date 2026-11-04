@@ -186,6 +186,24 @@ AFv, LANGv, SHIFTv = dmod.AF, dmod.LANG, dmod.shift_cost() / MM
 e3d = {k.split("|")[1]: r for k, r in dim.items() if k.startswith("E3|") and r.get("scen")}
 e5d = {k.split("|")[1]: r for k, r in dim.items() if k.startswith("E5|") and r.get("scen")}
 
+
+tdim = R("tea_dimensionado.json") if os.path.exists("results/tea_dimensionado.json") else None
+tdim_rows, tdim_scale, tdim_chk = [], [], []
+if tdim:
+    for k, c in tdim["cases"].items():
+        r = c["res"]
+        tdim_rows.append([E(k), n0(c["fruit_t"]),
+                          n0(r["FCI"] / MM), n0(r["revenue"] / MM), n0(r["var"] / MM), n0(r["fixed"] / MM), n0(r["NPV"] / MM), pct(r["MIRR"]),
+                          n1(r["payback"]), n0(r["LCOP"]), n0(c["breakeven"]), pct(c["mc"]["P_pos"], 0)])
+    for r in tdim["scale"]:
+        tdim_scale.append([n0(r["supply"]), sizes_txt(r), n0(r["FCI"] / MM), n0(r["NPV"] / MM),
+                           (pct(r["MIRR"]) if r["MIRR"] == r["MIRR"] else "—"), n0(r["LCOP"]), n0(r["breakeven"])])
+    tdim_chk = [[E(c["file"]), n0(c["NPV_py"] / MM), n0(c["NPV_xl"] / MM), f"{c['dNPV_rel']:.1e}"] for c in tdim["check"]]
+    TA = tdim["cases"]
+    tA0, tA1, tB0, tB1 = (TA.get(k) for k in ("A · Referencia TRL-9", "A · Óptimo (vino + harina)", "B · Referencia TRL-9 con bromelaína", "B · Óptimo con bromelaína"))
+    viable = next((r["supply"] for r in tdim["scale"] if r["NPV"] > 0), None)
+old_plan = next((e for e in evp if e["lines"] == ["vino", "harina"]), None)
+
 # ------------------------------------------------------------------------------ v1 (secciones previas)
 v1 = open("informe_v1.html").read()
 style = v1[v1.index("<style>"): v1.index("</style>") + 8]
@@ -200,7 +218,7 @@ html_out = f"""<title>Modelos Corsano para la piña</title>
 {style}
 <main>
 <header class="top">
-  <p class="kicker">Tesis doctoral · Biorrefinería de piña · Bajo Atrato (Chocó) · versión 4</p>
+  <p class="kicker">Tesis doctoral · Biorrefinería de piña · Bajo Atrato (Chocó) · versión 5</p>
   <h1>Moresi, capacidad, diseño TRL-9 y TEA por línea de producción</h1>
   <p class="lede">Esta versión pone en el centro las referencias de Moresi (1989a, b), dimensiona la materia prima y la planta con tecnologías TRL-9, monta un TEA por línea con la metodología Burk de sus TEA de asaí y coco, y decide qué procesar con la producción actual mediante un MILP de síntesis (Grossmann) y un programa semanal con red estado-tarea (Maravelias). Los modelos Corsano de la versión 1 siguen al final.</p>
   <div class="meta"><span>Moresi replicado contra su Tabla 3</span><span>EVA 2022 (UPRA)</span><span>11 libros TEA verificados con LibreOffice</span><span>SCIP 10</span></div>
@@ -216,6 +234,7 @@ html_out = f"""<title>Modelos Corsano para la piña</title>
     <li><a href="#estocastico">Optimización estocástica (§6.7)</a></li>
     <li><a href="#anual">Programa anual y cuellos de botella</a></li>
     <li><a href="#dimensionamiento">Dimensionamiento óptimo de equipos</a></li>
+    <li><a href="#tea-dim">TEA con los tamaños óptimos</a></li>
     <li><a href="#tesis2">Cambios que sugiere a la tesis</a></li>
     <li><a href="#v1-hallazgos">Modelos Corsano (versión 1)</a></li>
   </ul>
@@ -448,6 +467,39 @@ html_out = f"""<title>Modelos Corsano para la piña</title>
 </div>
 </section>
 
+
+<section id="tea-dim">
+<h2>TEA de Burk con los tamaños óptimos</h2>
+<div class="prose">
+<p>El margen del dimensionamiento es un criterio de decisión, no un indicador financiero: no incluye nómina, impuestos, depreciación ni capital de trabajo. Para confirmar la elección se recalculó el TEA completo de Burk (<code>tea_dimensionado.py</code>) con los equipos elegidos por el MILP y la operación anual de cada diseño:</p>
+<ul class="tight">
+<li><b>Equipos:</b> la lista de catálogo de cada opción elegida, con sus equipos acompañantes, más los que no dependen del dimensionamiento: tanques de guarda de 90 días para el vino del año, cuarto frío y empacadoras. El CapEx sigue la plantilla (instalación 1,3; no listados 10 %; flete 5 %; OSBL 0,23; obra civil 0,15; EPC 0,30; contingencia 0,20).</li>
+<li><b>Producción:</b> la del programa anual de cada diseño (fruta realmente procesada, vino, harina, bromelaína), no la nominal. Consumos y servicios salen del balance de masa a esa fruta.</li>
+<li><b>Materia prima:</b> toda la fruta procesada a 400 COP/kg, más el compostaje de corona, corazón sin uso y cáscara no secada a 30 COP/kg.</li>
+<li><b>Personal:</b> calendario de lunes a sábado con 2 turnos, o con 3 si el MILP eligió el tercer turno. Personal compartido al 75 % y uno o dos ingenieros de planta, como en el TEA integrado.</li>
+<li><b>Precios:</b> vino a 3 000 COP/L (el precio de nicho del plan del MILP); harina, jugo de cáscara, bromelaína y polvo como subproductos. Tornado y Monte Carlo (LHS con Iman–Conover, ρ = 0,45 entre precio y materia prima, 1 000 corridas) con las distribuciones de la plantilla.</li>
+</ul>
+</div>
+{table(['Caso', 'Fruta (t/año)', 'FCI', 'Ingresos', 'Costos variables', 'Costos fijos', 'VPN', 'MIRR', 'Recuperación (años)', 'Costo nivelado del vino (COP/L)', 'Precio de equilibrio del vino (COP/L)', 'P(VPN > 0)'], tdim_rows, num_cols=(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)) if tdim else ''}
+<div class="prose"><p class="small">Valores monetarios en MM COP de 2026 salvo indicación. Los tamaños de cada caso están en las tablas del dimensionamiento. El costo nivelado es neto de subproductos.</p></div>
+{fig('fig31_tea_dimensionado.png', 'TEA con tamaños óptimos', 'Fig. 31. TEA de Burk con los tamaños de referencia y óptimos: inversión, VPN y MIRR; Monte Carlo; tornado del mejor caso; VPN y precio de equilibrio del vino del diseño óptimo según la oferta.') if tdim else ''}
+<div class="prose">
+<p><b>Lectura.</b></p>
+<ul class="tight">
+<li><b>El TEA completo confirma el orden del MILP.</b> {('Con vino + harina, los tamaños óptimos bajan el FCI de ' + n0(tA0['res']['FCI'] / MM) + ' a ' + n0(tA1['res']['FCI'] / MM) + ' MM COP y suben el VPN de ' + n0(tA0['res']['NPV'] / MM) + ' a ' + n0(tA1['res']['NPV'] / MM) + ' MM COP (MIRR ' + pct(tA0['res']['MIRR']) + ' → ' + pct(tA1['res']['MIRR']) + '). La probabilidad de VPN positivo pasa de ' + pct(tA0['mc']['P_pos'], 0) + ' a ' + pct(tA1['mc']['P_pos'], 0) + '.') if tA0 and tA1 else ''}</li>
+<li><b>La bromelaína solo paga con el dimensionamiento correcto.</b> {('Con las tres prensas dedicadas del diseño TRL-9, agregarla baja el VPN a ' + n0(tB0['res']['NPV'] / MM) + ' MM COP. Con la prensa compartida y el tercer turno del óptimo, el VPN sube a ' + n0(tB1['res']['NPV'] / MM) + ' MM COP, con MIRR de ' + pct(tB1['res']['MIRR']) + ', recuperación en ' + n1(tB1['res']['payback']) + ' años y P(VPN > 0) = ' + pct(tB1['mc']['P_pos'], 0) + '. El tercer turno sube la nómina de ' + n0(tB0['res']['labor'] / MM) + ' a ' + n0(tB1['res']['labor'] / MM) + ' MM COP/año, pero ahorra ' + n0((tB0['res']['FCI'] - tB1['res']['FCI']) / MM) + ' MM COP de inversión y procesa toda la fruta.') if tB0 and tB1 else ''}</li>
+<li><b>El precio del vino sigue mandando.</b> {('En el tornado del mejor caso, el VPN solo se vuelve negativo con ' + ' o '.join({'Precio del producto': 'el vino un 30 % más barato', 'Costo de la materia prima principal': 'la fruta un 50 % más cara', 'CapEx (±30 %)': 'un CapEx un 30 % mayor', 'Tasa de descuento': 'una tasa de descuento del 18 %', 'Factor de producción': 'la producción al 80 %'}[t['label']] + ' (' + n0(t['NPV_worst'] / MM) + ' MM COP)' for t in tB1['tornado'] if t['NPV_worst'] < 0) + '. El precio de equilibrio es ' + n0(tB1['breakeven']) + ' COP/L con bromelaína y ' + n0(tA1['breakeven']) + ' COP/L sin ella; los dos están por encima del precio base de los TEA por línea (1 600 COP/L). El proyecto depende de vender el vino como producto de nicho.') if tA1 and tB1 else ''}</li>
+<li><b>Escala mínima.</b> {('Con los tamaños óptimos de cada oferta, el VPN es negativo a ' + n0(tdim['scale'][0]['supply']) + ' t/año y positivo desde ' + n0(viable) + ' t/año de fruta; el umbral está entre esos dos puntos del barrido, por debajo de la oferta actual del Chocó. A la base de la tesis (21 856 t/año), el precio de equilibrio del vino baja a ' + n0(tdim['scale'][-1]['breakeven']) + ' COP/L.') if tdim and viable else ''}</li>
+</ul>
+<p><b>Diferencias con el TEA del plan de la versión 2.</b> {('El plan vino + harina del MILP (Chocó 2022) tenía VPN de ' + n0(old_plan['NPV'] / MM) + ' MM COP con FCI de ' + n0(old_plan['FCI'] / MM) + '. El caso de referencia de esta sección da ' + n0(tA0['res']['NPV'] / MM) + ' MM COP porque corrige tres cosas: (1) la producción sale del programa anual (el diseño TRL-9 procesa ' + n0(tA0['fruit_t']) + ' t, no 6 146); (2) el plan anterior heredaba del diseño el desvío del 16 % del vino a vinagre aunque la línea de vinagre no estaba en el plan, de modo que ese vino no se vendía; ahora se vende todo; (3) antes la fruta se cobraba solo por las fracciones asignadas a cada línea (pulpa y cáscara, el 75 %), y ahora se cobra toda la fruta más el compostaje de lo que no se usa. Las correcciones (2) y (3) van en sentidos opuestos.') if old_plan and tA0 else ''}</p>
+</div>
+<h3>TEA del diseño óptimo por escala</h3>
+{table(['Oferta (t/año)', 'Tamaños', 'FCI (MM COP)', 'VPN (MM COP)', 'MIRR', 'Costo nivelado (COP/L)', 'Precio de equilibrio del vino (COP/L)'], tdim_scale, num_cols=(0, 2, 3, 4, 5, 6)) if tdim else ''}
+<h3>Libros Excel</h3>
+<div class="prose"><p>Los cuatro casos de Chocó 2022 se exportaron a <code>TEA_excel/</code> con la estructura de los libros de asaí y coco (Inicio, Tablero, Modelo del proceso, Costos de Equipos, CapEx, OpEx &amp; Ingresos, Flujo de Caja, Tornado, Break-Even, Monte Carlo), con fórmulas vivas, y se recalcularon en LibreOffice. En la exportación se corrigió un detalle: un residuo distinto de las aguas residuales (aquí, el compostaje) tomaba la tarifa de aguas residuales. Los once libros anteriores no tenían otros residuos, así que no cambian.</p></div>
+{table(['Libro', 'VPN Python (MM COP)', 'VPN Excel (MM COP)', 'Diferencia relativa'], tdim_chk, num_cols=(1, 2, 3)) if tdim else ''}
+</section>
+
 <section id="tesis2">
 <h2>Cambios que sugiere a la tesis (versión 2)</h2>
 <ol class="edits prose">
@@ -458,6 +510,7 @@ html_out = f"""<title>Modelos Corsano para la piña</title>
 <li><b>§3.3 y §3.5, base de diseño.</b> Actualizar la oferta con la EVA 2022 (6 146 t) y declarar que la base de 78 300 hL/año exige unas 21 900 t/año de fruta, 3,6 veces la producción del departamento. O se redimensiona la planta, o se justifica el abastecimiento con fruta de fuera del Chocó.</li>
 <li><b>Cap. 5, energía.</b> Para un diseño TRL-9, la caldera de biomasa de corona cubre el calor de secado y la gasificación no. Conviene presentar la gasificación como alternativa TRL 8.</li>
 <li><b>Cap. 8, TEA.</b> Adoptar la estructura de los TEA de asaí y coco (libros en <code>TEA_excel/</code>) y reportar el precio de equilibrio del vino (≈2 300 COP/L a la escala de la tesis) junto al precio "ilustrativo" de 400 USD/t.</li>
+<li><b>Cap. 8, TEA con tamaños óptimos.</b> Evaluar la planta con los equipos del dimensionamiento y la producción del programa anual, no con la nominal. Con la oferta actual, vino + harina + bromelaína con prensa compartida y tercer turno es el mejor caso (VPN ≈ 4 400 MM COP, MIRR 13,4 %, P(VPN > 0) = 0,72 con vino a 3 000 COP/L). Cobrar toda la fruta procesada, no solo las fracciones asignadas a cada línea.</li>
 <li><b>§6.7, incertidumbre.</b> Reportar RP, EEV, VSS y EVPI junto al CVaR. Con la oferta actual, el VSS es 0 y el EVPI de unos 550 MM COP/año. Lo que justifica medir antes de invertir es el sesgo del valor medio (+43 %) y la conmutación en λ* ≈ 0,2, más que la diferencia entre decisiones.</li>
 <li><b>§4.x, dimensionamiento.</b> Agregar el dimensionamiento simultáneo con el programa anual. Con la oferta actual y vino + harina, el frente de 3 t/h, las dos prensas dedicadas de 1 t/h y un secador de 100 kg de agua/h procesan el 99,9 % de la fruta con menos inversión que el diseño por flujo medio. Si se agrega bromelaína, conviene una sola prensa compartida con tercer turno en el frente. El almacén aséptico de mosto no se justifica en ninguna escala.</li>
 <li><b>Cap. 6 y 9, selección de líneas.</b> Incorporar el MILP con tamaños discretos y el STN semanal como evidencia de qué procesar con la oferta actual y de dónde están los cuellos de botella.</li>

@@ -173,3 +173,53 @@ if __name__ == "__main__":
     d = J("dimensionamiento.json")
     if d:
         fig27_dimensionamiento(d); fig28_escala(d); fig29_30_flujos(d)
+
+
+def fig31_tea():
+    t = J("tea_dimensionado.json")
+    if not t:
+        return
+    cs = t["cases"]; keys = list(cs)
+    fig, ax = plt.subplots(2, 2, figsize=(13.5, 8.4))
+    # (a) FCI y VPN
+    a = ax[0, 0]; x = np.arange(len(keys)); w = 0.38
+    fci = [cs[k]["res"]["FCI"] / 1e6 for k in keys]; npv = [cs[k]["res"]["NPV"] / 1e6 for k in keys]
+    a.bar(x - w / 2, fci, w, color=C[1], label="FCI (MM COP)"); a.bar(x + w / 2, npv, w, color=C[0], label="VPN al 10 % (MM COP)")
+    for xi, f, n, k in zip(x, fci, npv, keys):
+        a.text(xi - w / 2, f + 200, f"{f:,.0f}".replace(",", " "), ha="center", fontsize=7)
+        a.text(xi + w / 2, max(n, 0) + 200, f"{n:,.0f}\nMIRR {cs[k]['res']['MIRR']*100:.1f} %".replace(",", " ").replace(".", ","), ha="center", fontsize=7)
+    SH = {"A · Referencia TRL-9": "A: referencia\nTRL-9", "A · Óptimo (vino + harina)": "A: óptimo\n(vino + harina)", "B · Referencia TRL-9 con bromelaína": "B: referencia\nTRL-9", "B · Óptimo con bromelaína": "B: óptimo\n(+ bromelaína)"}
+    a.set_xticks(x); a.set_xticklabels([SH.get(k, k) for k in keys], fontsize=7.5); a.legend(fontsize=7.5, loc="upper left")
+    a.set_ylim(0, max(fci) * 1.18); a.set_title("Inversión y valor: tamaños de referencia frente a óptimos", fontsize=9)
+    # (b) Monte Carlo
+    b = ax[0, 1]
+    for q, k in enumerate(keys):
+        v = np.sort(np.array(cs[k]["mc"]["NPV"]) / 1e6)
+        b.plot(v, np.linspace(0, 1, len(v)), color=C[q], lw=1.8, ls="-" if "Óptimo" in k else "--",
+               label=f"{k} · P(VPN>0) = {cs[k]['mc']['P_pos']:.2f}".replace(".", ","))
+    b.axvline(0, color=INK2, lw=0.8); b.set_xlabel("VPN (MM COP)"); b.set_ylabel("Probabilidad acumulada"); b.legend(fontsize=6.8, loc="upper left")
+    b.set_title("Monte Carlo LHS + Iman–Conover (1 000 corridas)", fontsize=9)
+    # (c) tornado del mejor caso
+    k = max(keys, key=lambda k: cs[k]["res"]["NPV"]); tor = cs[k]["tornado"]; base = cs[k]["res"]["NPV"] / 1e6
+    c_ = ax[1, 0]
+    for i, rr in enumerate(tor):
+        lo, hi = rr["NPV_worst"] / 1e6, rr["NPV_best"] / 1e6
+        c_.barh(i, hi - base, left=base, color=C[0]); c_.barh(i, lo - base, left=base, color=C[1])
+    c_.axvline(base, color=INK, lw=1); c_.set_yticks(range(len(tor))); c_.set_yticklabels([rr["label"].replace("Precio del producto", "Precio del vino") for rr in tor], fontsize=8); c_.invert_yaxis()
+    c_.set_xlabel("VPN (MM COP)"); c_.set_title(f"Tornado: {k} (azul = mejor, naranja = peor)", fontsize=9)
+    # (d) escala
+    sc = t["scale"]; d_ = ax[1, 1]
+    s_ = [r["supply"] for r in sc]
+    d_.plot(s_, [r["NPV"] / 1e6 for r in sc], "-o", color=C[0], label="VPN del óptimo (vino 3 000 COP/L)")
+    d_.axhline(0, color=INK2, lw=0.8); d_.axvline(6146, color=GRID, ls="--"); d_.set_xlabel("Oferta de fruta (t/año)"); d_.set_ylabel("VPN (MM COP)")
+    d2 = d_.twinx(); d2.plot(s_, [r["breakeven"] for r in sc], "-s", color=C[3], label="Precio de equilibrio del vino"); d2.grid(False)
+    d2.axhline(1600, color=C[3], ls=":", lw=1); d2.text(s_[-1], 1640, "precio base del TEA (1 600)", ha="right", fontsize=7, color=C[3])
+    d2.set_ylabel("Precio de equilibrio del vino (COP/L)", color=C[3])
+    h1, l1 = d_.get_legend_handles_labels(); h2, l2 = d2.get_legend_handles_labels(); d_.legend(h1 + h2, l1 + l2, fontsize=7, loc="upper left")
+    d_.set_title("TEA del diseño óptimo según la oferta", fontsize=9)
+    fig.suptitle("Fig. 31  TEA de Burk recalculado con los tamaños óptimos (Chocó 2022 y regla por escala)", fontsize=10, fontweight="bold", x=0.01, ha="left")
+    save(fig, "fig31_tea_dimensionado.png")
+
+
+if __name__ == "__main__":
+    fig31_tea()

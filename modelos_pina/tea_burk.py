@@ -33,7 +33,9 @@ COMMON = dict(
 
 def calendar(scen, c=COMMON, factor=0.9):
     """Escenarios de la plantilla: 1 = todos los días 1 turno | 2 = lun–sáb 1 turno | 3 = lun–sáb 2 turnos.
-    'continuo' = 24/7 con 3 turnos (procesos biológicos)."""
+    'continuo' = 24/7 con 3 turnos (procesos biológicos). Un dict se usa tal cual (p. ej. lun–sáb con 3 turnos)."""
+    if isinstance(scen, dict):
+        return dict(scen)
     if scen == "continuo":
         return dict(days=365.25 * factor, shifts=3, h_shift=8.0, h_op=8.0)
     days = (365.25 if scen == 1 else 365.25 - 365.25 / 7 - 18) * factor

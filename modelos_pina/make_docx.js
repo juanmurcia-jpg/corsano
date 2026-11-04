@@ -52,6 +52,7 @@ function table(b) {
 
 const children = [];
 let first = true;
+let listNo = 0;
 for (const b of blocks) {
   if (b.type === "title") {
     children.push(new Paragraph({ heading: HeadingLevel.TITLE, children: R(b.runs) }));
@@ -65,7 +66,8 @@ for (const b of blocks) {
     children.push(new Paragraph({ spacing: { after: 120 }, children: R(b.runs, b.kicker ? { color: ACCENT, bold: true, size: 18 } : b.lede ? { color: INK2, size: 24 } : {}) }));
     if (b.lede) { children.push(new Paragraph({ children: [] })); children.push(new TableOfContents("Contenido", { hyperlink: true, headingStyleRange: "1-2" })); }
   } else if (b.type === "list") {
-    b.items.forEach((it) => children.push(new Paragraph({ numbering: { reference: b.ordered ? "num" : "bul", level: 0 }, spacing: { after: 60 }, children: R(it) })));
+    listNo += 1;   // cada lista numerada reinicia en 1 (instance distinto)
+    b.items.forEach((it) => children.push(new Paragraph({ numbering: b.ordered ? { reference: "num", level: 0, instance: listNo } : { reference: "bul", level: 0 }, spacing: { after: 60 }, children: R(it) })));
   } else if (b.type === "pre") {
     b.lines.filter((l) => l.trim()).forEach((l) => children.push(new Paragraph({
       spacing: { before: 0, after: 0 }, shading: { fill: "EEF1EC", type: ShadingType.CLEAR, color: "auto" },
