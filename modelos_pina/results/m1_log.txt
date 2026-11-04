@@ -1,0 +1,134 @@
+E1/E2 listo
+E1 7s
+E3 best 338869 Prop (1, 1) | Ferm (1, 1)
+E3 42s
+tau 12.5 338869 Prop (1, 1) | Ferm (1, 1)
+tau 9 339167 Prop (1, 1) | Ferm (1, 1)
+tau 7 341485 Prop (1, 1) | Ferm (1, 1)
+tau 5 347233 Prop (1, 1) | Ferm (2, 2)
+tau 4 348395 Prop (1, 1) | Ferm (2, 2)
+tau 3 356399 Prop (1, 1) | Ferm (2, 2)
+tau 2 376119 Prop (1, 1) | Ferm (6,)
+tau 1.5 385154 Prop (1, 1) | Ferm (8,)
+tau 1.0 399214 Prop (1, 1) | Ferm (12,)
+E4 94s
+E6 12.5 jerarquico 364617 Prop sin propagación | Ferm (1,)
+E6 12.5 intermedio 343478 Prop (1, 1) | Ferm (1,)
+E6 12.5 simultaneo 338869 Prop (1, 1) | Ferm (1, 1)
+E6 3.0 jerarquico 596913 Prop sin propagación | Ferm (1,)+(12,)+(2,)+(3,)+(4,)+(6,)+(8,)
+E6 3.0 intermedio 755322 Prop (1, 1)+(1,)+(2,) | Ferm (1,)+(12,)+(2,)+(3,)+(4,)+(6,)+(8,)
+E6 3.0 simultaneo 356399 Prop (1, 1) | Ferm (2, 2)
+E6 1.0 jerarquico 518128 Prop sin propagación | Ferm (1,)+(12,)+(3,)+(6,)
+E6 1.0 intermedio 867342 Prop (1, 1)+(1,)+(2,) | Ferm (1,)+(12,)+(2,)+(3,)+(4,)+(6,)+(8,)
+E6 1.0 simultaneo 399214 Prop (1, 1) | Ferm (12,)
+E6 60s
+
+******************************************************************************
+This program contains Ipopt, a library for large-scale nonlinear optimization.
+ Ipopt is released as open source code under the Eclipse Public License (EPL).
+         For more information visit https://github.com/coin-or/Ipopt
+******************************************************************************
+
+NLP0012I 
+              Num      Status      Obj             It       time                 Location
+NLP0014I             1         OPT 3.4263753       38 0.067164
+NLP0012I 
+              Num      Status      Obj             It       time                 Location
+NLP0014I             1         OPT 3.4263753       52 0.066551
+NLP0012I 
+              Num      Status      Obj             It       time                 Location
+NLP0014I             1         OPT 3.4263753       55 0.068382
+Cbc0012I Integer solution of 3.4263753 found by DiveMIPFractional after 0 iterations and 0 nodes (0.14 seconds)
+Cbc0001I Search completed - best objective 3.426375260364974, took 0 iterations and 0 nodes (0.14 seconds)
+Cbc0035I Maximum depth 0, 0 variables fixed on reduced cost
+E7 12.5 B-BB True 342638 [1.0, 1.0]
+OA0003I New best feasible of 3.4263753 found after 0.011966 sec and
+OA0008I OA  converged in 0.012718 seconds found solution of value 3.4263753 (lower bound 3.4263749 ).
+OA0010I Performed 1 iterations, explored 0 branch-and-bound nodes in total
+OA0003I New best feasible of 3.4263753 found after 0.018154 sec and
+OA0003I New best feasible of 3.4263753 found after 0.032367 sec and
+OA0008I OA  converged in 0.032996 seconds found solution of value 3.4263753 (lower bound 3.426375 ).
+OA0010I Performed 1 iterations, explored 0 branch-and-bound nodes in total
+OA0003I New best feasible of 3.4263753 found after 0.038239 sec and
+Cbc0012I Integer solution of 3.4263753 found by nonlinear program after 29 iterations and 0 nodes (0.04 seconds)
+Cbc0031I 29 added rows had average density of 6.0344828
+Cbc0013I At root node, 35 cuts changed objective from 3.4263749 to 3.426375 in 2 passes
+Cbc0014I Cut generator 0 (Outer Approximation decomposition.) - 34 row cuts average 5.7 elements, 0 column cuts (0 active)
+Cbc0014I Cut generator 1 (Outer Approximation feasibility check.) - 34 row cuts average 5.7 elements, 0 column cuts (0 active)
+Cbc0014I Cut generator 2 (Outer Approximation strong branching solution check.) - 0 row cuts average 0.0 elements, 0 column cuts (0 active)
+Cbc0001I Search completed - best objective 3.426375260356467, took 29 iterations and 0 nodes (0.04 seconds)
+Cbc0035I Maximum depth 0, 0 variables fixed on reduced cost
+ Outer Approximation decomposition. was tried 2 times and created 34 cuts of which 0 were active after adding rounds of cuts
+ Outer Approximation feasibility check. was tried 2 times and created 34 cuts of which 0 were active after adding rounds of cuts
+E7 12.5 B-OA True 342638 [1.0, 1.0]
+NLP0012I 
+              Num      Status      Obj             It       time                 Location
+NLP0014I             1         OPT 3.6487161       30 0.034559
+NLP0012I 
+              Num      Status      Obj             It       time                 Location
+NLP0014I             1         OPT 3.6494387       46 0.056987
+NLP0014I             2         OPT 3.650053       11 0.014031
+NLP0014I             3         OPT 3.650053       11 0.015524
+NLP0012I 
+              Num      Status      Obj             It       time                 Location
+NLP0014I             1         OPT 3.650053        6 0.007137
+Cbc0012I Integer solution of 3.650053 found by DiveMIPFractional after 0 iterations and 0 nodes (0.10 seconds)
+NLP0014I             2         OPT 3.6558827       38 0.049484
+NLP0014I             3         OPT 3.6490817        7 0.004792
+NLP0014I             4         OPT 3.6868102       34 0.040724
+NLP0014I             5         OPT 3.6494387       46 0.057089
+NLP0014I             6         OPT 3.650053       11 0.013952
+Cbc0001I Search completed - best objective 3.650053006607549, took 11 iterations and 0 nodes (0.26 seconds)
+Cbc0032I Strong branching done 2 times (125 iterations), fathomed 0 nodes and fixed 2 variables
+Cbc0035I Maximum depth 0, 0 variables fixed on reduced cost
+E7 3.0 B-BB True 365005 [3.0, 4.0]
+OA0003I New best feasible of 6.6295192 found after 0.027585 sec and
+OA0003I New best feasible of 4.0272163 found after 0.084842 sec and
+OA0008I OA  converged in 0.086103 seconds found solution of value 4.0272163 (lower bound 1e+50 ).
+OA0010I Performed 2 iterations, explored 4 branch-and-bound nodes in total
+Cbc0012I Integer solution of 4.0272163 found by nonlinear program after 41 iterations and 0 nodes (0.09 seconds)
+Cbc0031I 18 added rows had average density of 5.6666667
+Cbc0013I At root node, 18 cuts changed objective from 3.6487157 to 4.6315241 in 2 passes
+Cbc0014I Cut generator 0 (Outer Approximation decomposition.) - 90 row cuts average 6.0 elements, 0 column cuts (0 active)
+Cbc0014I Cut generator 1 (Outer Approximation feasibility check.) - 0 row cuts average 0.0 elements, 0 column cuts (0 active)
+Cbc0014I Cut generator 2 (Outer Approximation strong branching solution check.) - 0 row cuts average 0.0 elements, 0 column cuts (0 active)
+Cbc0001I Search completed - best objective 4.027216294439118, took 41 iterations and 0 nodes (0.09 seconds)
+Cbc0035I Maximum depth 0, 0 variables fixed on reduced cost
+ Outer Approximation decomposition. was tried 2 times and created 90 cuts of which 0 were active after adding rounds of cuts
+E7 3.0 B-OA True 402722 [2.0, 2.0]
+E7 14s
+b 0.3 sc 0.5 185602 Prop sin propagación | Ferm (1, 1)
+b 0.3 sc 1.0 350823 Prop sin propagación | Ferm (2,)
+b 0.3 sc 2.0 675023 Prop sin propagación | Ferm (3,)
+b 0.3 sc 4.0 1291663 Prop (1, 1) | Ferm (1,)
+b 0.4 sc 0.5 176455 Prop sin propagación | Ferm (1, 1)
+b 0.4 sc 1.0 335908 Prop sin propagación | Ferm (1, 1)
+b 0.4 sc 2.0 674845 Prop (1, 1) | Ferm (3,)
+b 0.4 sc 4.0 1290022 Prop (1, 1) | Ferm (1,)
+b 0.5 sc 0.5 174114 Prop sin propagación | Ferm (1, 1)
+b 0.5 sc 1.0 335751 Prop sin propagación | Ferm (1, 1)
+b 0.5 sc 2.0 681497 Prop (1, 1) | Ferm (3,)
+b 0.5 sc 4.0 1299058 Prop (1, 1) | Ferm (1,)
+b 0.6 sc 0.5 174503 Prop (1, 1) | Ferm (1, 1)
+b 0.6 sc 1.0 338869 Prop (1, 1) | Ferm (1, 1)
+b 0.6 sc 2.0 662930 Prop (1, 1) | Ferm (1, 1)
+b 0.6 sc 4.0 1303879 Prop (1, 1) | Ferm (1, 1)
+b 0.7 sc 0.5 175658 Prop (1, 1) | Ferm (1, 1)
+b 0.7 sc 1.0 343238 Prop (1, 1) | Ferm (1, 1)
+b 0.7 sc 2.0 673609 Prop (1, 1) | Ferm (1, 1)
+b 0.7 sc 4.0 1326559 Prop (1, 1) | Ferm (1, 1)
+b 0.8 sc 0.5 180437 Prop (1, 1) | Ferm (2, 2)
+b 0.8 sc 1.0 348516 Prop (1, 1) | Ferm (1, 1)
+b 0.8 sc 2.0 687003 Prop (1, 1) | Ferm (1, 1)
+b 0.8 sc 4.0 1356630 Prop (1, 1) | Ferm (1, 1)
+b 0.9 sc 0.5 178858 Prop (1, 1) | Ferm (1, 1)
+b 0.9 sc 1.0 354547 Prop (1, 1) | Ferm (1, 1)
+b 0.9 sc 2.0 703226 Prop (1, 1) | Ferm (1, 1)
+b 0.9 sc 4.0 1395535 Prop (1, 1) | Ferm (1, 1)
+b 1.0 sc 0.5 180661 Prop (1, 1) | Ferm (1, 1)
+b 1.0 sc 1.0 361298 Prop (1, 1) | Ferm (1, 1)
+b 1.0 sc 2.0 722572 Prop (1, 1) | Ferm (1, 1)
+b 1.0 sc 4.0 1445119 Prop (1, 1) | Ferm (1, 1)
+E5 436s
+/home/user/corsano_pina/m1_experimentos.py:206: DeprecationWarning: `salib.sample.saltelli` will be removed in SALib 1.5.1 Please use `salib.sample.sobol`
+  bounds=[[0.75 * mu0, 1.25 * mu0], [80, 110], [0.38, 0.45], [20, 60], [8, 25], [0.7, 1.3],

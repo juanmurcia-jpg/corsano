@@ -1,0 +1,22 @@
+
+******************************************************************************
+This program contains Ipopt, a library for large-scale nonlinear optimization.
+ Ipopt is released as open source code under the Eclipse Public License (EPL).
+         For more information visit https://github.com/coin-or/Ipopt
+******************************************************************************
+
+G1 ratio 1.11 SPC 3060473 best ABABAB 3096954
+G2 MC 3070546 MP 3096954 con MO: 2958046 3029454
+G3 sc 0.5 MP ABAB 1410626 MC 1392205
+G3 sc 1.0 MP ABABAB 3096954 MC 3070546
+G3 sc 2.0 MP AB 6612797 MC 6575094
+G3 sc 4.0 MP ABAB 13862583 MC 13808523
+G4 0.0 3006864 3033019
+G4 20.0 3034546 3060954
+G4 40.0 3052546 3078954
+G4 60.0 3070546 3096954
+G4 90.0 3097546 3123954
+G4 120.0 3124546 3150954
+G5 3.0 2958046 3029454
+G5 4.2 2913046 3002454
+M34 total 77 s
