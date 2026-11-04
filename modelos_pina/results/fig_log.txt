@@ -1,0 +1,15 @@
+fig fig01_cinetica_discretizacion.png
+fig fig02_error_discretizacion.png
+fig fig03_identificabilidad.png
+fig fig04_m1_optimo_base.png
+fig fig05_m1_multiarranque.png
+fig fig06_m1_llenado_oxidacion.png
+fig fig07_m1_mapa_b_escala.png
+fig fig08_m1_jerarquico_vs_simultaneo.png
+fig fig09_m1_sobol.png
+fig fig10_m2_concentracion_hub.png
+fig fig11_m2_Sw.png
+fig fig12_m2_pareto.png
+fig fig13_m2_asignacion_hub.png
+fig fig14_m3_campanas.png
+fig fig15_m4_MC_vs_MP.png

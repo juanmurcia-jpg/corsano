@@ -1,0 +1,43 @@
+E6 12.5 jerarquico 364617 Prop sin propagación | Ferm (1,)
+E6 12.5 intermedio 343478 Prop (1, 1) | Ferm (1,)
+E6 12.5 simultaneo 338869 Prop (1, 1) | Ferm (1, 1)
+E6 3.0 jerarquico 391799 Prop sin propagación | Ferm (6,)
+E6 3.0 intermedio 374478 Prop (1, 1) | Ferm (6,)
+E6 3.0 simultaneo 356399 Prop (1, 1) | Ferm (2, 2)
+E6 1.0 jerarquico INFACTIBLE
+E6 1.0 intermedio INFACTIBLE
+E6 1.0 simultaneo 399214 Prop (1, 1) | Ferm (12,)
+E6 50 s
+E5b 0.3 0.5 170581 Prop sin propagación | Ferm (1, 1) | NLP completo 185602
+E5b 0.3 1.0 328424 Prop sin propagación | Ferm (1, 1) | NLP completo 350823
+E5b 0.3 2.0 641781 Prop sin propagación | Ferm (1, 1) | NLP completo 675023
+E5b 0.3 4.0 1265569 Prop sin propagación | Ferm (1, 1) | NLP completo 1291663
+E5b 0.4 0.5 170362 Prop sin propagación | Ferm (1, 1) | NLP completo 176455
+E5b 0.4 1.0 329815 Prop sin propagación | Ferm (1, 1) | NLP completo 335908
+E5b 0.4 2.0 645575 Prop sin propagación | Ferm (1, 1) | NLP completo 674845
+E5b 0.4 4.0 1272377 Prop sin propagación | Ferm (1, 1, 1) | NLP completo 1290022
+E5b 0.5 0.5 171618 Prop sin propagación | Ferm (1, 1, 1) | NLP completo 174114
+E5b 0.5 1.0 333104 Prop sin propagación | Ferm (1, 1, 1) | NLP completo 335751
+E5b 0.5 2.0 652077 Prop sin propagación | Ferm (1, 1, 1) | NLP completo 681497
+E5b 0.5 4.0 1284347 Prop sin propagación | Ferm (1, 1, 1) | NLP completo 1299058
+E5b 0.6 0.5 173059 Prop sin propagación | Ferm (1, 1, 1) | NLP completo 174503
+E5b 0.6 1.0 337169 Prop sin propagación | Ferm (1, 1, 1) | NLP completo 338869
+E5b 0.6 2.0 660782 Prop sin propagación | Ferm (1, 1, 1) | NLP completo 662930
+E5b 0.6 4.0 1301058 Prop (1, 1) | Ferm (1, 1, 1) | NLP completo 1303879
+E5b 0.7 0.5 174511 Prop sin propagación | Ferm (1, 1, 1) | NLP completo 175658
+E5b 0.7 1.0 341557 Prop (1, 1) | Ferm (1, 1, 1) | NLP completo 343238
+E5b 0.7 2.0 671007 Prop (1, 1) | Ferm (1, 1, 1) | NLP completo 673609
+E5b 0.7 4.0 1322364 Prop (1, 1) | Ferm (1, 1, 1) | NLP completo 1326559
+E5b 0.8 0.5 175802 Prop (1, 1) | Ferm (1, 1, 1) | NLP completo 180437
+E5b 0.8 1.0 346174 Prop (1, 1) | Ferm (1, 1, 1) | NLP completo 348516
+E5b 0.8 2.0 682893 Prop (1, 1) | Ferm (1, 1, 1) | NLP completo 687003
+E5b 0.8 4.0 1349315 Prop (1, 1) | Ferm (1, 1, 1) | NLP completo 1356630
+E5b 0.9 0.5 176997 Prop (1, 1) | Ferm (1, 1, 1) | NLP completo 178858
+E5b 0.9 1.0 351068 Prop (1, 1) | Ferm (1, 1, 1) | NLP completo 354547
+E5b 0.9 2.0 696672 Prop (1, 1) | Ferm (1, 1, 1) | NLP completo 703226
+E5b 0.9 4.0 1383137 Prop (1, 1) | Ferm (1, 1, 1) | NLP completo 1395535
+E5b 1.0 0.5 178152 Prop (1, 1) | Ferm (1, 1, 1) | NLP completo 180661
+E5b 1.0 1.0 356302 Prop (1, 1) | Ferm (1, 1, 1) | NLP completo 361298
+E5b 1.0 2.0 712601 Prop (1, 1) | Ferm (1, 1, 1) | NLP completo 722572
+E5b 1.0 4.0 1425199 Prop (1, 1) | Ferm (1, 1, 1) | NLP completo 1445119
+E5b 51 s

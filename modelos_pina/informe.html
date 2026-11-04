@@ -62,7 +62,7 @@ ol.edits li,ul.tight li{margin:8px 0}
   <p class="kicker">Tesis doctoral · Biorrefinería de piña · Bajo Atrato (Chocó)</p>
   <h1>Modelos de superestructura de Corsano adaptados a la biorrefinería de piña</h1>
   <p class="lede">Cuatro modelos en Python reproducen los marcos de Corsano, Montagna, Iribarren y Aguirre (2004, 2006a, 2006b, 2006c, 2007; libro de 2009). Están adaptados al tren de vino de pulpa, a la línea de etanol del hub de azúcares y a la comparación entre complejo multiplanta y planta multiproducto que la tesis deja abierta en §6.10, §9.6 y §11.3.</p>
-  <div class="meta"><span>CasADi 3.8 · IPOPT · Bonmin · SALib</span><span>Discretización trapezoidal dentro del NLP</span><span>~3 400 optimizaciones resueltas</span></div>
+  <div class="meta"><span>CasADi 3.8 · IPOPT · Bonmin · SALib</span><span>Discretización trapezoidal dentro del NLP</span><span>≈ 3 000 optimizaciones resueltas</span></div>
   <ul class="toc" id="toc">
     <li><a href="#hallazgos">Hallazgos principales</a></li>
     <li><a href="#mapa">Qué se implementó y dónde encaja en la tesis</a></li>
@@ -82,7 +82,7 @@ ol.edits li,ul.tight li{margin:8px 0}
 <div class="findings">
   <div class="finding"><div class="n">12 fermentadores</div><div class="t">La configuración de la tesis (§4.2.4) aparece sin variables binarias cuando el tiempo de llenado se limita a 1 h. Esa protección contra la oxidación cuesta +17,8 % de TAC frente al óptimo libre.</div><div class="s">Modelo 1 · Fig. 6</div></div>
   <div class="finding"><div class="n">10 óptimos locales</div><div class="t">25 arranques del mismo NLP convergen a 10 estructuras distintas, con TAC entre 338,9 y 394,5 k USD/año (16 % de dispersión). En un subproblema certificado con SCIP, Bonmin B-OA (análogo de DICOPT) queda 2–3 % por encima del óptimo global. Esto respalda empíricamente la crítica de §6.10 al uso de CONOPT.</div><div class="s">Modelo 1 · Fig. 5 y tabla E7</div></div>
-  <div class="finding"><div class="n">{{VSS}}</div><div class="t">Ahorro de la optimización simultánea de Corsano frente a la cadena jerárquica actual de la tesis (cinética, luego tiempo de ciclo fijo, luego dimensionamiento). Cuantifica la brecha que §6.10 solo enuncia.</div><div class="s">Modelo 1 · Fig. 8</div></div>
+  <div class="finding"><div class="n">7–9 %</div><div class="t">Ahorro de la optimización simultánea de Corsano frente a la cadena jerárquica actual de la tesis (cinética, luego tiempo de ciclo fijo, luego dimensionamiento). Con llenado de 1 h, la cadena jerárquica ni siquiera tiene solución con 12 fermentadores. Cuantifica la brecha que §6.10 solo enuncia.</div><div class="s">Modelo 1 · Fig. 8</div></div>
   <div class="finding"><div class="n">f ≥ 2</div><div class="t">El reciclo de vinaza de Corsano (2006b) solo se vuelve óptimo si el hub entrega azúcar concentrado al menos 2×. Con las corrientes diluidas de la piña (60–110 g/L), reciclar no compensa.</div><div class="s">Modelo 2 · Fig. 10</div></div>
   <div class="finding"><div class="n">η = 0,905</div><div class="t">Recuperación de etanol en destilación cuando el etanol residual cuenta como DBO en la ec. 38. Sin ese término, el óptimo bota el 20 % del etanol en la vinaza.</div><div class="s">Modelo 2</div></div>
   <div class="finding"><div class="n">+56 k USD/año</div><div class="t">Ventaja de la planta multiproducto con campaña AB frente al complejo multiplanta, incluida la mano de obra (9 frente a 15 operarios). Sin mano de obra, la ventaja cae a 11 k USD/año (0,4 % del beneficio). Igual que en el libro, la diferencia económica es pequeña y la decide el personal.</div><div class="s">Modelos 3–4 · Figs. 14–15</div></div>
@@ -150,7 +150,7 @@ s.a.  TL ≥ T_aj / M_aj        (ZW, fuera de fase)            Σ_a P_a·V_a ≥
 <p>El dato de Murcia Palacios (2013) es un único punto final: 65,31 g/L a 12,5 h. Un punto no puede identificar a la vez µmax y la dosis efectiva de inóculo. La Fig. 3 muestra que la ambigüedad tiene consecuencias de diseño: el tiempo de ciclo, y con él el volumen de los fermentadores, cambia 2,3 veces dentro del conjunto de parámetros compatibles con el dato. Recomendación metodológica: medir una curva temporal de al menos 6 puntos (azúcar, etanol, biomasa) y registrar la dosis de levadura viable. Hasta entonces, propagar µmax como incertidumbre, que es lo que hace el análisis de Sobol más abajo.</p>
 <h3>Óptimo base: el modelo reinventa el pie de cuba</h3>
 </div>
-<figure><img src="figs/fig04_m1_optimo_base.png" alt="Diagrama de Gantt y perfiles de concentración del óptimo base"><figcaption>Fig. 4. Óptimo base: una cascada de propagación y dos fermentadores en serie de 0,55 m³ y 10,72 m³, con TL = 10,38 h y TAC = 338,9 k USD/año (8,7 % capital, 91,3 % operación).</figcaption></figure>
+<figure><img src="figs/fig04_m1_optimo_base.png" alt="Diagrama de Gantt y perfiles de concentración del óptimo base"><figcaption>Fig. 4. Óptimo base de la superestructura original (11 alternativas): una cascada de propagación y dos fermentadores en serie de 0,55 m³ y 10,72 m³, con TL = 10,38 h y TAC = 338,9 k USD/año (8,7 % capital, 91,3 % operación). Al añadir la alternativa de 3 en serie (Fig. 7), el óptimo baja a 337,2 k USD/año.</figcaption></figure>
 <div class="prose">
 <p>La estructura elegida es la de Corsano et al. (2006b), con una unidad de biomasa y dos fermentadores en serie, y en enología corresponde al pie de cuba. Un fermentador pequeño (5 % del volumen) recibe el cultivo del propagador y mosto sin diluir, llega a X ≈ 11,7 g/L y siembra el fermentador principal con X<sub>0</sub> ≈ 0,6 g/L. El optimizador llega a esa práctica industrial sin que nadie se la imponga. El capital pesa poco (8,7 %): el TAC lo dominan el jugo y el inóculo, así que la estructura óptima se decide sobre todo por el uso del sustrato y no por el tamaño de los equipos.</p>
 </div>
@@ -165,11 +165,21 @@ s.a.  TL ≥ T_aj / M_aj        (ZW, fuera de fase)            Σ_a P_a·V_a ≥
 <h3>Mapa de estructuras: exponente de costo y escala</h3>
 </div>
 <figure><img src="figs/fig07_m1_mapa_b_escala.png" alt="Mapa de la estructura óptima según el exponente de costo y la escala de producción"><figcaption>Fig. 7. Estructura de fermentación óptima en 32 combinaciones (b, escala), después de reoptimizar cada celda con cada estructura candidata fija.</figcaption></figure>
-<div class="prose">{{E5B_TEXT}}</div>
+<div class="prose"><p>El NLP completo con 5 arranques por celda dio un mapa ruidoso. Se pulió reoptimizando cada celda con cada estructura candidata fija (8 estructuras × 2 arranques; problemas más pequeños y mejor condicionados) y tomando el mínimo, como hace Corsano (2006a, §5) con su secuencia de MINLP. El pulido mejoró 17 de las 32 celdas en más de 1 % (1,8 % en promedio y hasta 8,1 %). Detectó además que la superestructura del caso base no incluía la alternativa <b>3 en serie</b>, que resulta la mejor para b ≥ 0,5. Con ella el caso base baja de 338,9 a 337,2 k USD/año (−0,5 %) y la propagación separada desaparece: la cascada de tres fermentadores siembra con levadura seca y hace de pie de cuba.</p>
+<p>El mapa pulido es monótono y tiene interpretación física. Con b ≤ 0,4 la concavidad es tan fuerte que una unidad pequeña cuesta casi lo mismo que una grande, y el óptimo usa solo 2 fermentadores en serie. Con b ≥ 0,5 conviene un tercero. La propagación aerobia separada solo vuelve a aparecer con b ≥ 0,7, cuando los equipos pequeños dejan de ser caros. La prueba de consistencia también se cumple: con b = 1, sin economía de escala, el TAC por unidad de producción es idéntico en las cuatro escalas.</p>
+<p>Lección metodológica para §6.1 y §6.9: la superestructura sin binarias es tan buena como su lista de alternativas. Corsano (2004) fija la cota superior de unidades en serie resolviendo primero un problema relajado; omitir ese paso, como hizo aquí la primera corrida, deja fuera el óptimo sin aviso. El protocolo de verificación de la tesis debería incluir una prueba explícita de completitud de la superestructura.</p></div>
 
 <div class="prose"><h3>Jerárquico frente a simultáneo: el costo de la cadena actual de la tesis</h3></div>
 <figure><img src="figs/fig08_m1_jerarquico_vs_simultaneo.png" alt="TAC de las estrategias jerárquica, intermedia y simultánea para tres tiempos de llenado"><figcaption>Fig. 8. Jerárquico: la cinética fija T = 12,5 h y X<sub>0</sub> = 0,2 g/L de levadura seca, y después se dimensiona. Intermedio: T fijo, inóculo libre. Simultáneo: Corsano.</figcaption></figure>
-<div class="prose">{{E6_TEXT}}</div>
+<div class="prose"><div class="tbl"><table>
+<thead><tr><th>τ llenado</th><th>Jerárquico</th><th>Intermedio</th><th>Simultáneo</th><th>Ahorro total</th><th>Parte por inóculo y propagación</th><th>Parte por tiempo y estructura</th></tr></thead>
+<tbody>
+<tr><td>12,5 h</td><td class="num">364,6 (1 unidad)</td><td class="num">343,5</td><td class="num">338,9 (2 en serie)</td><td class="num">−7,1 %</td><td class="num">82 %</td><td class="num">18 %</td></tr>
+<tr><td>3 h</td><td class="num">391,8 (6 en paralelo)</td><td class="num">374,5</td><td class="num">356,4 (2×2)</td><td class="num">−9,0 %</td><td class="num">49 %</td><td class="num">51 %</td></tr>
+<tr><td>1 h</td><td class="num">infactible</td><td class="num">infactible</td><td class="num">399,2 (12 en paralelo)</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+</tbody></table></div>
+<p>TAC en k USD/año. La cadena jerárquica, que es la de la tesis (§4.2 y §6.10), cuesta entre 7,1 y 9,0 % más que la formulación simultánea de Corsano. La descomposición muestra dónde está la pérdida. Sin restricción de llenado, el 82 % del ahorro viene de optimizar el inóculo y la propagación: la cadena jerárquica fija X<sub>0</sub> = 0,2 g/L de levadura seca. Cuando la restricción de oxidación se activa (τ = 3 h), la mitad del ahorro viene de optimizar a la vez el tiempo de fermentación y la estructura: el óptimo simultáneo pasa de 6 unidades en paralelo a un arreglo 2×2. Con τ = 1 h la cadena jerárquica no tiene solución. Con T fijo en 12,5 h necesitaría al menos 13 unidades; la optimización simultánea acorta la fermentación a 12 h y cumple con 12.</p>
+<p>Esto responde la pregunta que §6.10 deja abierta, si el compromiso entre tiempo de ciclo y tamaño de reactor existe en la cinética de la tesis: sí existe, y vale entre 7 y 9 % del TAC. La justificación de tractabilidad de Kallrath (2021) sigue siendo válida para el MINLP completo. Pero la pérdida ya no es hipotética, y la tesis puede citarla como costo cuantificado de la decisión polilítica.</p></div>
 
 <div class="prose"><h3>NLP sin binarias frente a MINLP</h3>
 <p>Para comparar como en §5 de Corsano (2006a), se fijó una etapa por operación y el número de unidades en paralelo se dejó como entero (Bonmin):</p></div>
@@ -205,7 +215,12 @@ s.a.  TL ≥ T_aj / M_aj        (ZW, fuera de fase)            Σ_a P_a·V_a ≥
 <h3>Sensibilidad global (Sobol)</h3>
 </div>
 <figure><img src="figs/fig09_m1_sobol.png" alt="Índices de Sobol de primer orden y totales del TAC óptimo"><figcaption>Fig. 9. Cada muestra de Saltelli es una reoptimización completa de la superestructura con 2 arranques. Así se mide la sensibilidad del óptimo, no la de un diseño fijo.</figcaption></figure>
-<div class="prose">{{E8_TEXT}}</div>
+<div class="prose"><p>Se hicieron 640 reoptimizaciones (muestreo de Saltelli, N = 64, 8 factores) sin fallos de convergencia. El TAC óptimo varía entre 210 y 496 k USD/año (percentiles 5–95; coeficiente de variación 26 %). Los índices separan dos preguntas distintas:</p>
+<ul class="tight">
+<li><b>Cuánto cuesta.</b> El costo del jugo de rechazo explica casi toda la varianza del TAC (S1 = 0,955; ST = 0,942). Cada USD/m³ de jugo suma 7 838 USD/año. Ningún otro factor pasa de ST = 0,03: Y<sub>P/S</sub> llega a 0,029 y los parámetros de costo de equipos, el exponente b y la electricidad quedan por debajo de 0,01. El índice del jugo tiene un intervalo de confianza amplio (±0,25) por el tamaño de muestra, pero su dominancia no depende de esa incertidumbre.</li>
+<li><b>Qué se construye.</b> El número de fermentadores óptimo no depende de los precios. Depende de la cinética: correlación de −0,36 con µmax y −0,28 con Pmax. Una levadura más lenta o más sensible al etanol pide más unidades (Fig. 9, derecha). En 54 % de las muestras el óptimo tiene 2 fermentadores, en 18 % tiene 4, en 14 % uno solo y en 13 % tres.</li>
+</ul>
+<p>Para la tesis: el precio del jugo de fruta de rechazo, y con él la logística de acopio en el Bajo Atrato (§3.3), es la variable económica que más importa medir. La calibración cinética del punto 2 de la sección de cambios es la que más importa para el diseño físico.</p></div>
 </section>
 
 <section id="m2">
@@ -299,6 +314,7 @@ Campaña c: N_c · Σ_q d(c_q, c_q+1) ≤ H,    N_A = n_A(c)·N_c,   N_B = n_B(c
 <li>El inóculo se limita a ≤ 10 % del lote, con pitching ≥ 0,5 g/L, y el vino se exige ≥ 55 g/L de etanol (7,0 % v/v). Sin esas restricciones, el modelo multiproducto diluía el vino con el mosto del propagador.</li>
 <li>Solo el subproblema de una etapa tiene certificado de optimalidad global (SCIP). Para los modelos completos, el multiarranque y el pulido por estructura reducen el riesgo, pero no lo eliminan. El paso siguiente natural es llevar la formulación reformulada de <code>m1_global.py</code> a la superestructura completa con SCIP o BARON.</li>
 <li>El SPC no es una relajación de las campañas mixtas bajo espera cero (ver Modelo 3).</li>
+<li>Los experimentos E3, E4, E6 y E8 del Modelo 1 usan la superestructura original, sin la alternativa de 3 en serie. Según el pulido de la Fig. 7, incluirla baja el TAC entre 0,2 % y 8 % según la celda (0,5 % en el caso base). Las conclusiones de esos experimentos no cambian, pero las cifras absolutas quedan ligeramente sobreestimadas.</li>
 </ul>
 </section>
 

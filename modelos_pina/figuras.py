@@ -266,10 +266,15 @@ def fig_m1_hier():
         vals = [d[t][k]["TAC"] / 1e3 if d[t][k].get("ok") else np.nan for t in taus]
         ax.bar(np.arange(len(taus)) + (q - 1) * w, vals, width=w - 0.02, color=C[q], label=lab)
     for i, t in enumerate(taus):
-        h, s = d[t]["jerarquico"]["TAC"], d[t]["simultaneo"]["TAC"]
-        ax.text(i + w, s / 1e3 + 8, f"−{(1 - s / h) * 100:.1f}%", ha="center", fontsize=8, color=INK)
+        h, s_ = d[t]["jerarquico"].get("TAC"), d[t]["simultaneo"]["TAC"]
+        if h:
+            ax.text(i + w, s_ / 1e3 + 8, f"−{(1 - s_ / h) * 100:.1f}%", ha="center", fontsize=8, color=INK)
+        else:
+            ax.text(i - w, 20, "infactible\n(>12 unidades)", ha="center", fontsize=7.5, color=INK2, rotation=90, va="bottom")
+        if not d[t]["intermedio"].get("TAC"):
+            ax.text(i, 20, "infactible", ha="center", fontsize=7.5, color=INK2, rotation=90, va="bottom")
     ax.set_xticks(range(len(taus))); ax.set_xticklabels([f"τ = {float(t):g} h" for t in taus])
-    ax.set_ylabel("TAC (k USD/año)"); ax.legend(fontsize=8)
+    ax.set_ylabel("TAC (k USD/año)"); ax.set_ylim(0, 500); ax.legend(fontsize=8, loc="upper left", ncol=3)
     ax.set_title("Fig. 8  Valor de la optimización simultánea frente a la jerárquica (§6.10 de la tesis)")
     save(fig, "fig08_m1_jerarquico_vs_simultaneo.png")
 
@@ -290,11 +295,14 @@ def fig_m1_sobol():
     ax[0].set_yticks(y); ax[0].set_yticklabels([nm[i] for i in o]); ax[0].legend(loc="lower right")
     ax[0].set_xlabel("Índice de Sobol"); ax[0].set_title("Sensibilidad global del TAC óptimo")
     X = np.array(d["X"]); Y = np.array([r["TAC"] for r in d["Y"]])
-    k = int(np.argmax(ST))
     nf = np.array([r.get("nferm", np.nan) for r in d["Y"]])
-    sc = ax[1].scatter(X[:, k], Y / 1e3, c=nf, s=9, cmap=matplotlib.colors.ListedColormap(SEQ[1:]), alpha=0.85)
-    cb = fig.colorbar(sc, ax=ax[1]); cb.set_label("Fermentadores en el óptimo")
-    ax[1].set_xlabel(nm[k]); ax[1].set_ylabel("TAC (k USD/año)"); ax[1].set_title(f"TAC vs el factor dominante ({nm[k]})")
+    i_mu = d["problem"]["names"].index("mu_max"); i_pm = d["problem"]["names"].index("Pmax")
+    rng = np.random.default_rng(0)
+    sc = ax[1].scatter(X[:, i_mu], nf + rng.uniform(-0.18, 0.18, len(nf)), c=X[:, i_pm], s=10,
+                       cmap=matplotlib.colors.ListedColormap(SEQ[1:]), alpha=0.9)
+    cb = fig.colorbar(sc, ax=ax[1]); cb.set_label("Pmax (g/L)")
+    ax[1].set_xlabel("µmax (1/h)"); ax[1].set_ylabel("Fermentadores en el óptimo")
+    ax[1].set_title("La estructura responde a la cinética, no a los precios")
     fig.suptitle(f"Fig. 9  Análisis de Sobol (Saltelli, {len(Y)} reoptimizaciones; {d['n_fail']} sin convergencia)",
                  fontsize=10, fontweight="bold", x=0.01, ha="left")
     save(fig, "fig09_m1_sobol.png")

@@ -151,9 +151,19 @@ def E6():
         for name, kw in cases.items():
             if "op2" in kw:   # sólo alternativas capaces de cumplir T2=12.5 h con TL<=tau
                 kw = dict(kw, op2=[a for a in kw["op2"] if a[0] * tau >= 12.5 - 1e-9])
+                if not kw["op2"]:
+                    out[tau][name] = dict(ok=False, TAC=None, label="infactible (requiere > 12 unidades)", active=[])
+                    print("E6", tau, name, "INFACTIBLE"); continue
             rs = pool_map(multistart_jobs(dict(kw, tau_fill=tau), range(8)))
             b = best_of(rs)
             out[tau][name] = slim(b)
+            if not b.get("ok"):
+                out[tau][name] = dict(ok=False, TAC=None, label="infactible", active=[])
+                print("E6", tau, name, "INFACTIBLE"); continue
+            if not np.isfinite(b.get("TAC", np.inf)) or not b.get("ok"):
+                out[tau][name] = dict(ok=False, TAC=None, label="infactible", active=[])
+                print("E6", tau, name, "INFACTIBLE")
+                continue
             print("E6", tau, name, round(b["TAC"]), b["label"])
     json.dump(out, open(f"{RES}/m1_E6.json", "w"))
 
