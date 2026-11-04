@@ -1,0 +1,12 @@
+RP optimal E=471 MM {'vino': 6200, 'harina': 6200} [6200]
+EV 672 {'vino': 6200, 'harina': 6200} EEV 471
+WS=1,021  VSS=0  EVPI=550 MM COP/año
+λ 0.0 E=471 CVaR90=-1,871 {'vino': 6200, 'harina': 6200}
+λ 0.01 E=471 CVaR90=-1,871 {'vino': 6200, 'harina': 6200}
+λ 0.02 E=471 CVaR90=-1,871 {'vino': 6200, 'harina': 6200}
+λ 0.05 E=471 CVaR90=-1,871 {'vino': 6200, 'harina': 6200}
+λ 0.1 E=471 CVaR90=-1,871 {'vino': 6200, 'harina': 6200}
+λ 0.2 E=471 CVaR90=-1,871 {'vino': 6200, 'harina': 6200}
+λ 0.5 E=0 CVaR90=0 {}
+λ 1.0 E=0 CVaR90=0 {}
+t 9 s

@@ -117,6 +117,35 @@ for lab, r in stn.items():
                      ", ".join(f"{k} {pct(v, 0)}" for k, v in sorted(u.items()))])
 x_rows = [[E(c["file"]), n0(c["NPV_py"] / MM), n0(c["NPV_xl"] / MM), f"{c['dNPV_rel']:.1e}"] for c in xchk]
 
+# ------------------------------------------------------------------------------ v3: estocástico y anual continuo
+sto = R("estocastico.json") if os.path.exists("results/estocastico.json") else None
+anu = R("anual_continuo.json") if os.path.exists("results/anual_continuo.json") else None
+sto_rows = []; front_rows = []; lam_star = float("nan")
+if sto:
+    sto_rows = [["EV: problema de valor medio (lo que promete)", n0(sto["EV"]["E"] / MM)],
+                ["RP: problema estocástico (27 escenarios)", n0(sto["RP"]["E"] / MM)],
+                ["EEV: decisión del EV evaluada en los escenarios", n0(sto["EEV"]["E"] / MM)],
+                ["WS: esperar y ver (información perfecta)", n0(sto["WS"] / MM)],
+                ["VSS = RP − EEV", n0(sto["VSS"] / MM)], ["EVPI = WS − RP", n0(sto["EVPI"] / MM)],
+                ["CVaR al 90 % de la solución RP", n0(sto["frontier"][0]["CVaR"] / MM)],
+                ["P(beneficio < 0) de la solución RP", pct(sum(sc["p"] for sc, v in zip(sto["scenarios"], sto["RP"]["Pi"]) if v < 0), 0)]]
+    for f in sto["frontier"]:
+        front_rows.append([str(f["lam"]).replace(".", ","), "+".join(sorted(f["sel"])) or "no construir", n0(f["E"] / MM), n0(f["CVaR"] / MM)])
+    E0, C0 = sto["frontier"][0]["E"], sto["frontier"][0]["CVaR"]
+    lam_star = E0 / (E0 - C0) if E0 > C0 else float("nan")
+    ws_sel = {}
+    for w in sto["WS_list"]:
+        key = "+".join(sorted(w["sel"])) or "no construir"
+        ws_sel[key] = ws_sel.get(key, 0) + w["p"]
+    ws_rows = [[E(k), pct(v, 0)] for k, v in sorted(ws_sel.items(), key=lambda x: -x[1])]
+anu_rows = []
+if anu:
+    for k, r in anu.items():
+        mx = {u: max(v) for u, v in r["util"].items()}
+        bott = ", ".join(f"{u} ({pct(v, 0)})" for u, v in sorted(mx.items(), key=lambda x: -x[1]) if v >= 0.95) or "ninguno ≥ 95 %"
+        anu_rows.append([E(k), r["status"], n1(sum(r["loss_month"])), n0(r["changeovers"]), n0(r["products"]["vino_m3"]),
+                         n0(r["products"]["harina_t"]), n0(r["products"].get("bromelaina_kg", 0)), bott])
+
 # ------------------------------------------------------------------------------ v1 (secciones previas)
 v1 = open("informe_v1.html").read()
 style = v1[v1.index("<style>"): v1.index("</style>") + 8]
@@ -131,7 +160,7 @@ html_out = f"""<title>Modelos Corsano para la piña</title>
 {style}
 <main>
 <header class="top">
-  <p class="kicker">Tesis doctoral · Biorrefinería de piña · Bajo Atrato (Chocó) · versión 2</p>
+  <p class="kicker">Tesis doctoral · Biorrefinería de piña · Bajo Atrato (Chocó) · versión 3</p>
   <h1>Moresi, capacidad, diseño TRL-9 y TEA por línea de producción</h1>
   <p class="lede">Esta versión pone en el centro las referencias de Moresi (1989a, b), dimensiona la materia prima y la planta con tecnologías TRL-9, monta un TEA por línea con la metodología Burk de sus TEA de asaí y coco, y decide qué procesar con la producción actual mediante un MILP de síntesis (Grossmann) y un programa semanal con red estado-tarea (Maravelias). Los modelos Corsano de la versión 1 siguen al final.</p>
   <div class="meta"><span>Moresi replicado contra su Tabla 3</span><span>EVA 2022 (UPRA)</span><span>11 libros TEA verificados con LibreOffice</span><span>SCIP 10</span></div>
@@ -144,6 +173,8 @@ html_out = f"""<title>Modelos Corsano para la piña</title>
     <li><a href="#milp">Qué procesar con la producción actual (MILP)</a></li>
     <li><a href="#stn">Programación semanal (STN)</a></li>
     <li><a href="#excel">Libros Excel y verificación</a></li>
+    <li><a href="#estocastico">Optimización estocástica (§6.7)</a></li>
+    <li><a href="#anual">Programa anual y cuellos de botella</a></li>
     <li><a href="#tesis2">Cambios que sugiere a la tesis</a></li>
     <li><a href="#v1-hallazgos">Modelos Corsano (versión 1)</a></li>
   </ul>
@@ -274,6 +305,51 @@ html_out = f"""<title>Modelos Corsano para la piña</title>
 {table(['Libro', 'VPN Python (MM COP)', 'VPN Excel (MM COP)', 'Diferencia relativa'], x_rows, num_cols=(1, 2, 3))}
 </section>
 
+<section id="estocastico">
+<h2>Optimización estocástica en dos etapas (§6.7)</h2>
+<div class="prose">
+<p>La formulación sigue a Grossmann (<i>Advanced Optimization for PSE</i>, cap. 14). Las decisiones de diseño d se toman aquí y ahora: líneas, tamaños de catálogo y frente de pelado. Las decisiones de operación z(θ), es decir compra de fruta, flujos mensuales, GLP y diésel, se ajustan después de conocer cada escenario θ. El problema (ec. 14.12) se resuelve como su equivalente determinista (ec. 14.19) con SCIP.</p>
+<p>Escenarios: 27, de la combinación de oferta de fruta (×0,7 / ×1,0 / ×1,3 sobre las 6 146 t del Chocó, con probabilidades 0,25 / 0,5 / 0,25), precio del vino a granel (2 200 / 3 000 / 4 000 COP/L; 0,3 / 0,4 / 0,3) y precio de la harina (8 000 / 12 000 / 16 000 COP/kg; 0,25 / 0,5 / 0,25). El riesgo se trata con el criterio de §6.7: max (1−λ)·E[Π] + λ·CVaR<sub>0,9</sub>(Π), con CVaR<sub>β</sub> = ζ − (1/(1−β)) Σ p<sub>s</sub> máx(0, ζ − Π<sub>s</sub>).</p>
+</div>
+{table(['Indicador', 'MM COP/año'], sto_rows, num_cols=(1,)) if sto else ''}
+<div class="prose">
+<p><b>Lectura de los indicadores.</b> El VSS es cero: la decisión de primera etapa del problema de valor medio (vino + harina a 6 200 t/año) es la misma que la del problema estocástico. Lo que cambia es la promesa: el EV anuncia {n0(sto['EV']['E']/MM) if sto else ''} MM COP/año, y con esa misma planta el beneficio esperado real es {n0(sto['RP']['E']/MM) if sto else ''} MM. Es el sesgo de los promedios: con precios y oferta asimétricos, la planta no aprovecha los escenarios buenos porque su capacidad la topa, y sí sufre los malos. El EVPI de {n0(sto['EVPI']/MM) if sto else ''} MM COP/año es alto. Medir la oferta real del Bajo Atrato y asegurar contratos de precio antes de invertir vale más que cualquier refinamiento del modelo.</p>
+</div>
+{table(['Decisión óptima con información perfecta', 'Probabilidad'], ws_rows) if sto else ''}
+{table(['λ (peso del CVaR)', 'Diseño', 'E[Π] (MM COP/año)', 'CVaR₉₀ (MM COP/año)'], front_rows, num_cols=(2, 3)) if sto else ''}
+<div class="prose"><p><b>Aversión al riesgo.</b> La decisión cambia de golpe en λ* ≈ {n1(lam_star*100).replace(',0','') if sto else ''} % (λ* = E/(E − CVaR)). Por debajo conviene construir vino + harina; por encima, con fruta comprada a 400 COP/kg, conviene no construir. No aparece ningún diseño intermedio: las escalas pequeñas no pagan su costo fijo. Para la tesis, la frontera media-riesgo de §6.7 con la oferta actual tiene dos puntos, y el resultado depende sobre todo de la tolerancia al riesgo del inversionista.</p></div>
+{fig('fig23_estocastico.png', 'Programación estocástica', 'Fig. 23. Distribución del beneficio en los 27 escenarios, indicadores de Grossmann y frontera media–CVaR.')}
+</section>
+
+<section id="anual">
+<h2>Programa anual con estacionalidad en tiempo continuo</h2>
+<div class="prose">
+<p>El modelo combina varias piezas de Maravelias (<i>Chemical Production Scheduling</i>):</p>
+<ul class="tight">
+<li><b>Rejilla continua común</b> (cap. 7.3, ec. 7.35–7.36): T<sub>0</sub> = 0, T<sub>|T|</sub> = η y T<sub>t</sub> ≥ T<sub>t−1</sub>. Los cortes de mes son puntos fijos y cada mes tiene K periodos de duración libre.</li>
+<li><b>Procesos continuos</b> (cap. 9.2): lo producido es tasa × duración, con la tasa acotada por la capacidad.</li>
+<li><b>Transiciones</b> (cap. 9.3.2): limpieza de 1 h al cambiar el material de la prensa compartida.</li>
+<li><b>Inventarios</b> con capacidad χ<sub>k</sub> (cap. 8.2): fruta, 3 días de oferta pico; pulpa 1,5 t; cáscara 3 t; torta 12 t; pulmón de mosto 50 m³.</li>
+</ul>
+<p>La entrada de fruta es la tasa estacional del mes por la duración del periodo, así que es lineal en d y el modelo sigue siendo un MILP. Las unidades con personal operan el 36 % del tiempo calendario (2 turnos de lunes a sábado); la bodega y el secador, el 90 %. El programa es periódico: el inventario final del año es igual al inicial. Se comparó K = 3 y K = 6 periodos por mes para comprobar que la solución no depende de la rejilla.</p>
+</div>
+{table(['Configuración', 'Estado', 'Fruta perdida (t/año)', 'Cambios de material', 'Vino (m³)', 'Harina (t)', 'Bromelaína (kg)', 'Cuellos de botella (máx. mensual)'], anu_rows, num_cols=(2, 3, 4, 5, 6)) if anu else ''}
+{fig('fig24_gantt_anual.png', 'Gantt anual', 'Fig. 24. Gantt anual: campañas de la prensa compartida por material, con marcas de cambio, y carga de cada unidad por periodo.') if anu else ''}
+{fig('fig25_ocupacion_anual.png', 'Ocupación anual', 'Fig. 25. Ocupación por unidad y mes en cada configuración (en negrita, ≥ 95 %) y fruta no procesada por falta de capacidad.') if anu else ''}
+{fig('fig26_gantt_bodega.png', 'Gantt de bodega', 'Fig. 26. Gantt de la bodega con fermentadores desfasados a la escala del Chocó y a la de la tesis.')}
+<div class="prose">
+<p><b>Cuellos de botella identificados.</b> El programa anual, el semanal (Fig. 21) y el de bodega (Fig. 26) se complementan:</p>
+<ul class="tight">
+<li><b>Prensa compartida.</b> Con vino + harina y una prensa de 2 t/h, la prensa está al 100 % en diez de los doce meses: los ciclos de cambio y limpieza, unos 2,8 por día, le quitan tiempo aun con poca oferta. La fruta se pierde en abril–junio y septiembre–noviembre, unas 520 t al año (8 % de la oferta).</li>
+<li><b>Con bromelaína.</b> Al agregarla, la prensa reparte su tiempo entre tres materiales y la pérdida sube a unas 1 580 t (26 %). La prensa es el cuello principal de cualquier ampliación del portafolio.</li>
+<li><b>Prensa de 3 t/h.</b> La pérdida baja a unas 220 t (3,6 %) y el cuello pasa al frente de pelado, que queda al 100 %. La bodega llega al 83–91 % en los picos.</li>
+<li><b>Unidades con holgura.</b> La microfiltración (≤ 63 %) y el secador (≤ 35 %) nunca son limitantes.</li>
+</ul>
+<p>La secuencia de ampliación queda: primero una prensa de 3 t/h o una prensa dedicada al corazón, después una segunda peladora, y luego fermentadores. En la bodega, a caudal bajo, cada fermentador tarda más en llenarse (34,5 h a la escala del Chocó) que en fermentar (12,5 h). Esa exposición al aire es el problema de oxidación de §4.2.4.</p>
+<p>La semana pico del STN (Fig. 21) mostraba la prensa de 2 t/h al 64 %. Ahí la oferta semanal estaba topada por el frente del plan del MILP (119 t/semana), y el acoplamiento con el almacenamiento era exacto. En el modelo anual la oferta del pico llega a unas 640 t/mes y el acoplamiento lineal es conservador. Los dos resultados acotan la ocupación real de la prensa entre esos valores.</p>
+</div>
+</section>
+
 <section id="tesis2">
 <h2>Cambios que sugiere a la tesis (versión 2)</h2>
 <ol class="edits prose">
@@ -284,6 +360,7 @@ html_out = f"""<title>Modelos Corsano para la piña</title>
 <li><b>§3.3 y §3.5, base de diseño.</b> Actualizar la oferta con la EVA 2022 (6 146 t) y declarar que la base de 78 300 hL/año exige unas 21 900 t/año de fruta, 3,6 veces la producción del departamento. O se redimensiona la planta, o se justifica el abastecimiento con fruta de fuera del Chocó.</li>
 <li><b>Cap. 5, energía.</b> Para un diseño TRL-9, la caldera de biomasa de corona cubre el calor de secado y la gasificación no. Conviene presentar la gasificación como alternativa TRL 8.</li>
 <li><b>Cap. 8, TEA.</b> Adoptar la estructura de los TEA de asaí y coco (libros en <code>TEA_excel/</code>) y reportar el precio de equilibrio del vino (≈2 300 COP/L a la escala de la tesis) junto al precio "ilustrativo" de 400 USD/t.</li>
+<li><b>§6.7, incertidumbre.</b> Reportar RP, EEV, VSS y EVPI junto al CVaR. Con la oferta actual, el VSS es 0 y el EVPI de unos 550 MM COP/año. Lo que justifica medir antes de invertir es el sesgo del valor medio (+43 %) y la conmutación en λ* ≈ 0,2, más que la diferencia entre decisiones.</li>
 <li><b>Cap. 6 y 9, selección de líneas.</b> Incorporar el MILP con tamaños discretos y el STN semanal como evidencia de qué procesar con la oferta actual y de dónde están los cuellos de botella.</li>
 </ol>
 </section>

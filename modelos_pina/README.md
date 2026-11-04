@@ -19,7 +19,10 @@ Corsano, Montagna, Iribarren y Aguirre, adaptados a la tesis *Biorrefinería de 
 | `excel_export.py`, `tea_excel_run.py` | — | Libros Excel con fórmulas vivas en `TEA_excel/`, verificados con LibreOffice |
 | `planificacion_milp.py` | Grossmann (2021), cap. 6, 7, 10 | MILP de síntesis y planificación mensual: qué procesar con la oferta actual |
 | `programacion_stn.py` | Maravelias (2021), cap. 7.2.2 | Programa semanal STN en tiempo discreto (prensa compartida) |
-| `figuras.py`, `figuras_v2.py`, `gen_informe_v2.py` | — | Figuras 1-22 e informe HTML (v2) |
+| `estocastico.py` | Grossmann (2021), cap. 14 | Programa estocástico de dos etapas (27 escenarios oferta × precios): RP, EV, EEV, VSS, WS, EVPI y media-CVaR |
+| `anual_continuo.py` | Maravelias (2021), cap. 7.3, 8.2, 9 y 10 | Programa anual en tiempo continuo con estacionalidad mensual: reparto de prensa, cambios de modo, inventarios |
+| `figuras.py`, `figuras_v2.py`, `figuras_v3.py`, `gen_informe_v2.py` | — | Figuras 1-26 (incl. Gantt anual y de bodega) e informe HTML (v3) |
+| `html2blocks.py`, `make_docx.js` | — | Conversión del informe HTML a Word (`Informe_Corsano_Moresi_TEA_pina_v3.docx`) |
 | `params.py` | — | Base de diseño con la procedencia de cada parámetro: [T] tesis, [C] Corsano, [L] literatura, [S] supuesto |
 
 ## Reproducir
@@ -36,7 +39,10 @@ python figuras.py
 python moresi_experimentos.py && python moresi_pina.py
 python capacidad.py && python tea_lineas.py && python tea_excel_run.py
 python planificacion_milp.py && python programacion_stn.py
-python figuras_v2.py && python gen_informe_v2.py
+python figuras_v2.py
+python estocastico.py && python anual_continuo.py   # ~10 min (SCIP)
+python figuras_v3.py && python gen_informe_v2.py
+python html2blocks.py informe.html blocks.json && node make_docx.js blocks.json Informe_Corsano_Moresi_TEA_pina_v3.docx
 ```
 
 ## Advertencia sobre los parámetros
