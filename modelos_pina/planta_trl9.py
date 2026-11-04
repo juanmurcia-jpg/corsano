@@ -36,6 +36,13 @@ TECH = {   # tecnología: (TRL, nota)
     "Gasificación downdraft + motor (≤ 100 kWe)": (8, "paquetes comerciales; confiabilidad limitada con biomasa húmeda"),
     "Pretratamiento/deslignificación + hidrólisis enzimática de hojas/corona": (6, "piloto; no apto para diseño TRL-9"),
     "Ácido cítrico / xantana del hub": (7, "comercial con melazas/glucosa, no con hidrolizado de piña"),
+    "Decantadora centrífuga de pulpa": (9, "extracción continua de jugos y mostos (Morata 2022, cap. 4)"),
+    "Flotación de mosto": (9, "clarificación de mostos blancos, continua o por lotes (Morata 2022, cap. 8)"),
+    "Centrífuga de discos para mosto": (9, "clarificación dinámica de mostos (Morata 2022, cap. 8)"),
+    "Microfiltración tangencial de lías": (9, "recuperación de jugo de lías y espumas (Morata 2022, cap. 8)"),
+    "Sulfitado del mosto (SO2)": (9, "práctica estándar de vinificación"),
+    "UHPH del mosto (300 MPa)": (8, "equipos industriales hasta 10 000 L/h, un solo proveedor (Morata 2022, cap. 5)"),
+    "Inertización con N2": (9, "protección del mosto y el vino frente al oxígeno (Morata 2022, caps. 23 y 25)"),
 }
 
 CAT = {   # catálogo: tamaños discretos, unidad, referencia (tamaño, USD 2024), exponente   [S] salvo indicación
@@ -66,6 +73,14 @@ CAT = {   # catálogo: tamaños discretos, unidad, referencia (tamaño, USD 2024
     "astilladora_secador_biomasa": dict(sizes=[0.2, 0.5, 1.0], unit="t/h", ref=(0.5, 30_000), n=0.6),
     "caldera": dict(sizes=[100, 200, 300, 500, 800], unit="kWt", ref=(300, 60_000), n=0.6),
     "cuarto_frio": dict(sizes=[10, 20, 40], unit="m3", ref=(20, 12_500), n=0.6),
+    # superestructura ampliada con White Wine Technology (Morata, ed., 2022), caps. 4, 5, 8, 12, 23 y 25   [S]
+    "decantadora": dict(sizes=[1, 2, 3, 5, 8], unit="t/h pulpa", ref=(3, 160_000), n=0.6),
+    "flotador_mosto": dict(sizes=[0.5, 1, 2, 4, 8], unit="m3/h", ref=(2, 40_000), n=0.6),
+    "UHPH": dict(sizes=[500, 1000, 2000, 5000, 10000], unit="L/h", ref=(1000, 400_000), n=0.6),
+    "dosificador_SO2": dict(sizes=[1], unit="u", ref=(1, 6_000), n=1.0),
+    "MF_lias": dict(sizes=[2, 5, 10, 20], unit="m2", ref=(5, 45_000), n=0.7),
+    "generador_N2": dict(sizes=[1], unit="u", ref=(1, 30_000), n=1.0),
+    "dosificador_nutrientes": dict(sizes=[1], unit="u", ref=(1, 5_000), n=1.0),
 }
 
 

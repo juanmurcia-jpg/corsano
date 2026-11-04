@@ -21,10 +21,10 @@ Corsano, Montagna, Iribarren y Aguirre, adaptados a la tesis *Biorrefinería de 
 | `programacion_stn.py` | Maravelias (2021), cap. 7.2.2 | Programa semanal STN en tiempo discreto (prensa compartida) |
 | `estocastico.py` | Grossmann (2021), cap. 14 | Programa estocástico de dos etapas (27 escenarios oferta × precios): RP, EV, EEV, VSS, WS, EVPI y media-CVaR |
 | `anual_continuo.py` | Maravelias (2021), cap. 7.3, 8.2, 9 y 10 | Programa anual en tiempo continuo con estacionalidad mensual: reparto de prensa, cambios de modo, inventarios |
-| `dimensionamiento.py` | Grossmann (2021), cap. 7, 10 y 14; Maravelias (2021); Moresi (1989b) | Dimensionamiento óptimo de equipos acoplado al programa anual: tamaños de catálogo, prensas dedicadas o compartida, almacén aséptico, tercer turno; barrido por escala y versión estocástica |
+| `dimensionamiento.py` | Grossmann (2021), cap. 7, 10 y 14; Maravelias (2021); Moresi (1989b); Morata (2022) | Dimensionamiento óptimo de equipos acoplado al programa anual, con superestructura del mosto (prensa o decantadora; MF, flotación o centrífuga; MF de lías; HTST, SO₂ o UHPH): tamaños de catálogo, almacén aséptico, tercer turno; barrido por escala y versión estocástica |
 | `tea_dimensionado.py` | Burk (TEA de asaí y coco) | TEA completo con los tamaños óptimos y la producción del programa anual: referencia vs óptimo, con y sin bromelaína, regla por escala; libros Excel verificados |
-| `figuras.py`, `figuras_v2.py`, `figuras_v3.py`, `figuras_v4.py`, `gen_informe_v2.py` | — | Figuras 1-31 (incl. Gantt anual, de bodega y del diseño óptimo, TEA dimensionado) e informe HTML (v5) |
-| `html2blocks.py`, `make_docx.js` | — | Conversión del informe HTML a Word (`Informe_Corsano_Moresi_TEA_pina_v5.docx`) |
+| `figuras.py`, `figuras_v2.py`, `figuras_v3.py`, `figuras_v4.py`, `gen_informe_v2.py` | — | Figuras 1-31 (incl. Gantt anual, de bodega y del diseño óptimo, TEA dimensionado) e informe HTML (v6) |
+| `html2blocks.py`, `make_docx.js` | — | Conversión del informe HTML a Word (`Informe_Corsano_Moresi_TEA_pina_v6.docx`) |
 | `params.py` | — | Base de diseño con la procedencia de cada parámetro: [T] tesis, [C] Corsano, [L] literatura, [S] supuesto |
 
 ## Reproducir
@@ -46,7 +46,7 @@ python estocastico.py && python anual_continuo.py   # ~10 min (SCIP)
 python dimensionamiento.py E1 E2 E3 E4 E5          # ~40 min (SCIP)
 python tea_dimensionado.py                          # TEA con tamaños óptimos + libros Excel
 python figuras_v3.py && python figuras_v4.py && python gen_informe_v2.py
-python html2blocks.py informe.html blocks.json && node make_docx.js blocks.json Informe_Corsano_Moresi_TEA_pina_v5.docx
+python html2blocks.py informe.html blocks.json && node make_docx.js blocks.json Informe_Corsano_Moresi_TEA_pina_v6.docx
 ```
 
 ## Advertencia sobre los parámetros

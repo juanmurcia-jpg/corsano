@@ -47,8 +47,21 @@ def option_equipment(u, lab):
     if u in ("Prensa cáscara", "Prensa corazón"):
         s = num(); w = "cáscara" if "cáscara" in u else "corazón"
         return [E("prensa_banda", s, f"Prensa de {w}"), E("trituradora", s, f"Trituradora de {w}")]
-    if u == "MF":
-        A = num(); return [E("MF_ceramica", A, "Microfiltración cerámica"), E("pasteurizador_placas", A * 60, "Pasteurizador flash de mosto")]
+    if u == "Decantadora":
+        s = num(); return [E("decantadora", s, "Decantadora centrífuga de pulpa"), E("trituradora", s, "Trituradora de pulpa"),
+                           E("macerador_camisa", s / 1.06 * 1.2, "Macerador enzimático con camisa")]
+    if u == "Clarificación":
+        tech, q = lab.split()[0], float(lab.split()[1])
+        cat = {"MF": "MF_ceramica", "Flotación": "flotador_mosto", "Centrífuga": "centrifuga_discos"}[tech]
+        name = {"MF": "Microfiltración cerámica de mosto", "Flotación": "Flotador de mosto (saturador + tanque)", "Centrífuga": "Centrífuga de discos para mosto"}[tech]
+        return [E(cat, q, name)]
+    if u == "MF lías":
+        return [E("MF_lias", num(), "Microfiltración tangencial de lías")]
+    if u == "Estabilización":
+        if lab.startswith("SO"):
+            return [E("dosificador_SO2", 1, "Dosificador de SO2")]
+        tech, q = lab.split()[0], float(lab.split()[1])
+        return [E("pasteurizador_placas", q, "Pasteurizador flash de mosto")] if tech == "HTST" else [E("UHPH", q, "Homogeneizador UHPH (300 MPa)")]
     if u == "Bodega":
         n = int(lab.split("×")[0]); q = (n - 1) * dm.VF / dm.T_PROC
         return [dict(name=f"Fermentador inox con camisa {dm.VF:.0f} m³", qty=n, size=dm.VF, ref_size=dm.VF, ref_USD=pt.fermenter_moresi(dm.VF, True), n=1.0),
@@ -82,26 +95,43 @@ def build_case(r, label, with_bromelain):
         eqs += option_equipment(u, lab)
     wine_m3 = pr["vino_m3"]
     eqs += [E("tanque_guarda", wine_m3 * 90 / 365 * 1.1, "Tanques de guarda (90 d)"), E("cuarto_frio", 10, "Cuarto frío (levaduras, enzimas)"),
-            E("empacadora", 1, "Empacadora de harina")]
+            E("empacadora", 1, "Empacadora de harina"), E("generador_N2", 1, "Generador de N2 (inertización de tanques)"),
+            E("dosificador_nutrientes", 1, "Dosificador de nutrientes (DAP)")]
     if with_bromelain:
         eqs.append(E("empacadora", 1, "Empacadora de bromelaína y polvo"))
     for e in eqs:
         e.setdefault("TRL", 9)
     brom_frac = (pr["bromelaina_kg"] / br["flows"]["bromelain_kg"]) if with_bromelain and br["flows"]["bromelain_kg"] > 0 else 0.0
-    mfA = float(r["sizes"]["MF"].split()[0])
+    clar, stab = r["sizes"]["Clarificación"], r["sizes"]["Estabilización"]
+    rows = sc["periods"]
+    must = pr.get("mosto_m3", sum(x["mf"] for x in rows))                 # mosto que entra a clarificación
+    stab_m3 = sum(x.get("stab", 0.0) for x in rows)
+    dec_t = sum(x["Pd"].get("pulpa", 0.0) for x in rows)
+    mem = 0.0
+    if clar.startswith("MF"):
+        mem += 0.15 * dm.buy("MF_ceramica", float(clar.split()[1]))
+    if r["sizes"].get("MF lías", "no") != "no":
+        mem += 0.15 * dm.buy("MF_lias", float(r["sizes"]["MF lías"].split()[0]))
     raw = [dict(name="Fruta de rechazo puesta en planta", qty_year=F * 1000, price=tl.M("fruta_kg"), main=True),
            dict(name="Pectinasa", qty_year=v["consumables"]["pectinasa_kg"], price=tl.M("pectinasa_kg")),
            dict(name="Levadura seca activa", qty_year=v["consumables"]["levadura_kg"], price=tl.M("levadura_kg")),
-           dict(name="Reposición de membranas MF (COP)", qty_year=1, price=0.15 * pt.pick("MF_ceramica", mfA)[2] * tl.TRM),
+           dict(name="Reposición de membranas MF (COP)", qty_year=1, price=mem),
+           dict(name="Nutrientes (DAP, 200 mg/L)", qty_year=must, price=dm.DAP_VC),
+           dict(name="Metabisulfito (SO2, ≈ 50 mg/L)", qty_year=(stab_m3 if stab.startswith("SO") else 0.0), price=dm.SO2_VC),
+           dict(name="Coadyuvantes de flotación", qty_year=(must if clar.startswith("Flot") else 0.0), price=dm.FLOT_VC - 1.0 * dm.E_COP),
            dict(name="Empaques de harina (COP)", qty_year=pr["harina_t"] * 1000 / 25, price=2_500)]
     lines = [v, h] + ([br] if with_bromelain else [])
     scale = [1.0, 1.0] + ([brom_frac] if with_bromelain else [])
-    util = [dict(name="Electricidad", qty_year=sum(l["elec_kWh"] * 1.3 * f for l, f in zip(lines, scale)), price_key="elec_COP_kWh"),
-            dict(name="Calor de proceso (MJ)", qty_year=sum(l["heat_MJ"] * f for l, f in zip(lines, scale)), price_key="calor_COP_MJ"),
+    kwh_extra = (dec_t * 4.5 + must * {"MF": 0.0, "Flotación": 1.0, "Centrífuga": 2.0}[clar.split()[0]] + pr.get("lias_MF_m3", 0.0) * 1.0
+                 + (stab_m3 * 100.0 if stab.startswith("UHPH") else 0.0) + wine_m3 * 0.5)
+    heat_past = 0.0 if stab.startswith("HTST") else v["flows"]["juice_m3"] * dm.HTST_VC / dm.H_COP   # MJ de pasteurización que no se gastan
+    util = [dict(name="Electricidad", qty_year=sum(l["elec_kWh"] * 1.3 * f for l, f in zip(lines, scale)) + kwh_extra, price_key="elec_COP_kWh"),
+            dict(name="Calor de proceso (MJ)", qty_year=sum(l["heat_MJ"] * f for l, f in zip(lines, scale)) - heat_past, price_key="calor_COP_MJ"),
             dict(name="Agua de planta (t)", qty_year=sum(l["water_t"] * f for l, f in zip(lines, scale)), price_key="agua_COP_t")]
     unused = b["crown_t"] + (b["core_t"] * (1 - brom_frac) if with_bromelain else b["core_t"]) + pr.get("cascara_compost_t", 0.0)
     waste = [dict(name="Aguas residuales (t)", qty_year=util[2]["qty_year"], price=tb.COMMON["ARD_COP_t"]),
-             dict(name="Compostaje de fracciones sin uso (t)", qty_year=unused, price=dm.COMPOST * 1000)]
+             dict(name="Compostaje de fracciones sin uso (t)", qty_year=unused, price=dm.COMPOST * 1000),
+             dict(name="Lías y espumas a compostaje (m³)", qty_year=pr.get("lias_compost_m3", 0.0), price=dm.LEES_DISP)]
     byp = [dict(name="harina", qty_year=pr["harina_t"] * 1000, price=tl.M("harina_kg")),
            dict(name="jugo", qty_year=(pr["harina_t"] / dm.FLOUR_PC / dm.CAKE) * cp.Y["peel_juice_frac"] * 1000, price=tl.M("jugo_cascara_kg"))]
     if with_bromelain:
@@ -130,9 +160,12 @@ def run(case, mc_n=1000):
 if __name__ == "__main__":
     dim = json.load(open(f"{RES}/dimensionamiento.json"))
     sel = [("A · Referencia TRL-9", "E1|Referencia TRL-9 (planta_trl9, 6 200 t)", False),
-           ("A · Óptimo (vino + harina)", "E1|Óptimo económico", False),
+           ("A · Óptimo con la topología anterior", "E1|Óptimo con la topología anterior (prensa, MF de mosto, HTST)", False),
+           ("A · Óptimo con la superestructura ampliada", "E1|Óptimo económico", False),
+           ("A · Óptimo sin SO₂", "E1|Óptimo sin SO₂", False),
            ("B · Referencia TRL-9 con bromelaína", "E5|B referencia (prensas dedicadas TRL-9)", True),
-           ("B · Óptimo con bromelaína", "E5|B óptimo económico", True)]
+           ("B · Óptimo con la topología anterior", "E5|B óptimo con la topología anterior", True),
+           ("B · Óptimo con la superestructura ampliada", "E5|B óptimo económico", True)]
     out = dict(cases={}, scale=[], check=[])
     made = []
     for lab, key, wb in sel:
