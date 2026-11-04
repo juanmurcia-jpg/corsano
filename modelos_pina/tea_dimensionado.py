@@ -80,6 +80,16 @@ def option_equipment(u, lab):
         return [E("spray_dryer", s, "Secador por aspersión"), E("UF_bromelaina", s / 0.12 / 25, "Ultrafiltración 10 kDa"),
                 E("centrifuga_discos", j, "Centrífuga de jugo de corazón"), E("tanque_precipitacion", j * 0.4, "Tanques de precipitación"),
                 E("cuarto_frio", 10, "Cuarto frío de producto")]
+    if u == "Bodega cáscara":
+        n = int(lab.split("×")[0]); q = (n - 1) * dm.VF / dm.T_PEEL
+        return [dict(name=f"Fermentador de jugo de cáscara {dm.VF:.0f} m³", qty=n, size=dm.VF, ref_size=dm.VF, ref_USD=pt.fermenter_moresi(dm.VF, True), n=1.0),
+                E("chiller", q * dm.HEAT_KW_PER_M3H * 1.1, "Chiller de la bodega de cáscara")]
+    if u == "Acetificador":
+        V = num(); kgh = V * dm.ACET_PROD / 24.0
+        return [E("acetador", V, "Acetificador sumergido (turbina autoaspirante)"), E("chiller", kgh * dm.ACID_HEAT / 3.6 * 1.1, "Chiller del acetificador"),
+                E("grupo_electrogeno", dm.AERATION_KW_M3 * V * 1.25 + kgh * dm.ACID_HEAT / 3.6 / 4.0, "Grupo electrógeno de emergencia"),
+                E("centrifuga_espuma", 1, "Centrífuga de espuma"), E("lavador_gases", 1, "Condensador y lavador de gases"),
+                E("MF_vinagre", kgh / dm.VIN_ACID * 1000 / 100.0, "Microfiltración de vinagre")]
     raise KeyError(u)
 
 
@@ -93,8 +103,12 @@ def build_case(r, label, with_bromelain):
     eqs = []
     for u, lab in r["sizes"].items():
         eqs += option_equipment(u, lab)
-    wine_m3 = pr["vino_m3"]
-    eqs += [E("tanque_guarda", wine_m3 * 90 / 365 * 1.1, "Tanques de guarda (90 d)"), E("cuarto_frio", 10, "Cuarto frío (levaduras, enzimas)"),
+    wine_m3 = pr["vino_m3"] - pr.get("vino_a_vinagre_m3", 0.0)           # vino vendido
+    vin_m3, acid_kg, pj_t = pr.get("vinagre_m3", 0.0), pr.get("acido_kg", 0.0), pr.get("jugo_cascara_vinagre_t", 0.0)
+    has_vin = r["sizes"].get("Acetificador", "no") != "no"
+    if vin_m3 > 0:
+        eqs.append(E("tanque_guarda", vin_m3 * 30 / 365 * 1.1, "Tanques de vinagre (30 d)"))
+    eqs += [E("tanque_guarda", max(wine_m3, 1.0) * 90 / 365 * 1.1, "Tanques de guarda (90 d)"), E("cuarto_frio", 10, "Cuarto frío (levaduras, enzimas)"),
             E("empacadora", 1, "Empacadora de harina"), E("generador_N2", 1, "Generador de N2 (inertización de tanques)"),
             E("dosificador_nutrientes", 1, "Dosificador de nutrientes (DAP)")]
     if with_bromelain:
@@ -119,12 +133,17 @@ def build_case(r, label, with_bromelain):
            dict(name="Nutrientes (DAP, 200 mg/L)", qty_year=must, price=dm.DAP_VC),
            dict(name="Metabisulfito (SO2, ≈ 50 mg/L)", qty_year=(stab_m3 if stab.startswith("SO") else 0.0), price=dm.SO2_VC),
            dict(name="Coadyuvantes de flotación", qty_year=(must if clar.startswith("Flot") else 0.0), price=dm.FLOT_VC - 1.0 * dm.E_COP),
-           dict(name="Empaques de harina (COP)", qty_year=pr["harina_t"] * 1000 / 25, price=2_500)]
+           dict(name="Empaques de harina (COP)", qty_year=(pr["harina_t"] + pr.get("harina_lias_t", 0.0)) * 1000 / 25, price=2_500),
+           dict(name="Levadura y nutrientes del jugo de cáscara (t)", qty_year=pj_t, price=dm.PJ_VC),
+           dict(name="Nutrientes y filtración del vinagre (kg ácido)", qty_year=acid_kg, price=500.0)]
     lines = [v, h] + ([br] if with_bromelain else [])
     scale = [1.0, 1.0] + ([brom_frac] if with_bromelain else [])
     kwh_extra = (dec_t * 4.5 + must * {"MF": 0.0, "Flotación": 1.0, "Centrífuga": 2.0}[clar.split()[0]] + pr.get("lias_MF_m3", 0.0) * 1.0
-                 + (stab_m3 * 100.0 if stab.startswith("UHPH") else 0.0) + wine_m3 * 0.5)
+                 + (stab_m3 * 100.0 if stab.startswith("UHPH") else 0.0) + pr["vino_m3"] * 0.5
+                 + (dm.AERATION_KW_M3 * float(r["sizes"]["Acetificador"].split()[0]) * 0.9 * 8766 if has_vin else 0.0)
+                 + acid_kg * dm.ACID_HEAT / 3.6 / 4.0)
     heat_past = 0.0 if stab.startswith("HTST") else v["flows"]["juice_m3"] * dm.HTST_VC / dm.H_COP   # MJ de pasteurización que no se gastan
+    heat_past -= pr.get("lias_secador_t", 0.0) * dm.LEES_DRY_EQ * h["heat_MJ"] / (h["flows"]["peel_t"] * dm.CAKE)   # secado de lías y retenidos
     util = [dict(name="Electricidad", qty_year=sum(l["elec_kWh"] * 1.3 * f for l, f in zip(lines, scale)) + kwh_extra, price_key="elec_COP_kWh"),
             dict(name="Calor de proceso (MJ)", qty_year=sum(l["heat_MJ"] * f for l, f in zip(lines, scale)) - heat_past, price_key="calor_COP_MJ"),
             dict(name="Agua de planta (t)", qty_year=sum(l["water_t"] * f for l, f in zip(lines, scale)), price_key="agua_COP_t")]
@@ -132,27 +151,51 @@ def build_case(r, label, with_bromelain):
     waste = [dict(name="Aguas residuales (t)", qty_year=util[2]["qty_year"], price=tb.COMMON["ARD_COP_t"]),
              dict(name="Compostaje de fracciones sin uso (t)", qty_year=unused, price=dm.COMPOST * 1000),
              dict(name="Lías y espumas a compostaje (m³)", qty_year=pr.get("lias_compost_m3", 0.0), price=dm.LEES_DISP)]
-    byp = [dict(name="harina", qty_year=pr["harina_t"] * 1000, price=tl.M("harina_kg")),
-           dict(name="jugo", qty_year=(pr["harina_t"] / dm.FLOUR_PC / dm.CAKE) * cp.Y["peel_juice_frac"] * 1000, price=tl.M("jugo_cascara_kg"))]
+    byp = [dict(name="harina", qty_year=(pr["harina_t"] + pr.get("harina_lias_t", 0.0)) * 1000, price=tl.M("harina_kg")),
+           dict(name="jugo", qty_year=max((pr["harina_t"] / dm.FLOUR_PC / dm.CAKE) * cp.Y["peel_juice_frac"] * 1000 - pj_t * 1000, 0.0), price=tl.M("jugo_cascara_kg"))]
+    if vin_m3 > 0:
+        byp.append(dict(name="vinagre", qty_year=vin_m3 * 1000, price=dm.VIN_PRICE))
     if with_bromelain:
         raw += [dict(name="Reposición de membranas UF (COP)", qty_year=1, price=0.2 * pt.pick("UF_bromelaina", float(r["sizes"]["Aspersión"].split()[0]) / 0.12 / 25)[2] * tl.TRM),
                 dict(name="Empaques y reactivos de bromelaína (COP)", qty_year=pr["bromelaina_kg"], price=8_000)]
         byp += [dict(name="bromelaina", qty_year=pr["bromelaina_kg"], price=tl.M("bromelaina_kg")),
                 dict(name="polvo", qty_year=br["flows"]["powder_t"] * brom_frac * 1000, price=tl.M("polvo_kg"))]
-    pos = math.ceil((4 + 2 + (2 if with_bromelain else 0)) * 0.75)
+    pos = math.ceil((4 + 2 + (2 if with_bromelain else 0) + (1 if has_vin else 0)) * 0.75)
     cal = dict(tb.calendar(3), shifts=3) if r.get("turno3") else 3
     return dict(name=label, product=dict(name="Vino de piña a granel", unit="L", qty_year=wine_m3 * 1000, price=WINE_PRICE),
                 raw=raw, utilities=util, waste=waste, equipment=eqs, positions=pos, calendar=cal, byproducts=byp,
                 engineer=2 if with_bromelain else 1)
 
 
+def breakeven_vinegar(case, lo=0.0, hi=20_000.0):
+    """Precio del vinagre (COP/L) que hace VPN = 0; None si el caso no produce vinagre."""
+    if not any(bp["name"] == "vinagre" and bp["qty_year"] > 0 for bp in case["byproducts"]):
+        return None
+    f = lambda pr_: tb.evaluate(case, overrides={"bp_price_vinagre": pr_})["NPV"]
+    if f(lo) > 0:
+        return lo
+    if f(hi) < 0:
+        return None
+    for _ in range(60):
+        mid = 0.5 * (lo + hi)
+        lo, hi = (mid, hi) if f(mid) < 0 else (lo, mid)
+    return 0.5 * (lo + hi)
+
+
 def run(case, mc_n=1000):
     r = tb.evaluate(case)
     be = tb.breakeven_price(case)
-    _, tor = tb.tornado(case, tl.tornado_specs(case))
-    mc = tb.monte_carlo(case, tl.mc_dists(case), tl.MC_R, n=mc_n)
+    be_vin = breakeven_vinegar(case)
+    specs, dists, R = tl.tornado_specs(case), tl.mc_dists(case), [list(rw) for rw in tl.MC_R]
+    vp = next((bp["price"] for bp in case["byproducts"] if bp["name"] == "vinagre" and bp["qty_year"] > 0), None)
+    if vp:   # el precio del vinagre también es incierto: mismo rango ±30 % que el del vino, independiente
+        specs = specs + [("Precio del vinagre", "bp_price_vinagre", 0.7 * vp, vp, 1.3 * vp)]
+        dists = dists + [("bp_price_vinagre", 0.7 * vp, vp, 1.3 * vp)]
+        R = [rw + [0.0] for rw in R] + [[0.0] * len(R) + [1.0]]
+    _, tor = tb.tornado(case, specs)
+    mc = tb.monte_carlo(case, dists, R, n=mc_n)
     return dict(res={k: v for k, v in r.items() if k != "capex"}, capex={k: v for k, v in r["capex"].items() if k != "rows"},
-                equipment=r["capex"]["rows"], breakeven=be, tornado=tor,
+                equipment=r["capex"]["rows"], breakeven=be, breakeven_vinegar=be_vin, tornado=tor,
                 mc=dict(P_pos=mc["P_pos"], P5=mc["P5"], P50=mc["P50"], P95=mc["P95"], CVaR5=mc["CVaR5"], NPV=mc["NPV"].tolist()),
                 case=case)
 
@@ -162,6 +205,7 @@ if __name__ == "__main__":
     sel = [("A · Referencia TRL-9", "E1|Referencia TRL-9 (planta_trl9, 6 200 t)", False),
            ("A · Óptimo con la topología anterior", "E1|Óptimo con la topología anterior (prensa, MF de mosto, HTST)", False),
            ("A · Óptimo con la superestructura ampliada", "E1|Óptimo económico", False),
+           ("A · Óptimo sin vinagre", "E1|Óptimo sin vinagre", False),
            ("A · Óptimo sin SO₂", "E1|Óptimo sin SO₂", False),
            ("B · Referencia TRL-9 con bromelaína", "E5|B referencia (prensas dedicadas TRL-9)", True),
            ("B · Óptimo con la topología anterior", "E5|B óptimo con la topología anterior", True),
@@ -185,8 +229,23 @@ if __name__ == "__main__":
         c = build_case(rr, f"Óptimo a {rr['scen'][0]['supply']:,.0f} t/año", False)
         r = tb.evaluate(c)
         out["scale"].append(dict(supply=rr["scen"][0]["supply"], fruit_t=rr["scen"][0]["products"]["fruta_t"], sizes=rr["sizes"], turno3=rr["turno3"],
-                                 FCI=r["FCI"], NPV=r["NPV"], MIRR=r["MIRR"], LCOP=r["LCOP"], breakeven=tb.breakeven_price(c), labor=r["labor"]))
+                                 FCI=r["FCI"], NPV=r["NPV"], MIRR=r["MIRR"], LCOP=r["LCOP"], breakeven=tb.breakeven_price(c), labor=r["labor"],
+                                 breakeven_vinegar=breakeven_vinegar(c), vinagre_m3=rr["scen"][0]["products"].get("vinagre_m3", 0.0)))
         print("escala", round(rr["scen"][0]["supply"]), f"FCI {r['FCI']/1e6:,.0f} VPN {r['NPV']/1e6:,.0f} PE {out['scale'][-1]['breakeven']:,.0f}", flush=True)
+    # precios del vino y del vinagre: TEA del diseño óptimo de cada par de precios (E6)
+    out["prices"] = []
+    for k in sorted([k for k in dim if k.startswith("E6|")], key=lambda k: (float(k.split("|")[1]), float(k.split("|")[2]))):
+        rr = dim[k]; wp, vp = float(k.split("|")[1]), float(k.split("|")[2])
+        c = build_case(rr, f"Vino {wp:.0f} · vinagre {vp:.0f}", False)
+        c["product"]["price"] = wp
+        for bp in c["byproducts"]:
+            if bp["name"] == "vinagre":
+                bp["price"] = vp
+        r = tb.evaluate(c); pr_ = rr["scen"][0]["products"]
+        out["prices"].append(dict(wine_price=wp, vinegar_price=vp, sizes=rr["sizes"], NPV=r["NPV"], FCI=r["FCI"], MIRR=r["MIRR"],
+                                  vino_vendido_m3=pr_["vino_m3"] - pr_.get("vino_a_vinagre_m3", 0.0), vino_a_vinagre_m3=pr_.get("vino_a_vinagre_m3", 0.0),
+                                  jugo_cascara_vinagre_t=pr_.get("jugo_cascara_vinagre_t", 0.0), vinagre_m3=pr_.get("vinagre_m3", 0.0)))
+        print("precios", wp, vp, f"VPN {r['NPV']/1e6:,.0f}", rr["sizes"].get("Acetificador"), flush=True)
     out["check"] = tx.recalc_check(made)
     for c in out["check"]:
         print(c["file"], "VPN py", round(c["NPV_py"] / 1e6, 1), "xl", None if c["NPV_xl"] is None else round(c["NPV_xl"] / 1e6, 1), "dRel", c["dNPV_rel"])

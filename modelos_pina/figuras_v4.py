@@ -188,7 +188,7 @@ def fig31_tea():
     if not t:
         return
     cs = t["cases"]
-    keys = [k for k in ("A · Referencia TRL-9", "A · Óptimo con la topología anterior", "A · Óptimo con la superestructura ampliada", "B · Óptimo con la topología anterior", "B · Óptimo con la superestructura ampliada") if k in cs]
+    keys = [k for k in ("A · Referencia TRL-9", "A · Óptimo con la topología anterior", "A · Óptimo sin vinagre", "A · Óptimo con la superestructura ampliada", "B · Óptimo con la topología anterior", "B · Óptimo con la superestructura ampliada") if k in cs]
     fig, ax = plt.subplots(2, 2, figsize=(13.5, 8.4))
     # (a) FCI y VPN
     a = ax[0, 0]; x = np.arange(len(keys)); w = 0.38
@@ -197,7 +197,7 @@ def fig31_tea():
     for xi, f, n, k in zip(x, fci, npv, keys):
         a.text(xi - w / 2, f + 200, f"{f:,.0f}".replace(",", " "), ha="center", fontsize=7)
         a.text(xi + w / 2, max(n, 0) + 200, f"{n:,.0f}\nMIRR {cs[k]['res']['MIRR']*100:.1f} %".replace(",", " ").replace(".", ","), ha="center", fontsize=7)
-    SH = {"A · Referencia TRL-9": "A: referencia\nTRL-9", "A · Óptimo con la topología anterior": "A: óptimo\ntopología v5", "A · Óptimo con la superestructura ampliada": "A: óptimo\nampliada", "B · Óptimo con la topología anterior": "B: óptimo\ntopología v5", "B · Óptimo con la superestructura ampliada": "B: óptimo\nampliada"}
+    SH = {"A · Referencia TRL-9": "A: referencia\nTRL-9", "A · Óptimo con la topología anterior": "A: óptimo\ntopología v5", "A · Óptimo con la superestructura ampliada": "A: óptimo\ncon vinagre", "A · Óptimo sin vinagre": "A: óptimo\nsin vinagre", "B · Óptimo con la topología anterior": "B: óptimo\ntopología v5", "B · Óptimo con la superestructura ampliada": "B: óptimo\nampliada"}
     a.set_xticks(x); a.set_xticklabels([SH.get(k, k) for k in keys], fontsize=7.5); a.legend(fontsize=7.5, loc="upper left")
     a.set_ylim(0, max(fci) * 1.18); a.set_title("Inversión y valor: tamaños de referencia frente a óptimos", fontsize=9)
     # (b) Monte Carlo
@@ -230,5 +230,41 @@ def fig31_tea():
     save(fig, "fig31_tea_dimensionado.png")
 
 
+def fig32_vinagre():
+    d = J("dimensionamiento.json"); t = J("tea_dimensionado.json")
+    if not d:
+        return
+    ks = sorted([k for k in d if k.startswith("E6|") and d[k].get("scen")], key=lambda k: (float(k.split("|")[2]), float(k.split("|")[1])))
+    if not ks:
+        return
+    fig, ax = plt.subplots(1, 2, figsize=(13.5, 4.6), gridspec_kw=dict(width_ratios=[1.5, 1]))
+    x = np.arange(len(ks)); labs = []
+    sold, wv, pjv = [], [], []
+    for k in ks:
+        p_ = d[k]["scen"][0]["products"]; wp, vp = k.split("|")[1:]
+        labs.append(f"vino {int(wp):,}\nvinagre {int(vp):,}".replace(",", " "))
+        sold.append(p_["vino_m3"] - p_.get("vino_a_vinagre_m3", 0)); wv.append(p_.get("vino_a_vinagre_m3", 0) * 1.6)
+        pjv.append(p_.get("jugo_cascara_vinagre_t", 0) * 55.7 / 50)
+    a = ax[0]
+    a.bar(x - 0.2, sold, 0.4, color=C[0], label="Vino vendido (m³/año)")
+    a.bar(x + 0.2, wv, 0.4, color=C[3], label="Vinagre de vino (m³/año)")
+    a.bar(x + 0.2, pjv, 0.4, bottom=wv, color=C[2], label="Vinagre de jugo de cáscara (m³/año)")
+    for xi, k in zip(x, ks):
+        a.text(xi, max(sold[list(x).index(xi)], wv[list(x).index(xi)] + pjv[list(x).index(xi)]) + 60, d[k]["sizes"].get("Acetificador", "no").replace("no", "sin acetif."), ha="center", fontsize=6.8, color=INK2)
+    a.set_xticks(x); a.set_xticklabels(labs, fontsize=7); a.set_ylabel("m³/año"); a.legend(fontsize=7, loc="upper left")
+    a.set_title("Qué hace el óptimo con el vino según los precios (COP/L); arriba, el acetificador elegido", fontsize=9)
+    b = ax[1]
+    if t and t.get("prices"):
+        P = t["prices"]
+        for q, vp in enumerate(sorted({r["vinegar_price"] for r in P})):
+            rr = sorted([r for r in P if r["vinegar_price"] == vp], key=lambda r: r["wine_price"])
+            b.plot([r["wine_price"] for r in rr], [r["NPV"] / 1e6 for r in rr], "-o", color=C[q], label=f"Vinagre a {int(vp):,} COP/L".replace(",", " "))
+        b.axhline(0, color=INK2, lw=0.8); b.set_xlabel("Precio del vino (COP/L)"); b.set_ylabel("VPN del diseño óptimo (MM COP)"); b.legend(fontsize=7.5)
+        b.set_title("TEA de Burk del óptimo de cada par de precios", fontsize=9)
+    fig.suptitle("Fig. 32  El vinagre como cobertura del precio del vino (Emde 2017; Bekatorou 2020)", fontsize=10, fontweight="bold", x=0.01, ha="left")
+    save(fig, "fig32_vinagre_precios.png")
+
+
 if __name__ == "__main__":
     fig31_tea()
+    fig32_vinagre()

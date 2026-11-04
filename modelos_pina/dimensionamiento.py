@@ -100,11 +100,31 @@ CENT_VC = 2.0 * E_COP                                       # COP/m³: centrífu
 DEC_VC = 4.5 * E_COP                                        # COP/t pulpa: decantadora frente a prensa de banda (+4,5 kWh/t)
 LEES_MF_VC = 1.0 * E_COP                                    # COP/m³ de lías filtradas
 LEES_DISP = 30.0 * 1000                                     # COP/m³ de lías a compostaje
-LEES_REC = 0.85                                             # fracción de jugo recuperable de lías y espumas (cap. 8: 80–90 %)
+LEES_REC = 0.60                                             # v7: jugo recuperable de lodos de piña (SIS 10,5 % m/m, Quesada Salas 2013) [S]
+# ---- v7: calibración con Quesada Salas (2013), MFT de jugo pulposo de piña en planta piloto
+MF_FLUX = 45.0                                              # L/m²·h sostenido (40–50 en ensayos de 6 h, FRV 3,7)
+MF_LOSS = 0.27                                              # retenido: rendimiento de jugo clarificado 73 % (FRV 3,7)
+CENT_LOSS, FLOT_LOSS = 0.12, 0.18                           # lodos y espumas con SIS 10,5 % m/m (uva: 2–15 %) [S]
+LEES_FLOUR = 0.11                                           # t harina / t lías o retenido (≈ 10 % de sólidos, harina al 10 % de humedad) [S]
+LEES_DRY_EQ = (1 - LEES_FLOUR) / 0.7667                     # carga del secador por t de lías (0,767 t de agua por t de torta)
+# ---- v7: vinagre (Emde 2017, Ullmann's Food and Feed: acetificador Frings; Bekatorou 2020)
+ACET_PROD = 50.0                                            # kg ácido acético/(m³·d): 40–60 en acetificadores Frings
+ACET_YIELD = 0.94                                           # fracción del rendimiento teórico (46 g etanol -> 60 g ácido)
+ACID_HEAT = 493.0 / 60.0                                    # MJ/kg ácido (ΔH = −493 kJ/mol)
+AERATION_KW_M3 = 1.2                                        # kW por m³ de acetificador (turbina autoaspirante, 0,1–0,15 vvm) [S]
+VIN_ACID = 50.0                                             # kg/m³ (vinagre al 5 %)
+A_WINE = 65.4 * 60 / 46 * ACET_YIELD                        # kg ácido / m³ de vino (≈ 8,3 % v/v de etanol)
+A_PJ = 104.0 * 0.46 * 0.95 * 60 / 46 * ACET_YIELD           # kg ácido / t de jugo de cáscara (104 g/kg de azúcar)
+T_PEEL = 30.0 + 2.5                                         # h: fermentación del jugo de cáscara + descarga
+VIN_PRICE = tl.M("vinagre_L")
 DAP_VC = 0.2 * 8_000.0                                      # COP/m³ de mosto: 200 mg/L de fosfato diamónico (YAN < 140 mg/L)
 N2_VC = 0.5 * E_COP                                         # COP/m³ de vino: generador PSA de N2 para inertizar tanques
-ALLOW_OLD = {"Decantadora": ["no"], "Clarificación": ["MF"], "MF lías": ["no"], "Estabilización": ["HTST"]}   # topología v5
+PJ_VC = 0.2 * 60_000 + DAP_VC                               # COP/t jugo de cáscara: levadura + nutrientes
+VIN_VC = ACID_HEAT / 3.6 / 4.0 * E_COP + 500.0              # COP/kg ácido: frío con COP 4 (trópico) + nutrientes y filtración [S]
+ALLOW_OLD = {"Decantadora": ["no"], "Clarificación": ["MF"], "MF lías": ["no"], "Estabilización": ["HTST"],
+             "Acetificador": ["no"], "Bodega cáscara": ["no"]}   # topología v5
 NO_SO2 = {"Estabilización": ["HTST", "UHPH"]}
+NO_VIN = {"Acetificador": ["no"], "Bodega cáscara": ["no"]}
 
 
 def options(with_bromelain=False):
@@ -121,10 +141,10 @@ def options(with_bromelain=False):
     O["Prensa cáscara"] = [dict(lab="no", cap=0.0, cost=0.0)] + [
         dict(lab=f"{s:g} t/h", cap=s, cost=buy("prensa_banda", s) + buy("trituradora", s)) for s in (1, 2, 3)]
     O["Clarificación"] = (
-        [dict(lab=f"MF {A:g} m²", cap=A * 60 / 1000, cost=buy("MF_ceramica", A), loss=0.02, vc=0.0, fixed=0.15 * buy("MF_ceramica", A))
+        [dict(lab=f"MF {A:g} m²", cap=A * MF_FLUX / 1000, cost=buy("MF_ceramica", A), loss=MF_LOSS, vc=0.0, fixed=0.15 * buy("MF_ceramica", A), ret=True)
          for A in (10, 20, 30, 40, 60, 80)]
-        + [dict(lab=f"Flotación {q:g} m³/h", cap=q, cost=buy("flotador_mosto", q), loss=0.10, vc=FLOT_VC) for q in (0.5, 1, 2, 4)]
-        + [dict(lab=f"Centrífuga {q:g} m³/h", cap=q, cost=buy("centrifuga_discos", q), loss=0.05, vc=CENT_VC) for q in (0.5, 1, 2, 3, 5)])
+        + [dict(lab=f"Flotación {q:g} m³/h", cap=q, cost=buy("flotador_mosto", q), loss=FLOT_LOSS, vc=FLOT_VC) for q in (0.5, 1, 2, 4)]
+        + [dict(lab=f"Centrífuga {q:g} m³/h", cap=q, cost=buy("centrifuga_discos", q), loss=CENT_LOSS, vc=CENT_VC) for q in (0.5, 1, 2, 3, 5)])
     O["MF lías"] = [dict(lab="no", cap=0.0, cost=0.0)] + [
         dict(lab=f"{A:g} m²", cap=A * 30 / 1000, cost=buy("MF_lias", A), fixed=0.15 * buy("MF_lias", A)) for A in (2, 5, 10)]
     O["Estabilización"] = (
@@ -139,6 +159,16 @@ def options(with_bromelain=False):
     O["Secador"] = [dict(lab=f"{s:g} kg agua/h", cap=s / 1000 * 1.35,
                          cost=buy("secador_banda", s) + buy("caldera", s * 3.2 / 3.6 * 1.1) + buy("molino_tamiz", s / 1000 * 1.35 * FLOUR_PC * 1000))
                     for s in (50, 100, 200, 300, 500, 800)]
+    O["Bodega cáscara"] = [dict(lab="no", cap=0.0, cost=0.0)] + [
+        dict(lab=f"{n}×10 m³", cap=(n - 1) * VF / T_PEEL, cost=ferm_cost(n) + buy("chiller", (n - 1) * VF / T_PEEL * HEAT_KW_PER_M3H * 1.1))
+        for n in (2, 3, 4, 6)]
+    O["Acetificador"] = [dict(lab="no", cap=0.0, cost=0.0)] + [
+        dict(lab=f"{V:g} m³", cap=V * ACET_PROD / 24.0,
+             cost=(buy("acetador", V) + buy("chiller", V * ACET_PROD / 24.0 * ACID_HEAT / 3.6 * 1.1)
+                   + buy("grupo_electrogeno", AERATION_KW_M3 * V * 1.25 + V * ACET_PROD / 24.0 * ACID_HEAT / 3.6 / 4.0)
+                   + buy("centrifuga_espuma", 1) + buy("lavador_gases", 1) + buy("MF_vinagre", V * ACET_PROD / 24.0 / VIN_ACID * 1000 / 100.0)),
+             fixed=AERATION_KW_M3 * V * 0.9 * 8766 * E_COP)
+        for V in (2, 4, 6, 10, 20)]
     O["Almacén de mosto"] = [dict(lab=f"{V:g} m³", cap=V, cost=(buy("tanque_pulmon", V) if V <= 50 else 1.4 * buy("tanque_guarda", V)))
                              for V in (10, 25, 50, 100, 200, 400, 800)]
     if with_bromelain:
@@ -154,13 +184,13 @@ def options(with_bromelain=False):
 
 REFERENCE = {   # diseño TRL-9 a 6 200 t/año (planta_trl9.design): lavado 2 t/h, prensa de pulpa 1 t/h + prensa de cáscara 1 t/h,
     "Frente": "2 t/h", "Prensa": "1 t/h", "Prensa cáscara": "1 t/h", "Decantadora": "no", "Clarificación": "MF 20 m²",
-    "MF lías": "no", "Estabilización": "HTST 1000 L/h", "Bodega": "2×10 m³",
+    "MF lías": "no", "Estabilización": "HTST 1000 L/h", "Bodega": "2×10 m³", "Acetificador": "no", "Bodega cáscara": "no",
     "Secador": "300 kg agua/h", "Almacén de mosto": "10 m³", "turno3": 0,                                    # secador 300, pulmón 10 m³
 }
 REFERENCE_B = dict(REFERENCE, **{"Aspersión": "10 kg agua/h", "Prensa corazón": "1 t/h"})
 
 
-def margins(wine_price=WINE_PRICE, flour_price=None):
+def margins(wine_price=WINE_PRICE, flour_price=None, vinegar_price=None):
     """Márgenes de contribución por unidad de flujo (COP), del TEA de cada línea a 6 200 t/año."""
     D = pt.design(6200)
     cs = tl.cases_from_design(D)
@@ -173,12 +203,19 @@ def margins(wine_price=WINE_PRICE, flour_price=None):
     v_h = var_noraw("L5 Harina de fibra de cáscara") / (D["lines"]["harina"]["flows"]["peel_t"] * CAKE)       # COP/t torta
     v_b = var_noraw("L4 Bromelaína + polvo nutracéutico") / (D["lines"]["bromelaina"]["flows"]["core_t"] * CORE_J)   # COP/t jugo de corazón
     fp = flour_price or tl.M("harina_kg")
+    global VIN_PRICE
+    VIN_PRICE = vinegar_price or tl.M("vinagre_L")
     brom_rev = (B1["bromelain_kg"] * tl.M("bromelaina_kg") + B1["powder_t"] * 1000 * 40000.0) / (B1["core_t"] * CORE_J)
     return dict(
         wine=C["vendido"] * wine_price * 1000 * WINE_PM - v_w,
         flour=C["vendido"] * fp * 1000 * FLOUR_PC - v_h,
         brom=C["vendido"] * brom_rev - v_b,
         peel_juice=cp.Y["peel_juice_frac"] * 150.0 * 1000,          # crédito del jugo de cáscara al hub, por t de cáscara prensada
+        flour_t=C["vendido"] * fp * 1000 - v_h / FLOUR_PC,          # COP por t de harina (para la harina de lías y retenidos)
+        v_cake=v_h,                                                 # COP por t de torta secada
+        wine_m3=C["vendido"] * wine_price * 1000,                   # ingreso por m³ de vino vendido
+        vin_kg=C["vendido"] * VIN_PRICE * 1000 / VIN_ACID,          # ingreso por kg de ácido vendido como vinagre al 5 %
+        vin_tank=AF * buy("tanque_guarda", 100) / 100 * 30 / 365 * 1.1 / VIN_ACID,   # tanques de vinagre (30 d), por kg de ácido/año
         guard=AF * buy("tanque_guarda", 160) / 160 * 90 / 365 * 1.1,  # tanques de guarda (90 d), COP/año por m³ de vino/año
     )
 
@@ -222,7 +259,7 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
                  + shift_cost(with_bromelain) * y3 + AF * FIXED_EQ_COST)
     Hx = float(HM.max())
     MT = [(mo_, t) for mo_ in range(12) for t in range(K)]
-    chi_fix = dict(fruta=None, pulpa=1.5, cascara=3.0, corazon=2.0, jugo=4.0, torta=12.0, jcor=3.0, lias=2.0)
+    chi_fix = dict(fruta=None, pulpa=1.5, cascara=3.0, corazon=2.0, jugo=4.0, torta=12.0, jcor=3.0, lias=2.0, ret=4.0)
     second = 0.0
     V = dict(y=y, y3=y3, O=O, modes=modes, MT=MT, scen=[])
     for sc in scen:
@@ -260,6 +297,8 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
         loss = {mt: m.addVar(lb=0) for mt in MT}
         ml = {mt: m.addVar(lb=0) for mt in MT}; ld = {mt: m.addVar(lb=0) for mt in MT}     # lías a MF y a compostaje
         XC, SB = {}, {}
+        ldry = {mt: m.addVar(lb=0) for mt in MT}; rdry = {mt: m.addVar(lb=0) for mt in MT}; rd = {mt: m.addVar(lb=0) for mt in MT}
+        pj = {mt: m.addVar(lb=0) for mt in MT}; wv = {mt: m.addVar(lb=0) for mt in MT}; acid = {mt: m.addVar(lb=0) for mt in MT}
         comp = {mt: m.addVar(lb=0) for mt in MT}                                # cáscara sin prensar a compostaje
         compk = {mt: m.addVar(lb=0) for mt in MT}                               # corazón sin procesar a compostaje
         st = list(chi) + ["mosto"]
@@ -300,7 +339,12 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
             m.addCons(quicksum(SB[mt].values()) == quicksum((1 - OC[k]["loss"]) * XC[mt][k] for k in XC[mt]) + LEES_REC * ml[mt])
             m.addCons(ml[mt] <= cap_expr("MF lías", mt, True))
             m.addCons(bod[mt] <= cap_expr("Bodega", mt, False))
-            m.addCons(sec[mt] <= cap_expr("Secador", mt, False))
+            m.addCons(sec[mt] + LEES_DRY_EQ * (ldry[mt] + rdry[mt]) <= cap_expr("Secador", mt, False))
+            # vinagre: jugo de cáscara fermentado y vino desviado, acetificados en continuo (24/7)
+            m.addCons(pj[mt] / 1.05 <= cap_expr("Bodega cáscara", mt, False))
+            m.addCons(wv[mt] <= WINE_PM * bod[mt])
+            m.addCons(acid[mt] == A_WINE * wv[mt] + A_PJ * pj[mt])
+            m.addCons(acid[mt] <= cap_expr("Acetificador", mt, False))
             for j in yded:
                 m.addCons(Pd[j, mt] <= cap_expr(ded[j], mt, True))
             if with_bromelain:
@@ -308,6 +352,7 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
             else:
                 m.addCons(asp[mt] == 0)
             Pc = P["cascara", mt] + (Pd["cascara", mt] if "cascara" in yded else 0)
+            m.addCons(pj[mt] <= cp.Y["peel_juice_frac"] * Pc)
             Pk = (P["corazon", mt] + (Pd["corazon", mt] if "corazon" in yded else 0)) if with_bromelain else 0
             bal = {
                 "fruta": rate_in[mo_] * d[mt] - fe[mt] - loss[mt],
@@ -315,7 +360,8 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
                 "cascara": FR["cascara"] * fe[mt] - Pc - comp[mt],
                 "corazon": (FR["corazon"] * fe[mt] - Pk - compk[mt]) if with_bromelain else 0,
                 "jugo": JUICE * (P["pulpa", mt] + (Pd["pulpa", mt] if "pulpa" in yded else 0)) - mfv[mt],
-                "lias": quicksum(OC[k]["loss"] * XC[mt][k] for k in XC[mt]) - ml[mt] - ld[mt],
+                "lias": quicksum(OC[k]["loss"] * XC[mt][k] for k in XC[mt] if not OC[k].get("ret")) - ml[mt] - ld[mt] - ldry[mt],
+                "ret": quicksum(OC[k]["loss"] * XC[mt][k] for k in XC[mt] if OC[k].get("ret")) - rdry[mt] - rd[mt],
                 "mosto": quicksum(SB[mt].values()) - bod[mt],
                 "torta": CAKE * Pc - sec[mt],
                 "jcor": (CORE_J * Pk - asp[mt]) if with_bromelain else 0,
@@ -331,10 +377,15 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
                            - mg["guard"] * WINE_PM * bod[mt]
                            - quicksum(O["Clarificación"][k].get("vc", 0.0) * XC[mt][k] for k in XC[mt])
                            - quicksum(O["Estabilización"][k].get("vc", 0.0) * SB[mt][k] for k in SB[mt])
-                           - LEES_MF_VC * ml[mt] - LEES_DISP * ld[mt] - (DEC_VC * Pd["pulpa", mt] if "pulpa" in yded else 0) for mt in MT)
+                           - LEES_MF_VC * ml[mt] - LEES_DISP * (ld[mt] + rd[mt]) - (DEC_VC * Pd["pulpa", mt] if "pulpa" in yded else 0)
+                           + (LEES_FLOUR * mg["flour_t"] - LEES_DRY_EQ * mg["v_cake"]) * (ldry[mt] + rdry[mt])
+                           + (mg["vin_kg"] - VIN_VC - mg["vin_tank"]) * acid[mt]
+                           - (mg["wine_m3"] - mg["guard"]) * wv[mt]
+                           - (150.0 * 1000 + PJ_VC) * pj[mt] for mt in MT)
         second = second + sc["p"] * contrib
         V["scen"].append(dict(sc=sc, supply=supply, d=d, w=w, tau=tau, ncy=ncy, P=P, Pd=Pd, fe=fe, mfv=mfv, bod=bod, sec=sec,
-                              asp=asp, loss=loss, comp=comp, I=I, contrib=contrib, Hs=Hs, XC=XC, SB=SB, ml=ml, ld=ld))
+                              asp=asp, loss=loss, comp=comp, I=I, contrib=contrib, Hs=Hs, XC=XC, SB=SB, ml=ml, ld=ld,
+                              ldry=ldry, rdry=rdry, rd=rd, pj=pj, wv=wv, acid=acid))
     m.setObjective((second - capex_ann) / 1e6, "maximize")
     V["capex_ann"] = capex_ann
     return m, V
@@ -358,12 +409,14 @@ def extract(m, V, with_bromelain):
             rows.append(dict(month=mt[0], k=mt[1], start=T0, dur=dur, tau=tau, W=v(S["ncy"][mt]),
                              P={i: v(S["P"][i, mt]) for i in V["modes"]}, Pd={j: v(S["Pd"][j, mt]) for j, _ in [(a, b) for (a, b) in S["Pd"] if b == mt]},
                              fe=v(S["fe"][mt]), mf=v(S["mfv"][mt]), bod=v(S["bod"][mt]), sec=v(S["sec"][mt]), asp=v(S["asp"][mt]),
-                             stab=sum(v(x_) for x_ in S["SB"][mt].values()), ml=v(S["ml"][mt]), ld=v(S["ld"][mt]),
+                             stab=sum(v(x_) for x_ in S["SB"][mt].values()), ml=v(S["ml"][mt]), ld=v(S["ld"][mt]) + v(S["rd"][mt]),
+                             ldry=v(S["ldry"][mt]) + v(S["rdry"][mt]), pj=v(S["pj"][mt]), wv=v(S["wv"][mt]), acid=v(S["acid"][mt]),
                              loss=v(S["loss"][mt]), comp=v(S["comp"][mt]), I_mosto=v(S["I"]["mosto", V["MT"].index(mt) + 1])))
             T0 += dur
         util = {}
         cap = out["caps"]
         for u, key, staffed in (("Frente", "fe", True), ("Clarificación", "mf", True), ("Estabilización", "stab", True), ("MF lías", "ml", True),
+                                ("Acetificador", "acid", False),
                                 ("Bodega", "bod", False), ("Secador", "sec", False), ("Aspersión", "asp", True)):
             if u == "Estabilización" and out["sizes"][u].startswith("SO"):
                 continue
@@ -378,7 +431,10 @@ def extract(m, V, with_bromelain):
             if u in cap and cap[u] > 0:
                 util[u] = [sum(r["Pd"].get(j, 0) for r in rows if r["month"] == mo_) / (cap[u] * a_st * HM[mo_]) for mo_ in range(12)]
         prod = dict(fruta_t=sum(r["fe"] for r in rows), cascara_compost_t=sum(r["comp"] for r in rows),
-                    mosto_m3=sum(r["mf"] for r in rows), lias_MF_m3=sum(r["ml"] for r in rows), lias_compost_m3=sum(r["ld"] for r in rows), vino_m3=sum(r["bod"] for r in rows) * WINE_PM,
+                    mosto_m3=sum(r["mf"] for r in rows), lias_MF_m3=sum(r["ml"] for r in rows), lias_compost_m3=sum(r["ld"] for r in rows),
+                    lias_secador_t=sum(r["ldry"] for r in rows), harina_lias_t=sum(r["ldry"] for r in rows) * LEES_FLOUR,
+                    jugo_cascara_vinagre_t=sum(r["pj"] for r in rows), vino_a_vinagre_m3=sum(r["wv"] for r in rows),
+                    acido_kg=sum(r["acid"] for r in rows), vinagre_m3=sum(r["acid"] for r in rows) / VIN_ACID, vino_m3=sum(r["bod"] for r in rows) * WINE_PM,
                     harina_t=sum(r["sec"] for r in rows) * FLOUR_PC,
                     bromelaina_kg=sum(r["asp"] for r in rows) * B1["bromelain_kg"] / (B1["core_t"] * CORE_J))
         out["scen"].append(dict(sup=S["sc"]["sup"], p=S["sc"]["p"], supply=S["supply"], contrib=v(S["contrib"]) / 1e6, periods=rows,
@@ -406,7 +462,7 @@ def brief(r):
 
 
 if __name__ == "__main__":
-    which = sys.argv[1:] or ["E1", "E2", "E3", "E4", "E5"]
+    which = sys.argv[1:] or ["E1", "E2", "E3", "E4", "E5", "E6"]
     path = f"{RES}/dimensionamiento.json"
     out = json.load(open(path)) if os.path.exists(path) else {}
     save = lambda: json.dump(out, open(path, "w"), default=float)
@@ -417,7 +473,8 @@ if __name__ == "__main__":
                         ("Referencia con prensa única de 3 t/h compartida", dict(fix=dict(REFERENCE, **{"Prensa": "3 t/h", "Prensa cáscara": "no"}))),
                         ("Óptimo con la topología anterior (prensa, MF de mosto, HTST)", dict(allow=ALLOW_OLD)),
                         ("Óptimo económico", {}),
-                        ("Óptimo sin SO₂", dict(allow=NO_SO2))):
+                        ("Óptimo sin SO₂", dict(allow=NO_SO2)),
+                        ("Óptimo sin vinagre", dict(allow=NO_VIN))):
             r = solve(**kw); out[f"E1|{lab}"] = r; save(); print("E1", lab, brief(r), flush=True)
     if "E2" in which:   # regla de dimensionamiento: tamaños óptimos según la oferta (0,5× a la base de la tesis)
         for f in (0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 21856 / SUPPLY):
@@ -439,6 +496,13 @@ if __name__ == "__main__":
         ws = [solve(scen=[dict(sup=a, p=1.0)]) for a, pa in es.SUP_F]
         out["E4|WS"] = dict(obj=sum(r["obj"] * pa for r, (a, pa) in zip(ws, es.SUP_F)), each=[dict(sup=a, obj=r["obj"], sizes=r["sizes"], turno3=r["turno3"]) for r, (a, pa) in zip(ws, es.SUP_F)])
         save(); print("E4 WS", out["E4|WS"]["obj"], "VSS", rp["obj"] - eev["obj"], "EVPI", out["E4|WS"]["obj"] - rp["obj"], flush=True)
+    if "E6" in which:   # precio del vino y del vinagre: ¿cuándo conviene acetificar?
+        for wp in (1600.0, 2200.0, 3000.0, 4000.0):
+            for vp in (1500.0, 2200.0):
+                r = solve(mg=margins(wine_price=wp, vinegar_price=vp), time_limit=240); out[f"E6|{wp:.0f}|{vp:.0f}"] = r; save()
+                print("E6", wp, vp, brief(r), {k: round(v_) for k, v_ in r["scen"][0]["products"].items()
+                                               if k in ("vino_m3", "vino_a_vinagre_m3", "jugo_cascara_vinagre_t", "vinagre_m3")}, flush=True)
+        margins()   # restituye el precio base del vinagre
     if "E5" in which:   # configuración B con bromelaína: ¿prensa compartida o dedicada?
         for lab, kw in (("B referencia (prensas dedicadas TRL-9)", dict(fix=REFERENCE_B)),
                         ("B óptimo con la topología anterior", dict(allow=ALLOW_OLD)), ("B óptimo económico", {})):

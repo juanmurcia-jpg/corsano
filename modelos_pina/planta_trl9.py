@@ -81,6 +81,11 @@ CAT = {   # catálogo: tamaños discretos, unidad, referencia (tamaño, USD 2024
     "MF_lias": dict(sizes=[2, 5, 10, 20], unit="m2", ref=(5, 45_000), n=0.7),
     "generador_N2": dict(sizes=[1], unit="u", ref=(1, 30_000), n=1.0),
     "dosificador_nutrientes": dict(sizes=[1], unit="u", ref=(1, 5_000), n=1.0),
+    # vinagre (Emde 2017, Ullmann's Food and Feed: planta Frings; Bekatorou 2020)   [S]
+    "grupo_electrogeno": dict(sizes=[10, 20, 50, 100, 200], unit="kW", ref=(50, 25_000), n=0.7),
+    "centrifuga_espuma": dict(sizes=[1], unit="u", ref=(1, 35_000), n=1.0),
+    "lavador_gases": dict(sizes=[1], unit="u", ref=(1, 15_000), n=1.0),
+    "MF_vinagre": dict(sizes=[2, 5, 10, 20], unit="m2", ref=(5, 40_000), n=0.7),
 }
 
 
