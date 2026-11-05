@@ -82,6 +82,8 @@ def ferm_cost(n):
 
 
 FIXED_EQ_COST = buy("generador_N2", 1) + buy("dosificador_nutrientes", 1)
+_Dref = pt.design(6200)
+Q_CAKE = _Dref["lines"]["harina"]["heat_MJ"] / (_Dref["lines"]["harina"]["flows"]["peel_t"] * (1 - cp.Y["peel_juice_frac"]))   # MJ/t de torta
 B1 = cp.full_balance(1.0)
 FR = dict(pulpa=B1["pulp_t"], cascara=B1["peel_t"], corazon=B1["core_t"])
 JUICE = cp.JUICE_YIELD_PULP / cp.RHO_JUICE                 # m³ jugo / t pulpa
@@ -121,10 +123,16 @@ DAP_VC = 0.2 * 8_000.0                                      # COP/m³ de mosto: 
 N2_VC = 0.5 * E_COP                                         # COP/m³ de vino: generador PSA de N2 para inertizar tanques
 PJ_VC = 0.2 * 60_000 + DAP_VC                               # COP/t jugo de cáscara: levadura + nutrientes
 VIN_VC = ACID_HEAT / 3.6 / 4.0 * E_COP + 500.0              # COP/kg ácido: frío con COP 4 (trópico) + nutrientes y filtración [S]
-ALLOW_OLD = {"Decantadora": ["no"], "Clarificación": ["MF"], "MF lías": ["no"], "Estabilización": ["HTST"],
+ALLOW_OLD = {"Decantadora": ["no"], "Clarificación": ["MF"], "MF lías": ["no"], "Estabilización": ["HTST"], "Caldera de corona": ["no"],
              "Acetificador": ["no"], "Bodega cáscara": ["no"]}   # topología v5
 NO_SO2 = {"Estabilización": ["HTST", "UHPH"]}
 NO_VIN = {"Acetificador": ["no"], "Bodega cáscara": ["no"]}
+NO_BOILER = {"Caldera de corona": ["no"]}
+# ---- v8: caldera de biomasa con corona (línea L7b del TEA, TRL 9)
+CROWN_MJ_T = cp.Y["crown_dm"] * 17_000.0 * 0.80             # MJ útiles por t de corona (20 % MS, 17 MJ/kg, caldera al 80 %)
+CROWN_VC = 10.0 * E_COP                                     # COP/t de corona: picado y secado (10 kWh/t)
+Q_MAC = 3.9 * (55 - 28) * 0.4                               # MJ/t de pulpa: maceración a 55 °C con 60 % de recuperación
+HEAT_COP = C["calor_COP_MJ"]                                # COP/MJ útil con GLP (caldera al 85 %, plantilla)
 
 
 def options(with_bromelain=False):
@@ -169,6 +177,9 @@ def options(with_bromelain=False):
                    + buy("centrifuga_espuma", 1) + buy("lavador_gases", 1) + buy("MF_vinagre", V * ACET_PROD / 24.0 / VIN_ACID * 1000 / 100.0)),
              fixed=AERATION_KW_M3 * V * 0.9 * 8766 * E_COP)
         for V in (2, 4, 6, 10, 20)]
+    O["Caldera de corona"] = [dict(lab="no", cap=0.0, cost=0.0)] + [
+        dict(lab=f"{q} kWt", cap=q * 3.6, cost=1.3 * buy("caldera", q) + buy("astilladora_secador_biomasa", q * 3.6 / CROWN_MJ_T))
+        for q in (100, 200, 300, 500)]
     O["Almacén de mosto"] = [dict(lab=f"{V:g} m³", cap=V, cost=(buy("tanque_pulmon", V) if V <= 50 else 1.4 * buy("tanque_guarda", V)))
                              for V in (10, 25, 50, 100, 200, 400, 800)]
     if with_bromelain:
@@ -184,7 +195,7 @@ def options(with_bromelain=False):
 
 REFERENCE = {   # diseño TRL-9 a 6 200 t/año (planta_trl9.design): lavado 2 t/h, prensa de pulpa 1 t/h + prensa de cáscara 1 t/h,
     "Frente": "2 t/h", "Prensa": "1 t/h", "Prensa cáscara": "1 t/h", "Decantadora": "no", "Clarificación": "MF 20 m²",
-    "MF lías": "no", "Estabilización": "HTST 1000 L/h", "Bodega": "2×10 m³", "Acetificador": "no", "Bodega cáscara": "no",
+    "MF lías": "no", "Estabilización": "HTST 1000 L/h", "Bodega": "2×10 m³", "Acetificador": "no", "Bodega cáscara": "no", "Caldera de corona": "no",
     "Secador": "300 kg agua/h", "Almacén de mosto": "10 m³", "turno3": 0,                                    # secador 300, pulmón 10 m³
 }
 REFERENCE_B = dict(REFERENCE, **{"Aspersión": "10 kg agua/h", "Prensa corazón": "1 t/h"})
@@ -299,6 +310,7 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
         XC, SB = {}, {}
         ldry = {mt: m.addVar(lb=0) for mt in MT}; rdry = {mt: m.addVar(lb=0) for mt in MT}; rd = {mt: m.addVar(lb=0) for mt in MT}
         pj = {mt: m.addVar(lb=0) for mt in MT}; wv = {mt: m.addVar(lb=0) for mt in MT}; acid = {mt: m.addVar(lb=0) for mt in MT}
+        hb = {mt: m.addVar(lb=0) for mt in MT}; cr = {mt: m.addVar(lb=0) for mt in MT}     # calor de la caldera (MJ) y corona quemada (t)
         comp = {mt: m.addVar(lb=0) for mt in MT}                                # cáscara sin prensar a compostaje
         compk = {mt: m.addVar(lb=0) for mt in MT}                               # corazón sin procesar a compostaje
         st = list(chi) + ["mosto"]
@@ -345,6 +357,12 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
             m.addCons(wv[mt] <= WINE_PM * bod[mt])
             m.addCons(acid[mt] == A_WINE * wv[mt] + A_PJ * pj[mt])
             m.addCons(acid[mt] <= cap_expr("Acetificador", mt, False))
+            # caldera de corona: capacidad, corona disponible y demanda de calor del periodo (secado + maceración)
+            m.addCons(hb[mt] <= cap_expr("Caldera de corona", mt, False))
+            m.addCons(hb[mt] == CROWN_MJ_T * cr[mt])      # la corona quemada es la que pide el calor de la caldera
+            m.addCons(cr[mt] <= B1["crown_t"] * fe[mt])
+            m.addCons(hb[mt] <= Q_CAKE * (sec[mt] + LEES_DRY_EQ * (ldry[mt] + rdry[mt]))
+                      + Q_MAC * (P["pulpa", mt] + (Pd["pulpa", mt] if "pulpa" in yded else 0)))
             for j in yded:
                 m.addCons(Pd[j, mt] <= cap_expr(ded[j], mt, True))
             if with_bromelain:
@@ -381,11 +399,12 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
                            + (LEES_FLOUR * mg["flour_t"] - LEES_DRY_EQ * mg["v_cake"]) * (ldry[mt] + rdry[mt])
                            + (mg["vin_kg"] - VIN_VC - mg["vin_tank"]) * acid[mt]
                            - (mg["wine_m3"] - mg["guard"]) * wv[mt]
-                           - (150.0 * 1000 + PJ_VC) * pj[mt] for mt in MT)
+                           - (150.0 * 1000 + PJ_VC) * pj[mt]
+                           + HEAT_COP * hb[mt] + (COMPOST * 1000 - CROWN_VC) * cr[mt] for mt in MT)
         second = second + sc["p"] * contrib
         V["scen"].append(dict(sc=sc, supply=supply, d=d, w=w, tau=tau, ncy=ncy, P=P, Pd=Pd, fe=fe, mfv=mfv, bod=bod, sec=sec,
                               asp=asp, loss=loss, comp=comp, I=I, contrib=contrib, Hs=Hs, XC=XC, SB=SB, ml=ml, ld=ld,
-                              ldry=ldry, rdry=rdry, rd=rd, pj=pj, wv=wv, acid=acid))
+                              ldry=ldry, rdry=rdry, rd=rd, pj=pj, wv=wv, acid=acid, hb=hb, cr=cr))
     m.setObjective((second - capex_ann) / 1e6, "maximize")
     V["capex_ann"] = capex_ann
     return m, V
@@ -411,12 +430,13 @@ def extract(m, V, with_bromelain):
                              fe=v(S["fe"][mt]), mf=v(S["mfv"][mt]), bod=v(S["bod"][mt]), sec=v(S["sec"][mt]), asp=v(S["asp"][mt]),
                              stab=sum(v(x_) for x_ in S["SB"][mt].values()), ml=v(S["ml"][mt]), ld=v(S["ld"][mt]) + v(S["rd"][mt]),
                              ldry=v(S["ldry"][mt]) + v(S["rdry"][mt]), pj=v(S["pj"][mt]), wv=v(S["wv"][mt]), acid=v(S["acid"][mt]),
+                             hb=v(S["hb"][mt]), cr=v(S["cr"][mt]),
                              loss=v(S["loss"][mt]), comp=v(S["comp"][mt]), I_mosto=v(S["I"]["mosto", V["MT"].index(mt) + 1])))
             T0 += dur
         util = {}
         cap = out["caps"]
         for u, key, staffed in (("Frente", "fe", True), ("Clarificación", "mf", True), ("Estabilización", "stab", True), ("MF lías", "ml", True),
-                                ("Acetificador", "acid", False),
+                                ("Acetificador", "acid", False), ("Caldera de corona", "hb", False),
                                 ("Bodega", "bod", False), ("Secador", "sec", False), ("Aspersión", "asp", True)):
             if u == "Estabilización" and out["sizes"][u].startswith("SO"):
                 continue
@@ -434,7 +454,8 @@ def extract(m, V, with_bromelain):
                     mosto_m3=sum(r["mf"] for r in rows), lias_MF_m3=sum(r["ml"] for r in rows), lias_compost_m3=sum(r["ld"] for r in rows),
                     lias_secador_t=sum(r["ldry"] for r in rows), harina_lias_t=sum(r["ldry"] for r in rows) * LEES_FLOUR,
                     jugo_cascara_vinagre_t=sum(r["pj"] for r in rows), vino_a_vinagre_m3=sum(r["wv"] for r in rows),
-                    acido_kg=sum(r["acid"] for r in rows), vinagre_m3=sum(r["acid"] for r in rows) / VIN_ACID, vino_m3=sum(r["bod"] for r in rows) * WINE_PM,
+                    acido_kg=sum(r["acid"] for r in rows), vinagre_m3=sum(r["acid"] for r in rows) / VIN_ACID,
+                    calor_corona_GJ=sum(r["hb"] for r in rows) / 1000, corona_caldera_t=sum(r["cr"] for r in rows), vino_m3=sum(r["bod"] for r in rows) * WINE_PM,
                     harina_t=sum(r["sec"] for r in rows) * FLOUR_PC,
                     bromelaina_kg=sum(r["asp"] for r in rows) * B1["bromelain_kg"] / (B1["core_t"] * CORE_J))
         out["scen"].append(dict(sup=S["sc"]["sup"], p=S["sc"]["p"], supply=S["supply"], contrib=v(S["contrib"]) / 1e6, periods=rows,
@@ -444,9 +465,23 @@ def extract(m, V, with_bromelain):
     return out
 
 
-def solve(scen=None, K=2, with_bromelain=False, time_limit=240, gap=0.005, **kw):
+def solve(scen=None, K=2, with_bromelain=False, time_limit=240, gap=0.005, hint=None, **kw):
     scen = scen or [dict(sup=1.0, p=1.0)]
     m, V = build(scen, K=K, with_bromelain=with_bromelain, **kw)
+    if hint and "fix" not in kw:
+        # arranque en caliente: se resuelve el mismo modelo con los tamaños fijos de una solución conocida y su solución
+        # completa se carga en el modelo libre (las variables se crean en el mismo orden en los dos modelos)
+        try:
+            m1, _ = build(scen, K=K, with_bromelain=with_bromelain, fix=hint, **kw)
+            m1.setParam("limits/time", 120); m1.setParam("limits/gap", 0.01); m1.optimize()
+            if m1.getNSols() > 0:
+                vals = [m1.getVal(x) for x in m1.getVars()]
+                sol = m.createSol()
+                for x, val in zip(m.getVars(), vals):
+                    m.setSolVal(sol, x, val)
+                print("    arranque en caliente:", "aceptado" if m.addSol(sol, free=True) else "rechazado", round(m1.getObjVal()), flush=True)
+        except Exception as ex:   # un tamaño de la pista que ya no existe, etc.
+            print("    sin arranque en caliente:", ex, flush=True)
     m.setParam("limits/time", time_limit); m.setParam("limits/gap", gap)
     t0 = time.time(); m.optimize()
     if m.getNSols() == 0:
@@ -466,6 +501,14 @@ if __name__ == "__main__":
     path = f"{RES}/dimensionamiento.json"
     out = json.load(open(path)) if os.path.exists(path) else {}
     save = lambda: json.dump(out, open(path, "w"), default=float)
+    _H = json.load(open(f"{RES}/dimensionamiento_v7.json")) if os.path.exists(f"{RES}/dimensionamiento_v7.json") else {}
+    def hint(key, each=None):
+        r0 = _H.get(key, {})
+        if each is not None:
+            r0 = r0.get("each", [{}])[each] if r0.get("each") else {}
+        if not r0.get("sizes"):
+            return None
+        return dict(r0["sizes"], **{"Caldera de corona": "no", "turno3": r0.get("turno3", 0)})
     print("Lang eq.", round(LANG, 3), "AF", round(AF, 4), "turno 3 MM COP/año", round(shift_cost() / 1e6, 1),
           {k: round(v_) for k, v_ in margins().items()}, flush=True)
     if "E1" in which:   # óptimo vs referencia TRL-9
@@ -474,37 +517,39 @@ if __name__ == "__main__":
                         ("Óptimo con la topología anterior (prensa, MF de mosto, HTST)", dict(allow=ALLOW_OLD)),
                         ("Óptimo económico", {}),
                         ("Óptimo sin SO₂", dict(allow=NO_SO2)),
-                        ("Óptimo sin vinagre", dict(allow=NO_VIN))):
-            r = solve(**kw); out[f"E1|{lab}"] = r; save(); print("E1", lab, brief(r), flush=True)
+                        ("Óptimo sin vinagre", dict(allow=NO_VIN)),
+                        ("Óptimo sin caldera de corona", dict(allow=NO_BOILER))):
+            r = solve(hint=(hint(f"E1|{lab}") or hint("E1|Óptimo económico")) if "fix" not in kw else None, **kw)
+            out[f"E1|{lab}"] = r; save(); print("E1", lab, brief(r), flush=True)
     if "E2" in which:   # regla de dimensionamiento: tamaños óptimos según la oferta (0,5× a la base de la tesis)
         for f in (0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 21856 / SUPPLY):
-            r = solve(scen=[dict(sup=f, p=1.0)], time_limit=300); out[f"E2|{f:.3f}"] = r; save(); print("E2", round(f, 3), brief(r), flush=True)
+            r = solve(scen=[dict(sup=f, p=1.0)], time_limit=180, hint=hint(f"E2|{f:.3f}")); out[f"E2|{f:.3f}"] = r; save(); print("E2", round(f, 3), brief(r), flush=True)
     if "E3" in which:   # valor del almacenamiento aséptico y del tercer turno, a 2× la oferta actual
         sc2 = [dict(sup=2.0, p=1.0)]
         for lab, kw in (("libre (almacén y turno 3 disponibles)", {}),
                         ("sin almacén aséptico (≤ 25 m³)", dict(store_max=25)),
                         ("sin turno 3", dict(allow_shift=False)),
                         ("sin almacén ni turno 3", dict(store_max=25, allow_shift=False))):
-            r = solve(scen=sc2, time_limit=300, **kw); out[f"E3|{lab}"] = r; save(); print("E3", lab, brief(r), flush=True)
+            r = solve(scen=sc2, time_limit=150, hint=hint(f"E3|{lab}"), **kw); out[f"E3|{lab}"] = r; save(); print("E3", lab, brief(r), flush=True)
     if "E4" in which:   # dimensionamiento estocástico (oferta 0,7 / 1,0 / 1,3) — Grossmann cap. 14
         import estocastico as es
         sc = [dict(sup=a, p=pa) for a, pa in es.SUP_F]
-        rp = solve(scen=sc, time_limit=600); out["E4|RP"] = rp; save(); print("E4 RP", brief(rp), flush=True)
-        ev = solve(scen=[dict(sup=sum(a * pa for a, pa in es.SUP_F), p=1.0)]); out["E4|EV"] = ev; save(); print("E4 EV", brief(ev), flush=True)
+        rp = solve(scen=sc, time_limit=600, hint=hint("E4|RP")); out["E4|RP"] = rp; save(); print("E4 RP", brief(rp), flush=True)
+        ev = solve(scen=[dict(sup=sum(a * pa for a, pa in es.SUP_F), p=1.0)], hint=hint("E4|EV")); out["E4|EV"] = ev; save(); print("E4 EV", brief(ev), flush=True)
         fixev = dict(ev["sizes"], turno3=ev["turno3"])
         eev = solve(scen=sc, fix=fixev, time_limit=600); out["E4|EEV"] = eev; save(); print("E4 EEV", brief(eev), flush=True)
-        ws = [solve(scen=[dict(sup=a, p=1.0)]) for a, pa in es.SUP_F]
+        ws = [solve(scen=[dict(sup=a, p=1.0)], hint=hint("E4|WS", i)) for i, (a, pa) in enumerate(es.SUP_F)]
         out["E4|WS"] = dict(obj=sum(r["obj"] * pa for r, (a, pa) in zip(ws, es.SUP_F)), each=[dict(sup=a, obj=r["obj"], sizes=r["sizes"], turno3=r["turno3"]) for r, (a, pa) in zip(ws, es.SUP_F)])
         save(); print("E4 WS", out["E4|WS"]["obj"], "VSS", rp["obj"] - eev["obj"], "EVPI", out["E4|WS"]["obj"] - rp["obj"], flush=True)
     if "E6" in which:   # precio del vino y del vinagre: ¿cuándo conviene acetificar?
         for wp in (1600.0, 2200.0, 3000.0, 4000.0):
             for vp in (1500.0, 2200.0):
-                r = solve(mg=margins(wine_price=wp, vinegar_price=vp), time_limit=240); out[f"E6|{wp:.0f}|{vp:.0f}"] = r; save()
+                r = solve(mg=margins(wine_price=wp, vinegar_price=vp), time_limit=150, hint=hint(f"E6|{wp:.0f}|{vp:.0f}")); out[f"E6|{wp:.0f}|{vp:.0f}"] = r; save()
                 print("E6", wp, vp, brief(r), {k: round(v_) for k, v_ in r["scen"][0]["products"].items()
                                                if k in ("vino_m3", "vino_a_vinagre_m3", "jugo_cascara_vinagre_t", "vinagre_m3")}, flush=True)
         margins()   # restituye el precio base del vinagre
     if "E5" in which:   # configuración B con bromelaína: ¿prensa compartida o dedicada?
         for lab, kw in (("B referencia (prensas dedicadas TRL-9)", dict(fix=REFERENCE_B)),
                         ("B óptimo con la topología anterior", dict(allow=ALLOW_OLD)), ("B óptimo económico", {})):
-            r = solve(with_bromelain=True, **kw); out[f"E5|{lab}"] = r; save(); print("E5", lab, brief(r), flush=True)
+            r = solve(with_bromelain=True, hint=(hint(f"E5|{lab}") if "fix" not in kw else None), **kw); out[f"E5|{lab}"] = r; save(); print("E5", lab, brief(r), flush=True)
     save()

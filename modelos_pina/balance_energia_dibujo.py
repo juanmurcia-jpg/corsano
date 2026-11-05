@@ -39,7 +39,7 @@ def energy_v7():
     e_frente = 1.3 * (F * 8 + b["peel_t"] * 12)
     e_chill_v = 1.3 * (v["elec_kWh"] - F * 8 - juice * 3.5 - wine_d * 1.0)
     e_bombas = 1.3 * (juice * 3.5 + wine_d * 1.0) + pr["mosto_m3"] * 2.0 + pr["lias_MF_m3"] * 1.0 + pr["vino_m3"] * 0.5
-    e_sec = 1.3 * b["flour_t"] * 40
+    e_sec = 1.3 * b["flour_t"] * 40 + pr.get("corona_caldera_t", 0.0) * 10.0      # + picado y secado de corona
     V = float(r["sizes"]["Acetificador"].split()[0]) if r["sizes"]["Acetificador"] != "no" else 0.0
     e_aire = dm.AERATION_KW_M3 * V * 0.9 * 8766
     acid = pr["acido_kg"]
@@ -55,7 +55,10 @@ def energy_v7():
     water = b["water_evap_t"] + pr.get("lias_secador_t", 0) * (1 - dm.LEES_FLOUR)
     latent = water * H_LAT
     crown = b["crown_dm_t"] * 17.0 * 0.80
-    return dict(F=F, E=E, E_tot=E_tot, diesel=E_tot / ETA_GEN, q_mac=q_mac, q_dry=q_dry, Q_tot=Q_tot, glp=Q_tot / ETA_GLP,
+    hb = min(pr.get("calor_corona_GJ", 0.0), Q_tot)
+    q_glp = Q_tot - hb
+    return dict(F=F, E=E, E_tot=E_tot, diesel=E_tot / ETA_GEN, q_mac=q_mac, q_dry=q_dry, Q_tot=Q_tot, glp=q_glp / ETA_GLP, q_glp=q_glp,
+                hb=hb, crown_fuel=hb / 0.80, crown_t=pr.get("corona_caldera_t", 0.0), boiler=r["sizes"].get("Caldera de corona", "no"),
                 h_alc=h_alc, h_acet=h_acet, latent=min(latent, q_dry), water=water, crown=crown, acid=acid, sizes=r["sizes"])
 
 
@@ -85,21 +88,23 @@ def build():
     e = energy_v7(); E = e["E"]
     S = bd.Sankey()
     sd.text(60, 72, "Balance de energía de la biorrefinería de piña", 58, sd.INK, font="Caveat", weight=700)
-    sd.text(62, 112, f"Diseño óptimo de la versión 7 · Chocó 2022 · {fmt(e['F'])} t/año de fruta. El ancho de cada corriente es "
+    sd.text(62, 112, f"Diseño óptimo de la versión 8 · Chocó 2022 · {fmt(e['F'])} t/año de fruta. El ancho de cada corriente es "
                      "proporcional a la energía (GJ/año); zona no interconectada: la electricidad sale de un grupo electrógeno diésel.", 21, "#5e5a53")
     # nodos: fuentes
     S.node("diesel", 340, 210, "Diésel", "elec", f"{fmt(e['diesel'])} GJ/año", side="left")
-    S.node("glp", 340, 640, "GLP", "glp", f"{fmt(e['glp'])} GJ/año", side="left")
+    S.node("glp", 340, 560, "GLP", "glp", f"{fmt(e['glp'])} GJ/año", side="left")
+    if e["hb"] > 0:
+        S.node("corona", 340, 700, "Corona (biomasa)", "corona", f"{fmt(e['crown_fuel'])} GJ/año · {fmt(e['crown_t'])} t", side="left")
     S.node("ralc", 340, 1080, "Fermentación alcohólica", "reac", "calor de reacción", side="left")
     S.node("racet", 340, 1180, "Acetificación", "reac", "493 kJ/mol de ácido", side="left")
     # conversión
     S.node("elec", 700, 200, "Electricidad", "elec", f"{fmt(e['E_tot'] / 3.6)} MWh/año", side="top")
-    S.node("calor", 700, 650, "Calor de proceso", "glp", "caldera de GLP", side="top")
+    S.node("calor", 700, 650, "Calor de proceso", "glp", ("caldera de corona " + e["boiler"] + " + GLP") if e["hb"] > 0 else "caldera de GLP", side="top")
     # usos
     S.node("u_frente", 1150, 170, "Frente y prensas", "elec", "lavado, pelado, trituración", side="right")
     S.node("u_bombas", 1150, 300, "Bombas y separación", "elec", "centrífuga, MF de lías, N₂", side="right")
     S.node("u_aire", 1150, 420, "Aireación", "elec", f"acetificador {e['sizes']['Acetificador']}", side="right")
-    S.node("u_secel", 1150, 560, "Ventiladores y molino", "elec", "secador de harina", side="right")
+    S.node("u_secel", 1150, 560, "Ventiladores y molino", "elec", "secador de harina y picadora de corona", side="right")
     S.node("u_mac", 1150, 650, "Maceración a 55 °C", "glp", "pectinasa, 1 h", side="right")
     S.node("u_dry", 1150, 760, "Secado", "glp", f"{fmt(e['water'])} t de agua evaporada", side="right")
     S.node("u_frio", 1150, 1060, "Frío (chillers)", "reac", "bodegas y acetificador", side="right")
@@ -112,8 +117,12 @@ def build():
     # flujos
     S.flow("diesel", "elec", e["E_tot"], "elec", fmt(e["E_tot"]), 0.5)
     S.flow("diesel", "d_conv", e["diesel"] - e["E_tot"], "perdidas", f"grupo electrógeno (η {int(ETA_GEN * 100)} %) {fmt(e['diesel'] - e['E_tot'])}", 0.22, -4)
-    S.flow("glp", "calor", e["Q_tot"], "glp", fmt(e["Q_tot"]), 0.5)
-    S.flow("glp", "d_conv", e["glp"] - e["Q_tot"], "perdidas", f"caldera {fmt(e['glp'] - e['Q_tot'])}", 0.12)
+    if e["q_glp"] > 0.5:
+        S.flow("glp", "calor", e["q_glp"], "glp", fmt(e["q_glp"]), 0.5)
+        S.flow("glp", "d_conv", e["glp"] - e["q_glp"], "perdidas", None)
+    if e["hb"] > 0:
+        S.flow("corona", "calor", e["hb"], "corona", fmt(e["hb"]), 0.5)
+        S.flow("corona", "d_conv", e["crown_fuel"] - e["hb"], "perdidas", f"caldera de biomasa {fmt(e['crown_fuel'] - e['hb'])}", 0.12)
     S.flow("elec", "u_frente", E["frente"], "elec", fmt(E["frente"]), 0.5)
     S.flow("elec", "u_bombas", E["bombas"], "elec", fmt(E["bombas"]), 0.5)
     S.flow("elec", "u_aire", E["aire"], "elec", fmt(E["aire"]), 0.5)
@@ -137,13 +146,13 @@ def build():
     for k, y in (("d_conv", 170), ("d_gas", 420), ("d_lat", 700), ("d_amb", 1010)):
         hpx = tot[k] * bd.K
         sd.text(PX + 26, y + hpx / 2 + 34, f"{fmt(tot[k])} GJ/año", 18, "#5e5a53")
-    ins = e["diesel"] + e["glp"] + e["h_alc"] + e["h_acet"]
+    ins = e["diesel"] + e["glp"] + e.get("crown_fuel", 0) + e["h_alc"] + e["h_acet"]
     outs = sum(tot.values())
     # cierre y lecturas
     bx, by = 60, 1440
     sd.rrect(bx, by, 1300, 290, PAL["neutro"][1], 1.8, dash="8 7", passes=1)
     sd.text(bx + 20, by + 40, "Cierre y lectura (GJ/año)", 30, sd.INK, font="Caveat", weight=700)
-    sd.text(bx + 20, by + 78, f"Entradas: diésel {fmt(e['diesel'])} + GLP {fmt(e['glp'])} + calores de reacción {fmt(e['h_alc'] + e['h_acet'])} = {fmt(ins)}", 21, sd.INK)
+    sd.text(bx + 20, by + 78, f"Entradas: diésel {fmt(e['diesel'])} + GLP {fmt(e['glp'])} + corona {fmt(e['crown_fuel'])} + calores de reacción {fmt(e['h_alc'] + e['h_acet'])} = {fmt(ins)}", 21, sd.INK)
     sd.text(bx + 20, by + 110, f"Salidas: conversión {fmt(tot['d_conv'])} + gases {fmt(tot['d_gas'])} + latente {fmt(tot['d_lat'])} + ambiente {fmt(tot['d_amb'])} = {fmt(outs)}", 21, sd.INK)
     share_v = (E["aire"] + kwh_chill_a(e)) / e["E_tot"]
     sd.text(bx + 20, by + 150, f"• El secado es el {100 * e['q_dry'] / e['Q_tot']:.0f} % del calor; el agua evaporada se lleva {100 * e['latent'] / e['q_dry']:.0f} % de él como calor latente.", 19, "#5e5a53")
@@ -154,12 +163,16 @@ def build():
     cx, cy = 1420, 1440
     sd.rrect(cx, cy, 1360, 290, PAL["corazon"][1], 2.0, dash="10 7")
     sd.hachure(cx + 3, cy + 3, 1354, 48, PAL["corazon"][1], gap=9, sw=1.3, op=0.35, fill=PAL["corazon"][0], fill_op=0.55)
-    sd.text(cx + 20, cy + 38, "Oportunidad: la corona como combustible", 30, sd.INK, font="Caveat", weight=700)
-    sd.text(cx + 20, cy + 84, f"La corona ({fmt(e['F'] * 0.15)} t/año, 20 % de materia seca, 17 MJ/kg) en una caldera de biomasa al 80 % daría "
-                              f"≈ {fmt(e['crown'])} GJ/año de calor,", 19, "#5e5a53")
-    sd.text(cx + 20, cy + 112, f"el {100 * e['crown'] / e['Q_tot']:.0f} % del calor de proceso que hoy se compra como GLP ({fmt(e['glp'])} GJ/año de combustible). "
-                               "En el óptimo de la versión 7 la corona va a compost:", 19, "#5e5a53")
-    sd.text(cx + 20, cy + 140, "la caldera de biomasa (TRL 9, línea L7b del TEA) no estaba en la superestructura del dimensionamiento.", 19, "#5e5a53")
+    if e["hb"] > 0:
+        sd.text(cx + 20, cy + 38, "La corona como combustible (versión 8)", 30, sd.INK, font="Caveat", weight=700)
+        sd.text(cx + 20, cy + 84, f"El MILP eligió una caldera de biomasa de {e['boiler']}: quema {fmt(e['crown_t'])} t/año de corona (20 % de materia seca, 17 MJ/kg, al 80 %)", 19, "#5e5a53")
+        sd.text(cx + 20, cy + 112, f"y entrega {fmt(e['hb'])} GJ/año, el {100 * e['hb'] / e['Q_tot']:.0f} % del calor de proceso. El GLP baja a {fmt(e['glp'])} GJ/año de combustible.", 19, "#5e5a53")
+        sd.text(cx + 20, cy + 140, "La corona deja de ir a compost; la caldera es TRL 9 (línea L7b del TEA).", 19, "#5e5a53")
+    else:
+        sd.text(cx + 20, cy + 38, "Oportunidad: la corona como combustible", 30, sd.INK, font="Caveat", weight=700)
+        sd.text(cx + 20, cy + 84, f"La corona ({fmt(e['F'] * 0.15)} t/año, 20 % de materia seca, 17 MJ/kg) en una caldera de biomasa al 80 % daría "
+                                  f"≈ {fmt(e['crown'])} GJ/año de calor,", 19, "#5e5a53")
+        sd.text(cx + 20, cy + 112, f"el {100 * e['crown'] / e['Q_tot']:.0f} % del calor de proceso que hoy se compra como GLP.", 19, "#5e5a53")
     sd.text(cx + 20, cy + 180, "Supuestos: grupo electrógeno al 33 % [S]; caldera de GLP al 85 % (plantilla); 96,6 kJ/mol de azúcar fermentado;", 18, "#6f6a62", italic=True)
     sd.text(cx + 20, cy + 206, "2,26 MJ/kg de calor latente; consumos por equipo de planta_trl9 y del TEA (incluye 30 % de no listados).", 18, "#6f6a62", italic=True)
     sd.text(cx + 20, cy + 232, "No se cuenta la energía química de los productos: es un balance de servicios y calores de proceso.", 18, "#6f6a62", italic=True)

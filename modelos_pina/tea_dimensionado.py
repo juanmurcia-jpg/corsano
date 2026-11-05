@@ -84,6 +84,9 @@ def option_equipment(u, lab):
         n = int(lab.split("×")[0]); q = (n - 1) * dm.VF / dm.T_PEEL
         return [dict(name=f"Fermentador de jugo de cáscara {dm.VF:.0f} m³", qty=n, size=dm.VF, ref_size=dm.VF, ref_USD=pt.fermenter_moresi(dm.VF, True), n=1.0),
                 E("chiller", q * dm.HEAT_KW_PER_M3H * 1.1, "Chiller de la bodega de cáscara")]
+    if u == "Caldera de corona":
+        q = num(); e = E("caldera", q, "Caldera de biomasa (corona), alimentación y cenizas"); e["ref_USD"] *= 1.3
+        return [e, E("astilladora_secador_biomasa", q * 3.6 / dm.CROWN_MJ_T, "Picadora y secador de corona")]
     if u == "Acetificador":
         V = num(); kgh = V * dm.ACET_PROD / 24.0
         return [E("acetador", V, "Acetificador sumergido (turbina autoaspirante)"), E("chiller", kgh * dm.ACID_HEAT / 3.6 * 1.1, "Chiller del acetificador"),
@@ -141,13 +144,14 @@ def build_case(r, label, with_bromelain):
     kwh_extra = (dec_t * 4.5 + must * {"MF": 0.0, "Flotación": 1.0, "Centrífuga": 2.0}[clar.split()[0]] + pr.get("lias_MF_m3", 0.0) * 1.0
                  + (stab_m3 * 100.0 if stab.startswith("UHPH") else 0.0) + pr["vino_m3"] * 0.5
                  + (dm.AERATION_KW_M3 * float(r["sizes"]["Acetificador"].split()[0]) * 0.9 * 8766 if has_vin else 0.0)
-                 + acid_kg * dm.ACID_HEAT / 3.6 / 4.0)
+                 + acid_kg * dm.ACID_HEAT / 3.6 / 4.0 + pr.get("corona_caldera_t", 0.0) * 10.0)
     heat_past = 0.0 if stab.startswith("HTST") else v["flows"]["juice_m3"] * dm.HTST_VC / dm.H_COP   # MJ de pasteurización que no se gastan
     heat_past -= pr.get("lias_secador_t", 0.0) * dm.LEES_DRY_EQ * h["heat_MJ"] / (h["flows"]["peel_t"] * dm.CAKE)   # secado de lías y retenidos
+    heat_past += pr.get("calor_corona_GJ", 0.0) * 1000                                                          # calor de la caldera de corona
     util = [dict(name="Electricidad", qty_year=sum(l["elec_kWh"] * 1.3 * f for l, f in zip(lines, scale)) + kwh_extra, price_key="elec_COP_kWh"),
             dict(name="Calor de proceso (MJ)", qty_year=sum(l["heat_MJ"] * f for l, f in zip(lines, scale)) - heat_past, price_key="calor_COP_MJ"),
             dict(name="Agua de planta (t)", qty_year=sum(l["water_t"] * f for l, f in zip(lines, scale)), price_key="agua_COP_t")]
-    unused = b["crown_t"] + (b["core_t"] * (1 - brom_frac) if with_bromelain else b["core_t"]) + pr.get("cascara_compost_t", 0.0)
+    unused = b["crown_t"] - pr.get("corona_caldera_t", 0.0) + (b["core_t"] * (1 - brom_frac) if with_bromelain else b["core_t"]) + pr.get("cascara_compost_t", 0.0)
     waste = [dict(name="Aguas residuales (t)", qty_year=util[2]["qty_year"], price=tb.COMMON["ARD_COP_t"]),
              dict(name="Compostaje de fracciones sin uso (t)", qty_year=unused, price=dm.COMPOST * 1000),
              dict(name="Lías y espumas a compostaje (m³)", qty_year=pr.get("lias_compost_m3", 0.0), price=dm.LEES_DISP)]
@@ -206,6 +210,7 @@ if __name__ == "__main__":
            ("A · Óptimo con la topología anterior", "E1|Óptimo con la topología anterior (prensa, MF de mosto, HTST)", False),
            ("A · Óptimo con la superestructura ampliada", "E1|Óptimo económico", False),
            ("A · Óptimo sin vinagre", "E1|Óptimo sin vinagre", False),
+           ("A · Óptimo sin caldera de corona", "E1|Óptimo sin caldera de corona", False),
            ("A · Óptimo sin SO₂", "E1|Óptimo sin SO₂", False),
            ("B · Referencia TRL-9 con bromelaína", "E5|B referencia (prensas dedicadas TRL-9)", True),
            ("B · Óptimo con la topología anterior", "E5|B óptimo con la topología anterior", True),

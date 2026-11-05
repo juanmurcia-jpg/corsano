@@ -256,8 +256,8 @@ def build(d):
     fmt = lambda v: f"{v:,.0f}".replace(",", " ")
 
     text(60, 72, "Superestructura de la biorrefinería de piña", 58, INK, font="Caveat", weight=700)
-    text(62, 112, "Cada ∨ es una disyunción (Grossmann cap. 10): el MILP elige una alternativa y su tamaño. En color, el diseño óptimo de la versión 7 "
-                  "(Chocó 2022, vino + harina + vinagre); en gris, las alternativas descartadas.", 21, "#5e5a53")
+    text(62, 112, "Cada ∨ es una disyunción (Grossmann cap. 10): el MILP elige una alternativa y su tamaño. En color, el diseño óptimo de la versión 8 "
+                  "(Chocó 2022: vino, harina, vinagre y caldera de corona); en gris, las alternativas descartadas.", 21, "#5e5a53")
 
     # fruta y frente
     pineapple(170, 790, 1.0)
@@ -337,8 +337,11 @@ def build(d):
     arrow(right(bU)[0] + 2, right(bU)[1], PX + 38, 1290, PAL["corazon"][1], 2.4, 0.05, dash="9 7")
 
     # ---- corona
-    bO, _ = card(650, 1470, 430, "Corona", ["compost · caldera (fuera del MILP)"], "corona", chosen=(0,), disjunction=False, faded=False)
-    arrow(hx - 2, hy + 10, left(bO)[0] - 4, left(bO)[1], PAL["corona"][1], 2.2, 0.28, label="corona 15 %", lab_dy=150, lab_color=PAL["corona"][1])
+    boiler = s.get("Caldera de corona", "no")
+    bO, _ = card(650, 1452, 330, "Corona", [f"caldera de biomasa {boiler if boiler != 'no' else '100–500 kWt'}", "compostaje"], "corona",
+                 chosen=(0,) if boiler != "no" else (1,),
+                 note=(f"→ {fmt(pr.get('calor_corona_GJ', 0))} GJ/año de calor al secador" if boiler != "no" else "calor para el secador"))
+    arrow(hx - 2, hy + 10, left(bO)[0] - 4, left(bO)[1], PAL["corona"][1], 2.2, 0.28, label="corona 15 %", lab_dy=120, lab_color=PAL["corona"][1])
 
     # ---- leyenda y palancas
     lx, ly = 1180, 1470
