@@ -11,7 +11,7 @@
   <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.1 1.25" result="ga"/>
   <feComposite in="SourceGraphic" in2="ga" operator="in"/>
 </filter></defs><rect width="3030" height="1500" fill="#fdfcfa"/><g filter="url(#pencil)"><text x="60.0" y="72.0" font-family="Caveat" font-size="58" font-weight="700" fill="#3d3a35" text-anchor="start" opacity="1.0">Layout conceptual de la planta</text>
-<text x="62.0" y="112.0" font-family="Kalam" font-size="21" font-weight="400" fill="#5e5a53" text-anchor="start" opacity="1.0">Vista en planta, a escala aproximada. Zonas por función y recorrido de los materiales de oeste a este; huellas de equipos del diseño óptimo de la versión 8 (Chocó 2022). Distribución conceptual: no es ingeniería de detalle.</text>
+<text x="62.0" y="112.0" font-family="Kalam" font-size="21" font-weight="400" fill="#5e5a53" text-anchor="start" opacity="1.0">Vista en planta, a escala aproximada. Zonas por función y recorrido de los materiales de oeste a este; huellas de equipos del diseño óptimo de la versión 9 (Chocó 2022). Distribución conceptual: no es ingeniería de detalle.</text>
 <path d="M152.7,190.8 Q1130.3,171.5 2107.9,190.9" fill="none" stroke="#3d3a35" stroke-width="2.80" stroke-linecap="round" opacity="1.00"/>
 <path d="M149.6,190.7 Q1128.3,212.7 2107.0,191.1" fill="none" stroke="#3d3a35" stroke-width="1.96" stroke-linecap="round" opacity="0.75"/>
 <path d="M2109.0,190.7 Q2108.1,820.0 2110.8,1449.3" fill="none" stroke="#3d3a35" stroke-width="2.80" stroke-linecap="round" opacity="1.00"/>

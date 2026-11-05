@@ -1,0 +1,42 @@
+A · Referencia TRL-9 FCI 13,255 | VPN -6,084 | MIRR 3.3 % | LCOP 3,618 COP/L | PE vino 3,984 | P(VPN>0) 0.02 | nómina 427
+A · Óptimo con la topología anterior FCI 11,750 | VPN -5,314 | MIRR 3.5 % | LCOP 3,516 COP/L | PE vino 3,834 | P(VPN>0) 0.04 | nómina 427
+A · Óptimo con la superestructura ampliada FCI 18,300 | VPN 2,577 | MIRR 11.6 % | LCOP 589 COP/L | PE vino 1,850 | P(VPN>0) 0.52 | nómina 499
+A · Óptimo sin vinagre FCI 12,774 | VPN 328 | MIRR 10.3 % | LCOP 2,688 COP/L | PE vino 2,957 | P(VPN>0) 0.37 | nómina 427
+A · Óptimo sin caldera de corona FCI 17,530 | VPN 1,882 | MIRR 11.2 % | LCOP 944 COP/L | PE vino 2,160 | P(VPN>0) 0.49 | nómina 499
+A · Óptimo sin SO₂ FCI 18,616 | VPN 2,207 | MIRR 11.4 % | LCOP 735 COP/L | PE vino 2,015 | P(VPN>0) 0.49 | nómina 499
+A · Diseño v8 con parámetros v9 FCI 18,300 | VPN 2,577 | MIRR 11.6 % | LCOP 589 COP/L | PE vino 1,850 | P(VPN>0) 0.52 | nómina 499
+A · Óptimo sin opciones v9 FCI 18,300 | VPN 2,577 | MIRR 11.6 % | LCOP 589 COP/L | PE vino 1,850 | P(VPN>0) 0.52 | nómina 499
+A · Óptimo sin cal FCI 18,300 | VPN 2,577 | MIRR 11.6 % | LCOP 589 COP/L | PE vino 1,850 | P(VPN>0) 0.52 | nómina 499
+A · Óptimo sin enzima de cáscara FCI 18,300 | VPN 2,577 | MIRR 11.6 % | LCOP 589 COP/L | PE vino 1,850 | P(VPN>0) 0.52 | nómina 499
+B · Referencia TRL-9 con bromelaína FCI 16,114 | VPN -6,211 | MIRR 4.6 % | LCOP 3,605 COP/L | PE vino 4,054 | P(VPN>0) 0.02 | nómina 565
+B · Óptimo con la topología anterior FCI 15,266 | VPN -4,690 | MIRR 5.9 % | LCOP 3,370 COP/L | PE vino 3,783 | P(VPN>0) 0.06 | nómina 565
+B · Óptimo con la superestructura ampliada FCI 22,100 | VPN 2,655 | MIRR 11.4 % | LCOP 494 COP/L | PE vino 1,905 | P(VPN>0) 0.50 | nómina 638
+escala 3073 FCI 11,655 VPN -5,817 PE 4,644
+escala 4610 FCI 17,025 VPN -1,877 PE 12,097
+escala 6146 FCI 18,300 VPN 2,577 PE 1,850
+escala 9219 FCI 24,476 VPN 9,753 PE 0
+escala 12292 FCI 28,417 VPN 18,803 PE 0
+escala 15365 FCI 32,257 VPN 25,314 PE 476
+escala 18438 FCI 36,451 VPN 34,518 PE 720
+escala 21856 FCI 43,986 VPN 40,934 PE 1,034
+precios 1600.0 1500.0 VPN -9,517 10 m³
+precios 1600.0 2200.0 VPN 322 20 m³
+precios 2200.0 1500.0 VPN -7,742 4 m³
+precios 2200.0 2200.0 VPN 322 20 m³
+precios 3000.0 1500.0 VPN -857 4 m³
+precios 3000.0 2200.0 VPN 2,577 10 m³
+precios 4000.0 1500.0 VPN 6,625 4 m³
+precios 4000.0 2200.0 VPN 9,206 4 m³
+TEA_Dimensionado_Choco2022_A_Referencia_TRL_9.xlsx VPN py -6084.4 xl -6084.4 dRel 1.5674155263005504e-16
+TEA_Dimensionado_Choco2022_A_ptimo_con_la_topolog_a_anterior.xlsx VPN py -5313.8 xl -5313.8 dRel 5.384169789356513e-16
+TEA_Dimensionado_Choco2022_A_ptimo_con_la_superestructura_ampliada.xlsx VPN py 2576.6 xl 2576.6 dRel 5.366792484822465e-15
+TEA_Dimensionado_Choco2022_A_ptimo_sin_vinagre.xlsx VPN py 328.0 xl 328.0 dRel 1.0358334421750914e-14
+TEA_Dimensionado_Choco2022_A_ptimo_sin_caldera_de_corona.xlsx VPN py 1882.4 xl 1882.4 dRel 1.899896599131727e-15
+TEA_Dimensionado_Choco2022_A_ptimo_sin_SO.xlsx VPN py 2207.0 xl 2207.0 dRel 4.969332288964736e-15
+TEA_Dimensionado_Choco2022_A_Dise_o_v8_con_par_metros_v9.xlsx VPN py 2576.6 xl 2576.6 dRel 5.366792484822465e-15
+TEA_Dimensionado_Choco2022_A_ptimo_sin_opciones_v9.xlsx VPN py 2576.6 xl 2576.6 dRel 5.366792484822465e-15
+TEA_Dimensionado_Choco2022_A_ptimo_sin_cal.xlsx VPN py 2576.6 xl 2576.6 dRel 5.366792484822465e-15
+TEA_Dimensionado_Choco2022_A_ptimo_sin_enzima_de_c_scara.xlsx VPN py 2576.6 xl 2576.6 dRel 5.366792484822465e-15
+TEA_Dimensionado_Choco2022_B_Referencia_TRL_9_con_bromela_na.xlsx VPN py -6210.9 xl -6210.9 dRel 1.2283848999002497e-15
+TEA_Dimensionado_Choco2022_B_ptimo_con_la_topolog_a_anterior.xlsx VPN py -4689.6 xl -4689.6 dRel 1.830235104145274e-15
+TEA_Dimensionado_Choco2022_B_ptimo_con_la_superestructura_ampliada.xlsx VPN py 2655.4 xl 2655.4 dRel 9.876595792274226e-15

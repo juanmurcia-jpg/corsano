@@ -114,11 +114,13 @@ def evaluate(case, c=COMMON, overrides=None):
     revenue_main = price * sold
     rev_bp = 0.0
     for bp in case.get("byproducts", []):
-        rev_bp += bp["qty_year"] * f_prod * c["vendido"] * ov.get("bp_price_" + bp["name"], bp["price"])
+        rev_bp += bp["qty_year"] * ov.get("bp_qty_" + bp["name"], 1.0) * f_prod * c["vendido"] * ov.get("bp_price_" + bp["name"], bp["price"])
     revenue = revenue_main + rev_bp
     raw = sum(r["qty_year"] * f_prod * r["price"] * (ov.get("raw_scale", 1.0) if r.get("main") else 1.0)
               for r in case["raw"])
-    util = sum(u["qty_year"] * f_prod * (c[u["price_key"]] if "price_key" in u else u["price"]) for u in case["utilities"])
+    # v9: si solo llega a planta una fracción de la corona (crown_avail), el calor que no da la caldera se compra
+    util = sum((u["qty_year"] + (1 - ov.get("crown_avail", 1.0)) * u.get("crown_MJ", 0.0)) * f_prod
+               * (c[u["price_key"]] if "price_key" in u else u["price"]) for u in case["utilities"])
     waste = sum(w["qty_year"] * f_prod * w["price"] for w in case.get("waste", []))
     var = raw + util + waste
     pay = payroll(case["positions"], cal, c, engineer=case.get("engineer", 1))

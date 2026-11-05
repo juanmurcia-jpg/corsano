@@ -108,7 +108,8 @@ MF_FLUX = 45.0                                              # L/m²·h sostenido
 MF_LOSS = 0.27                                              # retenido: rendimiento de jugo clarificado 73 % (FRV 3,7)
 CENT_LOSS, FLOT_LOSS = 0.12, 0.18                           # lodos y espumas con SIS 10,5 % m/m (uva: 2–15 %) [S]
 LEES_FLOUR = 0.11                                           # t harina / t lías o retenido (≈ 10 % de sólidos, harina al 10 % de humedad) [S]
-LEES_DRY_EQ = (1 - LEES_FLOUR) / 0.7667                     # carga del secador por t de lías (0,767 t de agua por t de torta)
+DRY_W = 1 - FLOUR_PC                                       # t de agua evaporada por t de torta (v9: 0,81; v8: 0,77)
+LEES_DRY_EQ = (1 - LEES_FLOUR) / DRY_W                     # carga del secador por t de lías, en t de torta equivalentes
 # ---- v7: vinagre (Emde 2017, Ullmann's Food and Feed: acetificador Frings; Bekatorou 2020)
 ACET_PROD = 50.0                                            # kg ácido acético/(m³·d): 40–60 en acetificadores Frings
 ACET_YIELD = 0.94                                           # fracción del rendimiento teórico (46 g etanol -> 60 g ácido)
@@ -116,15 +117,23 @@ ACID_HEAT = 493.0 / 60.0                                    # MJ/kg ácido (ΔH 
 AERATION_KW_M3 = 1.2                                        # kW por m³ de acetificador (turbina autoaspirante, 0,1–0,15 vvm) [S]
 VIN_ACID = 50.0                                             # kg/m³ (vinagre al 5 %)
 A_WINE = 65.4 * 60 / 46 * ACET_YIELD                        # kg ácido / m³ de vino (≈ 8,3 % v/v de etanol)
-A_PJ = 104.0 * 0.46 * 0.95 * 60 / 46 * ACET_YIELD           # kg ácido / t de jugo de cáscara (104 g/kg de azúcar)
+PJ_SUGAR = 104.0                                           # g de azúcares fermentables / kg de jugo de cáscara (Seguí y Fito 2018: 103 ± 15 g/L)
+PJ_ETOH = 0.36                                             # v9: g etanol / g azúcar en fermentación directa del jugo (Seguí y Fito 2018, tabla 2,
+                                                           #     S. bayanus); rango 0,23–0,43; v8: 0,46·0,95 = 0,437
+A_PJ = PJ_SUGAR * PJ_ETOH * 60 / 46 * ACET_YIELD           # kg ácido / t de jugo de cáscara (v9: 45,9; v8: 55,7)
+A_PJ_RANGE = tuple(PJ_SUGAR * e * 60 / 46 * ACET_YIELD for e in (0.23, 0.36, 0.43))
 T_PEEL = 30.0 + 2.5                                         # h: fermentación del jugo de cáscara + descarga
 VIN_PRICE = tl.M("vinagre_L")
 DAP_VC = 0.2 * 8_000.0                                      # COP/m³ de mosto: 200 mg/L de fosfato diamónico (YAN < 140 mg/L)
 N2_VC = 0.5 * E_COP                                         # COP/m³ de vino: generador PSA de N2 para inertizar tanques
-PJ_VC = 0.2 * 60_000 + DAP_VC                               # COP/t jugo de cáscara: levadura + nutrientes
+PJ_VC = 0.2 * 60_000 + DAP_VC + SO2_VC                      # COP/t jugo de cáscara: levadura + nutrientes + SO₂ (v9: el jugo sin tratar
+                                                           #     se contamina con bacterias acéticas, Seguí y Fito 2018)
 VIN_VC = ACID_HEAT / 3.6 / 4.0 * E_COP + 500.0              # COP/kg ácido: frío con COP 4 (trópico) + nutrientes y filtración [S]
 ALLOW_OLD = {"Decantadora": ["no"], "Clarificación": ["MF"], "MF lías": ["no"], "Estabilización": ["HTST"], "Caldera de corona": ["no"],
-             "Acetificador": ["no"], "Bodega cáscara": ["no"]}   # topología v5
+             "Acetificador": ["no"], "Bodega cáscara": ["no"], "Pretratamiento cáscara": ["agua"], "Enzima cáscara": ["no"]}   # topología v5
+NO_V9 = {"Pretratamiento cáscara": ["agua"], "Enzima cáscara": ["no"]}     # v9 sin sus opciones nuevas
+NO_LIME = {"Pretratamiento cáscara": ["agua"]}
+NO_ENZ = {"Enzima cáscara": ["no"]}
 NO_SO2 = {"Estabilización": ["HTST", "UHPH"]}
 NO_VIN = {"Acetificador": ["no"], "Bodega cáscara": ["no"]}
 NO_BOILER = {"Caldera de corona": ["no"]}
@@ -133,6 +142,22 @@ CROWN_MJ_T = cp.Y["crown_dm"] * 17_000.0 * 0.80             # MJ útiles por t d
 CROWN_VC = 10.0 * E_COP                                     # COP/t de corona: picado y secado (10 kWh/t)
 Q_MAC = 3.9 * (55 - 28) * 0.4                               # MJ/t de pulpa: maceración a 55 °C con 60 % de recuperación
 HEAT_COP = C["calor_COP_MJ"]                                # COP/MJ útil con GLP (caldera al 85 %, plantilla)
+# ---- v9: Seguí y Fito (2018, J. Clean. Prod. 172:1224) y Campos et al. (2020, Foods 9:60)
+PJ_FRAC = {"agua": cp.Y["peel_juice_frac"], "cal 0,1 %": 0.684 * 0.95}   # t de jugo (equivalente en azúcar) / t de cáscara:
+                                                           #     extractora 0,578 (Campos); con Ca(OH)₂ al 0,1 % 0,684 (Seguí), 5 % de dilución [S]
+CAKE_FRAC = {"agua": 1 - cp.Y["peel_juice_frac"], "cal 0,1 %": 1 - 0.684}  # t de torta / t de cáscara (misma MS de la torta, 17 %)
+LIME_VC = 1.0 * 1_500.0 + 1.0 * E_COP                      # COP/t de cáscara: 1 kg de Ca(OH)₂ + mezcla [S]
+ENZ_Y = 0.45 / cp.Y["peel_juice_frac"]                     # kg de enzima cruda seca / t de jugo de cáscara: 0,26 % de la cáscara en
+                                                           #     fracción húmeda con 17,2 % de MS (Campos 2020, fig. 1) = 0,45 kg/t cáscara
+ENZ_GAIN = 0.10                                            # aumento del etanol del jugo sin proteasas: Seguí mide +25 % (30 ± 5 frente a
+                                                           #     23,9 g/L); se toma 10 % por la dispersión [S]
+BROM_PRICE = tl.M("bromelaina_kg")                         # COP/kg de bromelaína cruda grado alimentario (≈ 1 200 GDU/g) [S]
+ENZ_TECH = {   # separación de la enzima del jugo de cáscara antes de fermentarlo
+    "Precipitación": dict(pf=1.0, sl=0.01, wet=ENZ_Y / 0.172,                 # precipitación con polisacárido, sin solventes (Campos 2020)
+                          vc=30_000.0 + 2.0 * E_COP + ENZ_Y / 0.172 * 0.83 * 1.5 * E_COP),   # polisacárido [S], centrífuga, liofilización 1,5 kWh/kg
+    "UF": dict(pf=0.5, sl=0.05, wet=50.0,                                       # UF 10 kDa con FCV 20 (Seguí 2018): 340–805 GDU/g frente a
+               vc=3.0 * E_COP + 2_000.0 + 50.0 * 0.95 * 1.5 * E_COP),          #     1 400–2 800 de la comercial → pf 0,5; liofilizar 50 kg/t
+}
 
 
 def options(with_bromelain=False):
@@ -164,8 +189,8 @@ def options(with_bromelain=False):
                         + buy("centrifuga_discos", (n - 1) * VF / T_PROC * 1.5) + buy("filtro_cartuchos", (n - 1) * VF / T_PROC * 1.5)
                         + buy("propagador", 0.5))
                    for n in range(2, 13)]
-    O["Secador"] = [dict(lab=f"{s:g} kg agua/h", cap=s / 1000 * 1.35,
-                         cost=buy("secador_banda", s) + buy("caldera", s * 3.2 / 3.6 * 1.1) + buy("molino_tamiz", s / 1000 * 1.35 * FLOUR_PC * 1000))
+    O["Secador"] = [dict(lab=f"{s:g} kg agua/h", cap=s / 1000 / DRY_W,
+                         cost=buy("secador_banda", s) + buy("caldera", s * 3.2 / 3.6 * 1.1) + buy("molino_tamiz", s / 1000 / DRY_W * FLOUR_PC * 1000))
                     for s in (50, 100, 200, 300, 500, 800)]
     O["Bodega cáscara"] = [dict(lab="no", cap=0.0, cost=0.0)] + [
         dict(lab=f"{n}×10 m³", cap=(n - 1) * VF / T_PEEL, cost=ferm_cost(n) + buy("chiller", (n - 1) * VF / T_PEEL * HEAT_KW_PER_M3H * 1.1))
@@ -180,6 +205,17 @@ def options(with_bromelain=False):
     O["Caldera de corona"] = [dict(lab="no", cap=0.0, cost=0.0)] + [
         dict(lab=f"{q} kWt", cap=q * 3.6, cost=1.3 * buy("caldera", q) + buy("astilladora_secador_biomasa", q * 3.6 / CROWN_MJ_T))
         for q in (100, 200, 300, 500)]
+    O["Pretratamiento cáscara"] = [dict(lab="agua", cap=0.0, cost=0.0),
+                                   dict(lab="cal 0,1 %", cap=0.0, cost=buy("mezclador_cal", 2) + buy("dosificador_nutrientes", 1))]
+    op1 = tb.payroll(1, tb.calendar(3), engineer=0)["total"] * (1 + C["supervision"])        # un operario por turno
+    O["Enzima cáscara"] = [dict(lab="no", cap=0.0, cost=0.0)]
+    for q in (0.25, 0.5, 1):
+        O["Enzima cáscara"].append(dict(lab=f"Precipitación {q:g} t/h", cap=q, tech="Precipitación", fixed=op1,
+                                        cost=2 * buy("tanque_precipitacion", q) + buy("centrifuga_discos", q)
+                                        + buy("liofilizador", q * 12 * ENZ_TECH["Precipitación"]["wet"] * 0.83)))
+        O["Enzima cáscara"].append(dict(lab=f"UF {q:g} t/h", cap=q, tech="UF", fixed=op1 + 0.2 * buy("UF_bromelaina", q * 1000 / 25),
+                                        cost=buy("centrifuga_discos", q) + buy("UF_bromelaina", q * 1000 / 25)
+                                        + buy("liofilizador", q * 12 * ENZ_TECH["UF"]["wet"] * 0.95)))
     O["Almacén de mosto"] = [dict(lab=f"{V:g} m³", cap=V, cost=(buy("tanque_pulmon", V) if V <= 50 else 1.4 * buy("tanque_guarda", V)))
                              for V in (10, 25, 50, 100, 200, 400, 800)]
     if with_bromelain:
@@ -196,7 +232,7 @@ def options(with_bromelain=False):
 REFERENCE = {   # diseño TRL-9 a 6 200 t/año (planta_trl9.design): lavado 2 t/h, prensa de pulpa 1 t/h + prensa de cáscara 1 t/h,
     "Frente": "2 t/h", "Prensa": "1 t/h", "Prensa cáscara": "1 t/h", "Decantadora": "no", "Clarificación": "MF 20 m²",
     "MF lías": "no", "Estabilización": "HTST 1000 L/h", "Bodega": "2×10 m³", "Acetificador": "no", "Bodega cáscara": "no", "Caldera de corona": "no",
-    "Secador": "300 kg agua/h", "Almacén de mosto": "10 m³", "turno3": 0,                                    # secador 300, pulmón 10 m³
+    "Secador": "300 kg agua/h", "Almacén de mosto": "10 m³", "Pretratamiento cáscara": "agua", "Enzima cáscara": "no", "turno3": 0,                                    # secador 300, pulmón 10 m³
 }
 REFERENCE_B = dict(REFERENCE, **{"Aspersión": "10 kg agua/h", "Prensa corazón": "1 t/h"})
 
@@ -312,6 +348,9 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
         pj = {mt: m.addVar(lb=0) for mt in MT}; wv = {mt: m.addVar(lb=0) for mt in MT}; acid = {mt: m.addVar(lb=0) for mt in MT}
         hb = {mt: m.addVar(lb=0) for mt in MT}; cr = {mt: m.addVar(lb=0) for mt in MT}     # calor de la caldera (MJ) y corona quemada (t)
         comp = {mt: m.addVar(lb=0) for mt in MT}                                # cáscara sin prensar a compostaje
+        OPT, OE = O["Pretratamiento cáscara"], O["Enzima cáscara"]
+        Pco = {(k, mt): m.addVar(lb=0) for k in range(len(OPT)) for mt in MT}   # v9: cáscara prensada con cada pretratamiento
+        XE = {}                                                                # v9: jugo de cáscara que pasa por la separación de enzima
         compk = {mt: m.addVar(lb=0) for mt in MT}                               # corazón sin procesar a compostaje
         st = list(chi) + ["mosto"]
         nq = len(MT)
@@ -355,7 +394,10 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
             # vinagre: jugo de cáscara fermentado y vino desviado, acetificados en continuo (24/7)
             m.addCons(pj[mt] / 1.05 <= cap_expr("Bodega cáscara", mt, False))
             m.addCons(wv[mt] <= WINE_PM * bod[mt])
-            m.addCons(acid[mt] == A_WINE * wv[mt] + A_PJ * pj[mt])
+            XE[mt] = opt_flows("Enzima cáscara", mt, True)
+            m.addCons(quicksum(XE[mt].values()) <= pj[mt])
+            m.addCons(acid[mt] == A_WINE * wv[mt] + A_PJ * pj[mt]
+                      + quicksum(A_PJ * ((1 + ENZ_GAIN) * (1 - ENZ_TECH[OE[k]["tech"]]["sl"]) - 1) * XE[mt][k] for k in XE[mt] if k > 0))
             m.addCons(acid[mt] <= cap_expr("Acetificador", mt, False))
             # caldera de corona: capacidad, corona disponible y demanda de calor del periodo (secado + maceración)
             m.addCons(hb[mt] <= cap_expr("Caldera de corona", mt, False))
@@ -370,7 +412,11 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
             else:
                 m.addCons(asp[mt] == 0)
             Pc = P["cascara", mt] + (Pd["cascara", mt] if "cascara" in yded else 0)
-            m.addCons(pj[mt] <= cp.Y["peel_juice_frac"] * Pc)
+            Mpc = FR["cascara"] * max(o["cap"] for o in O["Frente"]) * Hx
+            m.addCons(quicksum(Pco[k, mt] for k in range(len(OPT))) == Pc)
+            for k in range(len(OPT)):
+                m.addCons(Pco[k, mt] <= Mpc * y["Pretratamiento cáscara", k])
+            m.addCons(pj[mt] <= quicksum(PJ_FRAC[OPT[k]["lab"]] * Pco[k, mt] for k in range(len(OPT))))
             Pk = (P["corazon", mt] + (Pd["corazon", mt] if "corazon" in yded else 0)) if with_bromelain else 0
             bal = {
                 "fruta": rate_in[mo_] * d[mt] - fe[mt] - loss[mt],
@@ -381,7 +427,7 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
                 "lias": quicksum(OC[k]["loss"] * XC[mt][k] for k in XC[mt] if not OC[k].get("ret")) - ml[mt] - ld[mt] - ldry[mt],
                 "ret": quicksum(OC[k]["loss"] * XC[mt][k] for k in XC[mt] if OC[k].get("ret")) - rdry[mt] - rd[mt],
                 "mosto": quicksum(SB[mt].values()) - bod[mt],
-                "torta": CAKE * Pc - sec[mt],
+                "torta": quicksum(CAKE_FRAC[OPT[k]["lab"]] * Pco[k, mt] for k in range(len(OPT))) - sec[mt],
                 "jcor": (CORE_J * Pk - asp[mt]) if with_bromelain else 0,
             }
             for k_ in st:
@@ -390,7 +436,11 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
             m.addCons(quicksum(loss.values()) <= loss_max * supply)
         unused = FR["corazon"] * (0 if with_bromelain else 1) + B1["crown_t"]
         Pcas = lambda mt: P["cascara", mt] + (Pd["cascara", mt] if "cascara" in yded else 0)
-        contrib = quicksum(mg["wine"] * bod[mt] + mg["flour"] * sec[mt] + mg["brom"] * asp[mt] + mg["peel_juice"] * Pcas(mt)
+        pjtot = lambda mt: quicksum(PJ_FRAC[OPT[k]["lab"]] * Pco[k, mt] for k in range(len(OPT)))
+        enz = lambda mt: quicksum((C["vendido"] * BROM_PRICE * ENZ_TECH[OE[k]["tech"]]["pf"] * ENZ_Y - ENZ_TECH[OE[k]["tech"]]["vc"]) * XE[mt][k]
+                                  for k in XE[mt] if k > 0)
+        contrib = quicksum(mg["wine"] * bod[mt] + mg["flour"] * sec[mt] + mg["brom"] * asp[mt] + 150.0 * 1000 * pjtot(mt)
+                           - LIME_VC * quicksum(Pco[k, mt] for k in range(len(OPT)) if OPT[k]["lab"] != "agua") + enz(mt)
                            - (FRUIT_PRICE * 1000 + COMPOST * 1000 * unused) * fe[mt] - COMPOST * 1000 * (comp[mt] + compk[mt]) - CH_COST * ncy[mt]
                            - mg["guard"] * WINE_PM * bod[mt]
                            - quicksum(O["Clarificación"][k].get("vc", 0.0) * XC[mt][k] for k in XC[mt])
@@ -404,7 +454,7 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
         second = second + sc["p"] * contrib
         V["scen"].append(dict(sc=sc, supply=supply, d=d, w=w, tau=tau, ncy=ncy, P=P, Pd=Pd, fe=fe, mfv=mfv, bod=bod, sec=sec,
                               asp=asp, loss=loss, comp=comp, I=I, contrib=contrib, Hs=Hs, XC=XC, SB=SB, ml=ml, ld=ld,
-                              ldry=ldry, rdry=rdry, rd=rd, pj=pj, wv=wv, acid=acid, hb=hb, cr=cr))
+                              ldry=ldry, rdry=rdry, rd=rd, pj=pj, wv=wv, acid=acid, hb=hb, cr=cr, Pco=Pco, XE=XE))
     m.setObjective((second - capex_ann) / 1e6, "maximize")
     V["capex_ann"] = capex_ann
     return m, V
@@ -431,13 +481,16 @@ def extract(m, V, with_bromelain):
                              stab=sum(v(x_) for x_ in S["SB"][mt].values()), ml=v(S["ml"][mt]), ld=v(S["ld"][mt]) + v(S["rd"][mt]),
                              ldry=v(S["ldry"][mt]) + v(S["rdry"][mt]), pj=v(S["pj"][mt]), wv=v(S["wv"][mt]), acid=v(S["acid"][mt]),
                              hb=v(S["hb"][mt]), cr=v(S["cr"][mt]),
+                             pjt=sum(PJ_FRAC[O["Pretratamiento cáscara"][k]["lab"]] * v(S["Pco"][k, mt]) for k in range(len(O["Pretratamiento cáscara"]))),
+                             cal=sum(v(S["Pco"][k, mt]) for k in range(len(O["Pretratamiento cáscara"])) if O["Pretratamiento cáscara"][k]["lab"] != "agua"),
+                             enz=sum(v(x_) for k, x_ in S["XE"][mt].items() if k > 0),
                              loss=v(S["loss"][mt]), comp=v(S["comp"][mt]), I_mosto=v(S["I"]["mosto", V["MT"].index(mt) + 1])))
             T0 += dur
         util = {}
         cap = out["caps"]
         for u, key, staffed in (("Frente", "fe", True), ("Clarificación", "mf", True), ("Estabilización", "stab", True), ("MF lías", "ml", True),
                                 ("Acetificador", "acid", False), ("Caldera de corona", "hb", False),
-                                ("Bodega", "bod", False), ("Secador", "sec", False), ("Aspersión", "asp", True)):
+                                ("Bodega", "bod", False), ("Secador", "sec", False), ("Aspersión", "asp", True), ("Enzima cáscara", "enz", True)):
             if u == "Estabilización" and out["sizes"][u].startswith("SO"):
                 continue
             if u not in cap or cap[u] <= 0:
@@ -457,7 +510,9 @@ def extract(m, V, with_bromelain):
                     acido_kg=sum(r["acid"] for r in rows), vinagre_m3=sum(r["acid"] for r in rows) / VIN_ACID,
                     calor_corona_GJ=sum(r["hb"] for r in rows) / 1000, corona_caldera_t=sum(r["cr"] for r in rows), vino_m3=sum(r["bod"] for r in rows) * WINE_PM,
                     harina_t=sum(r["sec"] for r in rows) * FLOUR_PC,
-                    bromelaina_kg=sum(r["asp"] for r in rows) * B1["bromelain_kg"] / (B1["core_t"] * CORE_J))
+                    bromelaina_kg=sum(r["asp"] for r in rows) * B1["bromelain_kg"] / (B1["core_t"] * CORE_J),
+                    torta_t=sum(r["sec"] for r in rows), jugo_cascara_t=sum(r["pjt"] for r in rows), cascara_cal_t=sum(r["cal"] for r in rows),
+                    jugo_enzima_t=sum(r["enz"] for r in rows), enzima_cascara_kg=sum(r["enz"] for r in rows) * ENZ_Y)
         out["scen"].append(dict(sup=S["sc"]["sup"], p=S["sc"]["p"], supply=S["supply"], contrib=v(S["contrib"]) / 1e6, periods=rows,
                                 util=util, loss=sum(r["loss"] for r in rows), loss_month=[sum(r["loss"] for r in rows if r["month"] == mo_) for mo_ in range(12)],
                                 supply_month=(S["supply"] * pm.SEASON / 12.0).tolist(), changeovers=sum(r["W"] for r in rows), products=prod,
@@ -498,27 +553,34 @@ def brief(r):
 
 if __name__ == "__main__":
     which = sys.argv[1:] or ["E1", "E2", "E3", "E4", "E5", "E6"]
-    path = f"{RES}/dimensionamiento.json"
+    path = os.environ.get("DIM_OUT", f"{RES}/dimensionamiento.json")      # v9: corridas en paralelo, cada una con su archivo
     out = json.load(open(path)) if os.path.exists(path) else {}
     save = lambda: json.dump(out, open(path, "w"), default=float)
-    _H = json.load(open(f"{RES}/dimensionamiento_v7.json")) if os.path.exists(f"{RES}/dimensionamiento_v7.json") else {}
+    _H = json.load(open(f"{RES}/dimensionamiento_v8.json")) if os.path.exists(f"{RES}/dimensionamiento_v8.json") else {}
     def hint(key, each=None):
         r0 = _H.get(key, {})
         if each is not None:
             r0 = r0.get("each", [{}])[each] if r0.get("each") else {}
         if not r0.get("sizes"):
             return None
-        return dict(r0["sizes"], **{"Caldera de corona": "no", "turno3": r0.get("turno3", 0)})
+        return dict(r0["sizes"], **{"Pretratamiento cáscara": "agua", "Enzima cáscara": "no", "turno3": r0.get("turno3", 0)})
     print("Lang eq.", round(LANG, 3), "AF", round(AF, 4), "turno 3 MM COP/año", round(shift_cost() / 1e6, 1),
           {k: round(v_) for k, v_ in margins().items()}, flush=True)
     if "E1" in which:   # óptimo vs referencia TRL-9
+        v8 = _H.get("E1|Óptimo económico")
+        if v8:   # v9: el diseño óptimo de la v8 evaluado con los parámetros de la v9 (descomposición v8 → v9)
+            r = solve(fix=dict(v8["sizes"], **{"Pretratamiento cáscara": "agua", "Enzima cáscara": "no", "turno3": v8["turno3"]}))
+            out["E1|Diseño v8 con parámetros v9"] = r; save(); print("E1 Diseño v8 con parámetros v9", brief(r), flush=True)
         for lab, kw in (("Referencia TRL-9 (planta_trl9, 6 200 t)", dict(fix=REFERENCE)),
                         ("Referencia con prensa única de 3 t/h compartida", dict(fix=dict(REFERENCE, **{"Prensa": "3 t/h", "Prensa cáscara": "no"}))),
                         ("Óptimo con la topología anterior (prensa, MF de mosto, HTST)", dict(allow=ALLOW_OLD)),
                         ("Óptimo económico", {}),
                         ("Óptimo sin SO₂", dict(allow=NO_SO2)),
                         ("Óptimo sin vinagre", dict(allow=NO_VIN)),
-                        ("Óptimo sin caldera de corona", dict(allow=NO_BOILER))):
+                        ("Óptimo sin caldera de corona", dict(allow=NO_BOILER)),
+                        ("Óptimo sin opciones v9 (sin cal ni enzima)", dict(allow=NO_V9)),
+                        ("Óptimo sin cal", dict(allow=NO_LIME)),
+                        ("Óptimo sin enzima de cáscara", dict(allow=NO_ENZ))):
             r = solve(hint=(hint(f"E1|{lab}") or hint("E1|Óptimo económico")) if "fix" not in kw else None, **kw)
             out[f"E1|{lab}"] = r; save(); print("E1", lab, brief(r), flush=True)
     if "E2" in which:   # regla de dimensionamiento: tamaños óptimos según la oferta (0,5× a la base de la tesis)

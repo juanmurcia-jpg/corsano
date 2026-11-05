@@ -46,9 +46,10 @@ def wine_from_fruit(fruit_t, pulp_share=FR["pulpa"][0]):
 
 # ---------------------------------------------------------------------------------- rendimientos de cada línea
 Y = dict(
-    peel_juice_frac=0.50,       # jugo / cáscara (prensa) [S]
+    peel_juice_frac=0.578,      # v9: jugo / cáscara con extractora (Campos et al. 2020, Foods 9:60, fig. 1); v8: 0,50 [S]
     peel_cake_moist=0.75,       # humedad de la torta [L]
-    peel_dm=0.14,               # materia seca de la cáscara fresca [L]
+    peel_dm=0.1765,             # v9: materia seca de la cáscara fresca, humedad 82,35 % (Campos 2020, tabla 1); v8: 0,14 [L]
+    cake_dm_ret=0.41,           # v9: fracción de la materia seca de la cáscara que queda en la torta (Campos 2020: torta 42,2 % con 17,03 % MS); v8: 0,75 [S]
     flour_moist=0.10,           # humedad final de la harina [L]
     core_juice_frac=0.60,       # [S]
     bromelain_g_per_kg_core=3.0,  # bromelaína cruda [S] (rango 1–6)
@@ -76,7 +77,7 @@ def full_balance(fruit_t, wine_frac_to_vinegar=0.16, pulp_share=FR["pulpa"][0], 
     vinegar_m3 = acid_t * 1000 / Y["vinegar_acidity"]
     peel_juice_t = peel * Y["peel_juice_frac"]
     cake_t = peel - peel_juice_t
-    cake_dm = peel * Y["peel_dm"] * 0.75          # 75 % de la materia seca queda en la torta [S]
+    cake_dm = peel * Y["peel_dm"] * Y["cake_dm_ret"]   # materia seca que queda en la torta (Campos 2020)
     flour_t = cake_dm / (1 - Y["flour_moist"])
     water_evap_t = cake_t - flour_t
     core_juice_t = core * Y["core_juice_frac"]

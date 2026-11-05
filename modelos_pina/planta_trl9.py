@@ -43,6 +43,9 @@ TECH = {   # tecnología: (TRL, nota)
     "Sulfitado del mosto (SO2)": (9, "práctica estándar de vinificación"),
     "UHPH del mosto (300 MPa)": (8, "equipos industriales hasta 10 000 L/h, un solo proveedor (Morata 2022, cap. 5)"),
     "Inertización con N2": (9, "protección del mosto y el vino frente al oxígeno (Morata 2022, caps. 23 y 25)"),
+    "Prensado de cáscara con Ca(OH)2 al 0,1 %": (6, "planta piloto neumática (Seguí y Fito 2018); sin referencia industrial"),
+    "Bromelaína por precipitación con polisacárido": (5, "laboratorio con jugo industrial (Campos et al. 2020)"),
+    "Bromelaína por UF 10 kDa + liofilización": (6, "UF industrial madura; con jugo de piña solo en laboratorio (Seguí y Fito 2018)"),
 }
 
 CAT = {   # catálogo: tamaños discretos, unidad, referencia (tamaño, USD 2024), exponente   [S] salvo indicación
@@ -86,6 +89,9 @@ CAT = {   # catálogo: tamaños discretos, unidad, referencia (tamaño, USD 2024
     "centrifuga_espuma": dict(sizes=[1], unit="u", ref=(1, 35_000), n=1.0),
     "lavador_gases": dict(sizes=[1], unit="u", ref=(1, 15_000), n=1.0),
     "MF_vinagre": dict(sizes=[2, 5, 10, 20], unit="m2", ref=(5, 40_000), n=0.7),
+    # v9: pretratamiento con cal (Seguí y Fito 2018) y separación de enzima del jugo de cáscara (Campos 2020)   [S]
+    "mezclador_cal": dict(sizes=[1, 2, 3, 5], unit="t/h", ref=(2, 12_000), n=0.6),
+    "liofilizador": dict(sizes=[5, 10, 25, 50, 100, 250, 500], unit="kg agua/d", ref=(25, 90_000), n=0.6),
 }
 
 

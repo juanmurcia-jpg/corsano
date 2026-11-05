@@ -256,8 +256,8 @@ def build(d):
     fmt = lambda v: f"{v:,.0f}".replace(",", " ")
 
     text(60, 72, "Superestructura de la biorrefinería de piña", 58, INK, font="Caveat", weight=700)
-    text(62, 112, "Cada ∨ es una disyunción (Grossmann cap. 10): el MILP elige una alternativa y su tamaño. En color, el diseño óptimo de la versión 8 "
-                  "(Chocó 2022: vino, harina, vinagre y caldera de corona); en gris, las alternativas descartadas.", 21, "#5e5a53")
+    text(62, 112, "Cada ∨ es una disyunción (Grossmann cap. 10): el MILP elige una alternativa y su tamaño. En color, el diseño óptimo de la versión 9 "
+                  "(Chocó 2022); en gris, las alternativas descartadas. Nuevo en la v9: pretratamiento de la cáscara y bromelaína del jugo de cáscara.", 21, "#5e5a53")
 
     # fruta y frente
     pineapple(170, 790, 1.0)
@@ -302,23 +302,35 @@ def build(d):
     arrow(right(bL)[0] + 2, cL[0][1], bS[0] + 110, bS[1] + bS[3] + 4, PAL["agua"][1], 2.2, 0.18, label="jugo recuperado", lab_size=18, lab_dy=26)
 
     # ---- fila de cáscara: harina y vinagre
+    lime = s.get("Pretratamiento cáscara", "agua") != "agua"
+    jf, kf = (0.684, 0.316) if lime else (0.578, 0.422)
+    bT, cT = card(650, 575, 250, "Pretratamiento", ["agua (jugo 58 %)", "Ca(OH)₂ 0,1 % (jugo 68 %)"], "cascara",
+                  chosen=(1,) if lime else (0,), note="Campos 2020 · Seguí 2018")
     bK, cK = card(650, 800, 250, "Prensa de cáscara", [f"dedicada {s['Prensa cáscara']}", "compartida con la pulpa"], "cascara",
                   chosen=(0,) if s["Prensa cáscara"] != "no" else (1,))
+    arrow(bT[0] + 125, bT[1] + bT[3] + 2, bK[0] + 125, bK[1] - 4, PAL["cascara"][1], 2.2, 0.0)
     arrow(hx + 6, hy + 4, left(bK)[0] - 4, left(bK)[1], PAL["cascara"][1], 2.6, 0.12, )
     text(470, 905, "cáscara 30 %", 22, PAL["cascara"][1], anchor="middle")
     bD, cD = card(1280, 800, 245, "Secador de banda", [f"{s['Secador']}", "50 · 200 · 300 · 500 · 800"], "cascara", chosen=(0,),
                   note="+ molino y tamiz")
-    arrow(right(bK)[0] + 2, cK[0][1], left(bD)[0] - 4, left(bD)[1] - 10, PAL["cascara"][1], 2.6, -0.05, label="torta (50 %)", lab_size=19)
+    arrow(right(bK)[0] + 2, cK[0][1], left(bD)[0] - 4, left(bD)[1] - 10, PAL["cascara"][1], 2.6, -0.05, label=f"torta ({kf * 100:.0f} %, 17 % MS)", lab_size=19)
     arrow(cL[1][0] + 120, cL[1][1] + 22, bD[0] + 60, bD[1] - 4, PAL["cascara"][1], 2.0, 0.1, dash="7 6")
     product(PX, 770, sack, "Harina de fibra", [f"≈ {fmt(pr['harina_t'] + pr.get('harina_lias_t', 0))} t/año", "cáscara + lías"], "cascara")
     arrow(right(bD)[0] + 2, right(bD)[1], PX + 10, 850, PAL["cascara"][1], 2.6, 0.06)
 
     bJ, cJ = card(945, 1010, 290, "Jugo de cáscara", [f"fermentar {s['Bodega cáscara']}", "venta al hub (150 COP/kg)"], "vinagre",
                   chosen=(0,) if s["Bodega cáscara"] != "no" else (1,))
-    arrow(bK[0] + 125, bK[1] + bK[3] + 2, left(bJ)[0] - 4, left(bJ)[1], PAL["vinagre"][1], 2.4, 0.15, label="jugo (50 %)", lab_size=19, lab_dy=28)
-    bA, cA = card(1570, 1010, 300, "Acetificador Frings", [f"{s['Acetificador']} · 50 kg/m³·d", "2 · 4 · 6 · 20 m³ · no"], "vinagre",
+    arrow(bK[0] + 125, bK[1] + bK[3] + 2, left(bJ)[0] - 4, left(bJ)[1], PAL["vinagre"][1], 2.4, 0.15, label=f"jugo ({jf * 100:.0f} %)", lab_size=19, lab_dy=28)
+    enz = s.get("Enzima cáscara", "no")
+    eo = ["precipitación con polisacárido", "UF 10 kDa + liofilización", "sin separar"]
+    ei_ = 2 if enz == "no" else (0 if enz.startswith("Prec") else 1)
+    if enz != "no":
+        eo[ei_] = eo[ei_].split(" con")[0].split(" +")[0] + " " + " ".join(enz.split()[1:])
+    bZ, cZ = card(1262, 1010, 300, "Enzima del jugo", eo, "corazon", chosen=(ei_,), note="sin proteasas el jugo fermenta mejor")
+    bA, cA = card(1600, 1010, 290, "Acetificador Frings", [f"{s['Acetificador']} · 50 kg/m³·d", "2 · 4 · 6 · 20 m³ · no"], "vinagre",
                   chosen=(0,) if s["Acetificador"] != "no" else (1,), note="frío · grupo electrógeno")
-    arrow(right(bJ)[0] + 2, cJ[0][1], left(bA)[0] - 4, cA[0][1], PAL["vinagre"][1], 2.6, -0.05, label="vino de cáscara", lab_size=18)
+    arrow(right(bJ)[0] + 2, cJ[0][1], left(bZ)[0] - 4, cZ[0][1], PAL["vinagre"][1], 2.6, 0.0)
+    arrow(right(bZ)[0] + 2, cZ[0][1], left(bA)[0] - 4, cA[0][1], PAL["vinagre"][1], 2.6, 0.0)
     arrow(bB[0] + 60, bB[1] + bB[3] + 4, bA[0] + 190, bA[1] - 4, PAL["vinagre"][1], 2.6, 0.12, dash="10 6")
     text(bB[0] + 80, bB[1] + bB[3] + 250, "vino desviado", 21, PAL["vinagre"][1])
     text(bB[0] + 80, bB[1] + bB[3] + 276, f"≈ {fmt(pr.get('vino_a_vinagre_m3', 0))} m³/año", 21, PAL["vinagre"][1])
@@ -330,11 +342,14 @@ def build(d):
                   chosen=(0,) if b.get("Prensa corazón", "no") == "no" and b else (), optional=True)
     arrow(hx + 2, hy + 8, left(bR)[0] - 4, left(bR)[1], PAL["corazon"][1], 2.4, 0.2, dash="9 7", label="corazón 10 %", lab_dy=40,
           lab_color=PAL["corazon"][1])
-    bU, cU = card(1280, 1225, 290, "Bromelaína", [f"aspersión {b.get('Aspersión', '25 kg agua/h')}", "UF 10 kDa (o 75 + 10 kDa)"], "corazon",
+    bU, cU = card(1280, 1275, 290, "Bromelaína", [f"aspersión {b.get('Aspersión', '25 kg agua/h')}", "UF 10 kDa (o 75 + 10 kDa)"], "corazon",
                   chosen=(0, 1), disjunction=False, optional=True, note="Vasiljevic 2020")
     arrow(right(bR)[0] + 2, cR[0][1], left(bU)[0] - 4, left(bU)[1], PAL["corazon"][1], 2.4, -0.04, dash="9 7", label="jugo de corazón", lab_size=18)
-    product(PX, 1220, vial, "Bromelaína + polvo", ["solo en la configuración B", "≈ 1 840 kg/año"], "corazon")
-    arrow(right(bU)[0] + 2, right(bU)[1], PX + 38, 1290, PAL["corazon"][1], 2.4, 0.05, dash="9 7")
+    product(PX, 1220, vial, "Bromelaína cruda", [f"≈ {fmt(pr.get('enzima_cascara_kg', 0))} kg/año del jugo de cáscara" if enz != "no" else "del jugo de cáscara: desde 2× la oferta",
+                                                  "del corazón: solo en la config. B"], "corazon")
+    arrow(right(bU)[0] + 2, right(bU)[1], PX + 38, 1300, PAL["corazon"][1], 2.4, 0.05, dash="9 7")
+    if enz != "no":
+        arrow(bZ[0] + 150, bZ[1] + bZ[3] + 2, PX + 20, 1270, PAL["corazon"][1], 2.6, -0.12)
 
     # ---- corona
     boiler = s.get("Caldera de corona", "no")
@@ -344,7 +359,7 @@ def build(d):
     arrow(hx - 2, hy + 10, left(bO)[0] - 4, left(bO)[1], PAL["corona"][1], 2.2, 0.28, label="corona 15 %", lab_dy=120, lab_color=PAL["corona"][1])
 
     # ---- leyenda y palancas
-    lx, ly = 1180, 1470
+    lx, ly = 1180, 1490
     rrect(lx, ly, 1340, 160, PAL["neutro"][1], 1.8, dash="8 7", passes=1)
     text(lx + 20, ly + 38, "Cómo leer", 30, INK, font="Caveat", weight=700)
     hachure(lx + 20, ly + 56, 120, 34, PAL["pulpa"][1], gap=6.5, sw=1.4, op=0.6, fill=PAL["pulpa"][0], fill_op=0.75)

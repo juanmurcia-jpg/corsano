@@ -39,7 +39,8 @@ def energy_v7():
     e_frente = 1.3 * (F * 8 + b["peel_t"] * 12)
     e_chill_v = 1.3 * (v["elec_kWh"] - F * 8 - juice * 3.5 - wine_d * 1.0)
     e_bombas = 1.3 * (juice * 3.5 + wine_d * 1.0) + pr["mosto_m3"] * 2.0 + pr["lias_MF_m3"] * 1.0 + pr["vino_m3"] * 0.5
-    e_sec = 1.3 * b["flour_t"] * 40 + pr.get("corona_caldera_t", 0.0) * 10.0      # + picado y secado de corona
+    fh = pr.get("torta_t", b["peel_t"] * dm.CAKE) / (b["peel_t"] * dm.CAKE)        # v9: la línea de harina sigue a la torta secada
+    e_sec = 1.3 * b["flour_t"] * fh * 40 + pr.get("corona_caldera_t", 0.0) * 10.0 + pr.get("jugo_enzima_t", 0.0) * 5.0   # + corona, + enzima
     V = float(r["sizes"]["Acetificador"].split()[0]) if r["sizes"]["Acetificador"] != "no" else 0.0
     e_aire = dm.AERATION_KW_M3 * V * 0.9 * 8766
     acid = pr["acido_kg"]
@@ -47,12 +48,12 @@ def energy_v7():
     E = dict(frente=kwh(e_frente), bombas=kwh(e_bombas), secador_el=kwh(e_sec), aire=kwh(e_aire), frio=kwh(e_chill_v + e_chill_a))
     E_tot = sum(E.values())
     q_mac = b["pulp_t"] * 1000 * 3.9 * (55 - 28) / 1000 * 0.4 / 1000                # GJ
-    q_dry = (h["heat_MJ"] + pr.get("lias_secador_t", 0) * dm.LEES_DRY_EQ * h["heat_MJ"] / (b["peel_t"] * dm.CAKE)) / 1000
+    q_dry = (h["heat_MJ"] * fh + pr.get("lias_secador_t", 0) * dm.LEES_DRY_EQ * h["heat_MJ"] / (b["peel_t"] * dm.CAKE)) / 1000
     Q_tot = q_mac + q_dry
     must_ferm = pr["vino_m3"] / dm.WINE_PM
     h_alc = must_ferm * p.S_JUICE / 180.16 * 96.6 / 1000 + pr["jugo_cascara_vinagre_t"] * 104 / 180.16 * 96.6 / 1000
     h_acet = acid * dm.ACID_HEAT / 1000
-    water = b["water_evap_t"] + pr.get("lias_secador_t", 0) * (1 - dm.LEES_FLOUR)
+    water = b["water_evap_t"] * fh + pr.get("lias_secador_t", 0) * (1 - dm.LEES_FLOUR)
     latent = water * H_LAT
     crown = b["crown_dm_t"] * 17.0 * 0.80
     hb = min(pr.get("calor_corona_GJ", 0.0), Q_tot)
@@ -88,7 +89,7 @@ def build():
     e = energy_v7(); E = e["E"]
     S = bd.Sankey()
     sd.text(60, 72, "Balance de energía de la biorrefinería de piña", 58, sd.INK, font="Caveat", weight=700)
-    sd.text(62, 112, f"Diseño óptimo de la versión 8 · Chocó 2022 · {fmt(e['F'])} t/año de fruta. El ancho de cada corriente es "
+    sd.text(62, 112, f"Diseño óptimo de la versión 9 · Chocó 2022 · {fmt(e['F'])} t/año de fruta. El ancho de cada corriente es "
                      "proporcional a la energía (GJ/año); zona no interconectada: la electricidad sale de un grupo electrógeno diésel.", 21, "#5e5a53")
     # nodos: fuentes
     S.node("diesel", 340, 210, "Diésel", "elec", f"{fmt(e['diesel'])} GJ/año", side="left")
@@ -164,7 +165,7 @@ def build():
     sd.rrect(cx, cy, 1360, 290, PAL["corazon"][1], 2.0, dash="10 7")
     sd.hachure(cx + 3, cy + 3, 1354, 48, PAL["corazon"][1], gap=9, sw=1.3, op=0.35, fill=PAL["corazon"][0], fill_op=0.55)
     if e["hb"] > 0:
-        sd.text(cx + 20, cy + 38, "La corona como combustible (versión 8)", 30, sd.INK, font="Caveat", weight=700)
+        sd.text(cx + 20, cy + 38, "La corona como combustible (versiones 8 y 9)", 30, sd.INK, font="Caveat", weight=700)
         sd.text(cx + 20, cy + 84, f"El MILP eligió una caldera de biomasa de {e['boiler']}: quema {fmt(e['crown_t'])} t/año de corona (20 % de materia seca, 17 MJ/kg, al 80 %)", 19, "#5e5a53")
         sd.text(cx + 20, cy + 112, f"y entrega {fmt(e['hb'])} GJ/año, el {100 * e['hb'] / e['Q_tot']:.0f} % del calor de proceso. El GLP baja a {fmt(e['glp'])} GJ/año de combustible.", 19, "#5e5a53")
         sd.text(cx + 20, cy + 140, "La corona deja de ir a compost; la caldera es TRL 9 (línea L7b del TEA).", 19, "#5e5a53")

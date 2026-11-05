@@ -8,7 +8,7 @@ from figuras import C, INK, INK2, GRID, SURF, save, J
 
 MES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
 CUM = np.cumsum([0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31])
-ORDER = ["Frente", "Prensa", "Decantadora", "Prensa cáscara", "Prensa corazón", "Clarificación", "MF lías", "Estabilización", "Bodega", "Secador", "Aspersión"]
+ORDER = ["Frente", "Prensa", "Decantadora", "Prensa cáscara", "Prensa corazón", "Clarificación", "MF lías", "Estabilización", "Bodega", "Secador", "Aspersión", "Enzima cáscara", "Acetificador", "Caldera de corona"]
 
 
 def _key(d, start):
@@ -79,10 +79,13 @@ def fig28_escala(d):
     for j, k in enumerate(ks):
         for i, u in enumerate(units):
             lab = d[k]["sizes"][u]
-            ax[0].text(j, i, lab.replace(" kg agua/h", "").replace(" t/h", "").replace(" m³", "").replace(" m²", ""), ha="center", va="center",
+            short = (lab.replace(" kg agua/h", "").replace(" t/h", "").replace(" m³/h", "").replace(" m³", "").replace(" m²", "").replace(" kWt", "")
+                     .replace("Centrífuga ", "C ").replace("Flotación ", "F ").replace("Precipitación ", "P ").replace("MF ", "MF ").replace(".", ","))
+            ax[0].text(j, i, short, ha="center", va="center",
                        fontsize=6.4, color="white" if (M[i, j] == M[i, j] and M[i, j] > 0.7) else INK)
     ax[0].set_yticks(range(len(units))); ax[0].set_yticklabels([u + {"Frente": " (t/h)", "Prensa": " (t/h)", "Prensa cáscara": " (t/h)", "Decantadora": " (t/h)", "MF lías": " (m²)",
-                                                                       "Secador": " (kg agua/h)", "Almacén de mosto": " (m³)"}.get(u, "") for u in units], fontsize=7.5)
+                                                                       "Secador": " (kg agua/h)", "Almacén de mosto": " (m³)", "Clarificación": " (C/F/MF, m³/h o m²)",
+                                                                       "Enzima cáscara": " (P = precipitación, t/h)", "Acetificador": " (m³)", "Caldera de corona": " (kWt)"}.get(u, "") for u in units], fontsize=7.5)
     ax[0].set_xticks(range(len(ks))); ax[0].set_xticklabels([f"{x/1000:.1f}k" + ("\nT3" if d[k]["turno3"] else "") for x, k in zip(sup, ks)], fontsize=7)
     ax[0].set_xlabel("Oferta de fruta (t/año); T3 = tercer turno"); ax[0].grid(False)
     ax[0].set_title("Tamaño óptimo (texto) y ocupación del mes pico (color)", fontsize=9)

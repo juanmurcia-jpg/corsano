@@ -41,9 +41,9 @@ def flows_v7():
     w_vin = p["vino_a_vinagre_m3"] * RHO_W
     w_sold = wine - w_vin
     pj = p["jugo_cascara_vinagre_t"]
-    sold_pj = fr["cascara"] * cp.Y["peel_juice_frac"] - pj
-    torta = fr["cascara"] * (1 - cp.Y["peel_juice_frac"])
-    co2_pj = pj * 0.46 * 0.95 * 104 / 1000 * 44 / 46        # CO2 de la fermentación del jugo de cáscara
+    torta = p.get("torta_t", fr["cascara"] * (1 - cp.Y["peel_juice_frac"]))
+    sold_pj = fr["cascara"] - torta - pj                     # jugo vendido al hub (cierra el balance de la cáscara)
+    co2_pj = pj * dm.PJ_SUGAR / 1000 * dm.PJ_ETOH * 44 / 46  # CO2 de la fermentación del jugo de cáscara (v9: 0,36 g/g)
     pwine = pj - co2_pj
     acid = p["acido_kg"] / 1000
     o2 = acid * 32 / 60
@@ -150,7 +150,7 @@ def build():
     f = flows_v7()
     S = Sankey()
     sd.text(60, 72, "Balance de masa de la biorrefinería de piña", 58, sd.INK, font="Caveat", weight=700)
-    sd.text(62, 112, f"Diseño óptimo de la versión 8 · Chocó 2022 · {fmt(f['F'])} t/año de fruta procesada. El ancho de cada corriente es "
+    sd.text(62, 112, f"Diseño óptimo de la versión 9 · Chocó 2022 · {fmt(f['F'])} t/año de fruta procesada. El ancho de cada corriente es "
                      "proporcional a su masa (t/año); los líquidos se pasan a masa con sus densidades.", 21, "#5e5a53")
     # nodos
     S.node("fruta", 250, 700, "Fruta", "cascara", f"{fmt(f['F'])} t/año", side="left")

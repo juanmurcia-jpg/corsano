@@ -185,7 +185,7 @@ def build():
     r = d["E1|Óptimo económico"]; s = r["sizes"]; f = bd.flows_v7()
     pr = r["scen"][0]["products"]
     sd.text(60, 72, "Diagrama de flujo del proceso", 58, INK, font="Caveat", weight=700)
-    sd.text(62, 112, "Diseño óptimo de la versión 8 · Chocó 2022. Equipos con su tamaño de catálogo; corrientes numeradas con sus caudales en la tabla "
+    sd.text(62, 112, "Diseño óptimo de la versión 9 · Chocó 2022. Equipos con su tamaño de catálogo; corrientes numeradas con sus caudales en la tabla "
                      "(t/año). Línea continua: proceso; terracota discontinua: calor; azul discontinua: frío.", 21, "#5e5a53")
     # --- frente
     pipe([(40, 330), (108, 330)], INK, num=1, at=0.45)
@@ -288,7 +288,7 @@ def build():
         (11, "Vino", f["wine"], "fermentación a 30 °C, 12,5 h"),
         (12, "Vino a vinagre", f["w_vin"], "sin guarda"),
         (13, "Vino a granel", f["w_sold"], "tras 90 días de guarda"),
-        (14, "Torta de cáscara", f["torta"], "75 % de humedad"),
+        (14, "Torta de cáscara", f["torta"], "83 % de humedad"),
         (15, "Jugo de cáscara", f["pj"], "104 g/kg de azúcar"),
         (16, "Harina de fibra", f["flour"], "10 % de humedad; cáscara + lías"),
         (17, "Vinagre al 5 %", f["vin"], "50 kg/m³·d en el acetificador"),
