@@ -18,9 +18,9 @@ import dimensionamiento as dm
 import tea_burk as tb
 
 RES = dm.RES
-CASES = [("Referencia TRL-9", "E1|Referencia TRL-9 (planta_trl9, 6 200 t)"), ("Diseño v10", "E1|Diseño v10 con parámetros v11"),
+CASES = [("Referencia TRL-9", "E1|Referencia TRL-9 (planta_trl9, 6 200 t)"), ("Diseño v11", "E1|Diseño v11 con parámetros v12"),
          ("Óptimo sin opciones v10", "E1|Óptimo sin opciones v10 (sin hojas ni hub)"), ("Óptimo sin vinagre", "E1|Óptimo sin vinagre"),
-         ("Óptimo sin azúcar", "E1|Óptimo sin azúcar añadido"), ("Óptimo v11", "E1|Óptimo económico")]
+         ("Óptimo sin azúcar", "E1|Óptimo sin azúcar añadido"), ("Óptimo v12", "E1|Óptimo económico")]
 
 
 def indicators(r, case):
@@ -32,7 +32,7 @@ def indicators(r, case):
     fruit_pay = p["fruta_t"] * 1000 * dm.FRUIT_PRICE
     leaves_pay = p.get("hojas_t", 0.0) * dm.ACOPIO_VC
     local_wages = D.val("frac_nomina_local") * (pay["total"] + sup)
-    raw_other = sum(x["qty_year"] * x["price"] for x in case["raw"] if not x.get("main") and x.get("key") != "acopio")
+    raw_other = sum(x["qty_year"] * x["price"] for x in case["raw"] if not x.get("main") and x.get("key") not in ("acopio", "impuesto_consumo"))   # v12: el impuesto no es una compra
     local_buy = D.val("frac_compras_locales") * raw_other
     value = fruit_pay + leaves_pay + local_wages + local_buy
     return dict(empleos_planta=jobs_plant, empleos_acopio=jobs_leaves, empleos_total=jobs_plant + jobs_leaves,

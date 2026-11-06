@@ -160,7 +160,7 @@ def build():
     f = flows_v7()
     S = Sankey()
     sd.text(60, 72, "Balance de masa de la biorrefinería de piña", 58, sd.INK, font="Caveat", weight=700)
-    sd.text(62, 112, f"Diseño óptimo de la versión 11 · Chocó 2022 · {fmt(f['F'])} t/año de fruta procesada. El ancho de cada corriente es "
+    sd.text(62, 112, f"Diseño óptimo de la versión 12 · Chocó 2022 · {fmt(f['F'])} t/año de fruta procesada. El ancho de cada corriente es "
                      "proporcional a su masa (t/año); los líquidos se pasan a masa con sus densidades.", 21, "#5e5a53")
     # nodos
     S.node("fruta", 250, 700, "Fruta", "cascara", f"{fmt(f['F'])} t/año", side="left")
@@ -182,7 +182,7 @@ def build():
     if f["az"] > 0.1:   # v11
         S.node("panela", 900, 1100, "Panela", "cascara", f"{fmt(f['az'])} t/año", side="left")
     PX = 2240
-    S.node("p_vino", PX, 170, "Vino a granel", "pulpa", None, side="right", bar=True)
+    S.node("p_vino", PX, 170, "Vino embotellado" if dm.BOTTLED else "Vino a granel", "pulpa", None, side="right", bar=True)
     S.node("p_harina", PX, 480, "Harina de fibra", "cascara", None, side="right")
     S.node("p_vinagre", PX, 720, "Vinagre al 5 %", "vinagre", None, side="right")
     S.node("p_emis", PX, 1040, "Vapor y CO₂", "vapor", None, side="right")

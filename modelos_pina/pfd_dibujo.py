@@ -186,7 +186,7 @@ def build():
     r = d["E1|Óptimo económico"]; s = r["sizes"]; f = bd.flows_v7()
     pr = r["scen"][0]["products"]
     sd.text(60, 72, "Diagrama de flujo del proceso", 58, INK, font="Caveat", weight=700)
-    sd.text(62, 112, "Diseño óptimo de la versión 11 · Chocó 2022. Equipos con su tamaño de catálogo; corrientes numeradas con sus caudales en la tabla "
+    sd.text(62, 112, "Diseño óptimo de la versión 12 · Chocó 2022. Equipos con su tamaño de catálogo; corrientes numeradas con sus caudales en la tabla "
                      "(t/año). Línea continua: proceso; terracota discontinua: calor; azul discontinua: frío.", 21, "#5e5a53")
     # --- frente
     pipe([(40, 330), (108, 330)], INK, num=1, at=0.45)
@@ -221,7 +221,10 @@ def build():
     vessel(1620, 260, 56, 130, "pulpa", cone=False); vessel(1690, 260, 56, 130, "pulpa", cone=False)
     label(1655, 445, "TK-102/103", "Guarda 90 días")
     pipe([(1720, 330), (1790, 330)], PAL["pulpa"][1], num=13, at=0.45)
-    sd.bottle(1840, 320, "pulpa"); sd.text(1840, 430, "Vino a granel", 24, INK, anchor="middle", font="Caveat", weight=700)
+    sd.bottle(1840, 320, "pulpa"); sd.text(1840, 430, "Vino embotellado" if dm.BOTTLED else "Vino a granel", 24, INK, anchor="middle", font="Caveat", weight=700)
+    if dm.BOTTLED and s.get("Embotelladora", "no") != "no":   # v12: línea de embotellado sobre la corriente 13
+        sd.text(1755, 300, "EB-101", 15, "#8a8378", anchor="middle", font="Kalam", weight=700)
+        sd.text(1755, 280, f"embotelladora {s['Embotelladora']}", 15, "#5e5a53", anchor="middle")
     # lodos y MF de lías
     pipe([(1115, 368), (1115, 540)], PAL["agua"][1], num=9, at=0.55)
     membrane(1060, 542, 110, 64, "agua"); sd.text(1185, 572, "MF-101", 17, "#8a8378", font="Kalam", weight=700)
@@ -299,7 +302,7 @@ def build():
         (10, "Jugo recuperado", f["rec"], "permeado de la MF de lías (60 %)"),
         (11, "Vino", f["wine"], "fermentación a 30 °C, 12,5 h"),
         (12, "Vino a vinagre", f["w_vin"], "sin guarda"),
-        (13, "Vino a granel", f["w_sold"], "tras 90 días de guarda"),
+        (13, "Vino embotellado" if dm.BOTTLED else "Vino a granel", f["w_sold"], ("botellas de 750 mL; impuesto al consumo" if dm.BOTTLED else "tras 90 días de guarda")),
         (14, "Torta de cáscara", f["torta"], "83 % de humedad"),
         (15, "Jugo de cáscara", f["pj"], "104 g/kg de azúcar"),
         (16, "Harina de fibra", f["flour"], "10 % de humedad; cáscara + lías"),

@@ -27,6 +27,21 @@ import tea_excel_run as tx
 
 RES = os.path.join(os.path.dirname(__file__), "results")
 WINE_PRICE = dm.WINE_PRICE
+C_VEND = lambda: tb.COMMON["vendido"]   # v12: el impuesto y el empaque se pagan por botella vendida
+
+
+def size_class(revenue):
+    """v12: tamaño de empresa por ingresos ordinarios en UVT (Decreto 957 de 2019, manufactura; verificar el sector)."""
+    uvt = revenue / DT.val("uvt_2026")
+    return "micro o pequeña" if uvt <= DT.val("tope_uvt_pequena") else ("mediana" if uvt <= DT.val("tope_uvt_mediana") else "grande")
+
+
+def zomac_rates(size, N=None, prorroga=False):
+    """v12: tarifa de renta por año de operación (año 0 = construcción). Ley 1819 de 2016, art. 237: tarifa plena desde 2028;
+    con arranque en 2030 no hay beneficio. Escenario prorroga: PL 435 de 2025 (MiPymes al 25 % de la general hasta 2033) [S]."""
+    N = N or tb.COMMON["anios"]; y0 = int(DT.val("anio_arranque")) - 1; g = DT.val("renta_general")
+    f = lambda yr: (DT.val("zomac_mipyme_prorroga") if (prorroga and size != "grande" and yr <= 2033) else 1.0)
+    return [g * f(y0 + t) for t in range(N + 1)]
 
 
 def E(cat, need, name):
@@ -42,6 +57,8 @@ def option_equipment(u, lab):
         return []
     if u == "Frente":
         s = num(); return [E("lavado_seleccion", s, "Recepción, lavado y selección"), E("peladora_descorazonadora", s, "Peladora-descorazonadora")]
+    if u == "Embotelladora":   # v12
+        return [E("embotelladora", num(), "Línea de embotellado (llenado, tapado, etiquetado, encajonado)")]
     if u == "Prensa":
         s = num(); return [E("prensa_banda", s, "Prensa de banda (pulpa)"), E("trituradora", s, "Trituradora de pulpa"),
                            E("macerador_camisa", s / 1.06 * 1.2, "Macerador enzimático con camisa")]
@@ -181,6 +198,11 @@ def build_case(r, label, with_bromelain):
            dict(name="Operación del motor a biogás (kWh)", qty_year=pr.get("elec_bio_kWh", 0.0), price=dm.BIO_OM),
            # v11: panela añadida a los jugos antes de fermentar (Ebrahimi 2026; Tanamool et al. 2020)
            dict(name="Panela añadida a los jugos (kg)", qty_year=pr.get("azucar_kg", 0.0), price=dm.AZ_PRICE, key="panela")]
+    WB = dm.wine_bottle()
+    bottles = wine_m3 * 1000 / dm.BOTTLE_L
+    if dm.BOTTLED:   # v12: empaque e impuesto al consumo departamental (Ley 1816 de 2016), por botella vendida
+        raw += [dict(name="Botella, tapa, etiqueta y caja (botella)", qty_year=bottles * C_VEND(), price=WB["empaque"], key="empaque"),
+                dict(name="Impuesto al consumo de vinos: específico + ad valórem (botella)", qty_year=bottles * C_VEND(), price=WB["impuesto"], key="impuesto_consumo")]
     for prod, key in (("Ácido cítrico", "citrico_kg"), ("Xantana", "xantana_kg")):
         if pr.get(key, 0.0) > 0:
             raw.append(dict(name=f"Servicios y reactivos de {prod.lower()} (kg)", qty_year=pr[key], price=dm.HUB[prod]["vc"]))
@@ -230,7 +252,11 @@ def build_case(r, label, with_bromelain):
     pos = math.ceil((4 + 2 + (2 if with_bromelain else 0) + (1 if has_vin else 0) + (1 if has_enz else 0) + lv_pos) * 0.75)
     cal = dict(tb.calendar(3), shifts=3) if r.get("turno3") else 3
     vin_share_pj = (dm.A_PJ * pj_t / acid_kg) if acid_kg > 0 else 0.0
-    return dict(name=label, vin_share_pj=vin_share_pj, product=dict(name="Vino de piña a granel", unit="L", qty_year=wine_m3 * 1000, price=WINE_PRICE),
+    prod = (dict(name="Vino de piña embotellado (750 mL)", unit="botella", qty_year=bottles, price=WB["fabrica"]) if dm.BOTTLED
+            else dict(name="Vino de piña a granel", unit="L", qty_year=wine_m3 * 1000, price=WINE_PRICE))
+    if dm.BOTTLED and bottles > 0:
+        pos += 1   # v12: un operario de embotellado
+    return dict(name=label, vin_share_pj=vin_share_pj, product=prod,
                 raw=raw, utilities=util, waste=waste, equipment=eqs, positions=pos, calendar=cal, byproducts=byp,
                 engineer=2 if with_bromelain else 1)
 
@@ -251,6 +277,9 @@ def breakeven_vinegar(case, lo=0.0, hi=20_000.0):
 
 
 def run(case, mc_n=1000):
+    size = size_class(tb.evaluate(case)["revenue"])                     # v12: tamaño por ingresos y renta por año (ZOMAC)
+    case["renta_years"] = zomac_rates(size)
+    npv_prorroga = tb.evaluate(case, overrides=dict(renta_years=zomac_rates(size, prorroga=True)))["NPV"]
     r = tb.evaluate(case)
     be = tb.breakeven_price(case)
     be_vin = breakeven_vinegar(case)
@@ -290,7 +319,8 @@ def run(case, mc_n=1000):
         R = [rw + [0.0] for rw in R] + [[0.0] * len(R) + [1.0]]
     _, tor = tb.tornado(case, specs)
     mc = tb.monte_carlo(case, dists, R, n=mc_n)
-    return dict(res={k: v for k, v in r.items() if k != "capex"}, capex={k: v for k, v in r["capex"].items() if k != "rows"},
+    return dict(size=size, NPV_zomac_prorroga=npv_prorroga, wine_bottle=dm.wine_bottle() if dm.BOTTLED else None,
+                res={k: v for k, v in r.items() if k != "capex"}, capex={k: v for k, v in r["capex"].items() if k != "rows"},
                 equipment=r["capex"]["rows"], breakeven=be, breakeven_vinegar=be_vin, tornado=tor,
                 mc=dict(P_pos=mc["P_pos"], P5=mc["P5"], P50=mc["P50"], P95=mc["P95"], CVaR5=mc["CVaR5"], NPV=mc["NPV"].tolist()),
                 case=case)
@@ -304,9 +334,10 @@ if __name__ == "__main__":
            ("A · Óptimo sin vinagre", "E1|Óptimo sin vinagre", False),
            ("A · Óptimo sin caldera de corona", "E1|Óptimo sin caldera de corona", False),
            ("A · Óptimo sin SO₂", "E1|Óptimo sin SO₂", False),
-           ("A · Diseño v10 con parámetros v11", "E1|Diseño v10 con parámetros v11", False),
+           ("A · Diseño v11 con parámetros v12", "E1|Diseño v11 con parámetros v12", False),
            ("A · Óptimo sin azúcar añadido", "E1|Óptimo sin azúcar añadido", False),
            ("A · Óptimo sin tope de demanda de vinagre", "E1|Óptimo sin tope de demanda de vinagre", False),
+           ("A · Óptimo sin tope de demanda de vino", "E1|Óptimo sin tope de demanda de vino", False),
            ("A · Óptimo sin opciones v10", "E1|Óptimo sin opciones v10 (sin hojas ni hub)", False),
            ("A · Óptimo sin etanol de hojas", "E1|Óptimo sin etanol de hojas", False),
            ("A · Óptimo sin digestor", "E1|Óptimo sin digestor", False),
@@ -340,12 +371,21 @@ if __name__ == "__main__":
     for k in sorted([k for k in dim if k.startswith("E6|")], key=lambda k: (float(k.split("|")[1]), float(k.split("|")[2]))):
         rr = dim[k]; wp, vp = float(k.split("|")[1]), float(k.split("|")[2])
         c = build_case(rr, f"Vino {wp:.0f} · vinagre {vp:.0f}", False)
-        c["product"]["price"] = wp
+        pvp = None
+        if dm.BOTTLED:   # v12: E6 se indexa por el neto por litro; se recupera el PVP y se fijan precio de fábrica e impuesto
+            pvp = min((10000.0, 16000.0, 25000.0), key=lambda p_: abs(dm.wine_bottle(pvp=p_)["neto_L"] - wp))
+            wb = dm.wine_bottle(pvp=pvp)
+            c["product"]["price"] = wb["fabrica"]
+            for r_ in c["raw"]:
+                if r_.get("key") == "impuesto_consumo":
+                    r_["price"] = wb["impuesto"]
+        else:
+            c["product"]["price"] = wp
         for bp in c["byproducts"]:
             if bp["name"] == "vinagre":
                 bp["price"] = vp
         r = tb.evaluate(c); pr_ = rr["scen"][0]["products"]
-        out["prices"].append(dict(wine_price=wp, vinegar_price=vp, sizes=rr["sizes"], NPV=r["NPV"], FCI=r["FCI"], MIRR=r["MIRR"],
+        out["prices"].append(dict(wine_price=wp, pvp=pvp, vinegar_price=vp, sizes=rr["sizes"], NPV=r["NPV"], FCI=r["FCI"], MIRR=r["MIRR"],
                                   vino_vendido_m3=pr_["vino_m3"] - pr_.get("vino_a_vinagre_m3", 0.0), vino_a_vinagre_m3=pr_.get("vino_a_vinagre_m3", 0.0),
                                   jugo_cascara_vinagre_t=pr_.get("jugo_cascara_vinagre_t", 0.0), vinagre_m3=pr_.get("vinagre_m3", 0.0)))
         print("precios", wp, vp, f"VPN {r['NPV']/1e6:,.0f}", rr["sizes"].get("Acetificador"), flush=True)

@@ -135,3 +135,18 @@ kwh_ec_kg_dqo,acv,1.5,,,,,kWh/kg DQO removida,S,,v11
 bo_ch4_dqo,acv,0.25,,,,,kg CH4/kg DQO,L,"IPCC (2006), vol. 5, cap. 6",v11
 mcf_humedal,acv,0.1,,,,,fracción,L,"IPCC (2014), suplemento de humedales: flujo subsuperficial horizontal",v11
 costo_ptar_m3,precios,2500,1500,2500,4000,,COP/m³,S,electrocoagulación y humedal construido,v11
+grado_vino,impuestos,8.3,,,,,% v/v,T,"65,31 g/L de etanol (Murcia Palacios 2013) / 789 g/L",v12: grados alcoholimétricos para el componente específico
+impuesto_vino_especifico,impuestos,243,,,,,COP por grado en 750 cm³,L,"Certificación 003 de 2025, Ministerio de Hacienda (tarifa 2026), citada por Actualícese",v12: impuesto al consumo de vinos; se ajusta con el IPC; en pesos constantes de 2026
+impuesto_vino_ad_valorem,impuestos,0.20,,,,,fracción del PVP antes de impuestos,L,"Ley 1816 de 2016, art. 20 (modifica el art. 50 de la Ley 788 de 2002)",v12
+iva_vino,impuestos,0.05,,,,,fracción,L,"Estatuto Tributario art. 468-1 (Ley 1816 de 2016, arts. 32–33); DIAN, oficio 4031 de 2026",v12
+pvp_vino_botella,precios,16000,10000,16000,25000,PERT,COP por botella de 750 mL,S,sin referencia de vino de piña embotellado en Colombia,v12: precio de venta al público con impuestos
+margen_distribucion_vino,precios,0.35,0.25,0.35,0.50,,fracción sobre el precio de fábrica,S,distribuidor y comercio,v12
+costo_empaque_botella,precios,2400,1600,2400,3500,PERT,COP por botella,S,"botella de 750 mL a 0,23–0,50 USD FOB (proveedores internacionales) más flete, tapa, etiqueta y caja",v12
+demanda_vino_botellas,precios,500000,250000,500000,2000000,discreta,botellas/año,S,sin estudio de mercado del vino de piña embotellado,v12: tope de ventas de vino; barrido en E9
+ef_botella,acv,0.5,0.3,0.5,0.8,,kg CO2e por botella,S,"orden de magnitud; la botella es de los mayores impactos del vino (García García et al. 2023; Zhang y Rosentrater 2019)",v12
+renta_general,impuestos,0.35,,,,,fracción,L,Estatuto Tributario art. 240,v12
+anio_arranque,impuestos,2030,,,,,año,T,decisión del autor,v12: año 1 de operación
+uvt_2026,impuestos,52374,,,,,COP,L,"DIAN, Resolución 000238 de 2025",v12
+tope_uvt_pequena,impuestos,204995,,,,,UVT de ingresos ordinarios,L,"Decreto 957 de 2019 (manufactura; verificar el sector)",v12: tamaño de empresa por ingresos
+tope_uvt_mediana,impuestos,1736565,,,,,UVT de ingresos ordinarios,L,"Decreto 957 de 2019 (manufactura; verificar el sector)",v12
+zomac_mipyme_prorroga,impuestos,0.25,,,,,fracción de la tarifa general,S,"Proyecto de Ley 435 de 2025 Cámara (no aprobado al cierre): MiPymes ZOMAC hasta 2033",v12: escenario; con la ley vigente la tarifa es plena desde 2028

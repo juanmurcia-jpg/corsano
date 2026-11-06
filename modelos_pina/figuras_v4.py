@@ -255,14 +255,14 @@ def fig32_vinagre():
     for xi, k in zip(x, ks):
         a.text(xi, max(sold[list(x).index(xi)], wv[list(x).index(xi)] + pjv[list(x).index(xi)]) + 60, d[k]["sizes"].get("Acetificador", "no").replace("no", "sin acetif."), ha="center", fontsize=6.8, color=INK2)
     a.set_xticks(x); a.set_xticklabels(labs, fontsize=7); a.set_ylabel("m³/año"); a.legend(fontsize=7, loc="upper left")
-    a.set_title("Qué hace el óptimo con el vino según los precios (COP/L); arriba, el acetificador elegido", fontsize=9)
+    a.set_title("Qué hace el óptimo con el vino según los precios (vino: neto COP/L); arriba, el acetificador elegido", fontsize=9)
     b = ax[1]
     if t and t.get("prices"):
         P = t["prices"]
         for q, vp in enumerate(sorted({r["vinegar_price"] for r in P})):
             rr = sorted([r for r in P if r["vinegar_price"] == vp], key=lambda r: r["wine_price"])
             b.plot([r["wine_price"] for r in rr], [r["NPV"] / 1e6 for r in rr], "-o", color=C[q], label=f"Vinagre a {int(vp):,} COP/L".replace(",", " "))
-        b.axhline(0, color=INK2, lw=0.8); b.set_xlabel("Precio del vino (COP/L)"); b.set_ylabel("VPN del diseño óptimo (MM COP)"); b.legend(fontsize=7.5)
+        b.axhline(0, color=INK2, lw=0.8); b.set_xlabel("Vino: neto por litro tras impuesto, margen y empaque (COP/L)"); b.set_ylabel("VPN del diseño óptimo (MM COP)"); b.legend(fontsize=7.5)
         b.set_title("TEA de Burk del óptimo de cada par de precios", fontsize=9)
     fig.suptitle("Fig. 32  El vinagre como cobertura del precio del vino (Emde 2017; Bekatorou 2020)", fontsize=10, fontweight="bold", x=0.01, ha="left")
     save(fig, "fig32_vinagre_precios.png")

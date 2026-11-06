@@ -49,7 +49,7 @@ def run(n=6):
     g_eco = eco["scen"][0]["products"]["gwp_kg"]
     pts = [point(eco)]
     print("extremo económico", round(pts[0]["margin"]), round(g_eco / 1000), flush=True)
-    seeds = [design(d[k]) for k in ("E1|Óptimo sin opciones v10 (sin hojas ni hub)", "E1|Óptimo sin vinagre", "E1|Diseño v10 con parámetros v11") if k in d]
+    seeds = [design(d[k]) for k in ("E1|Óptimo sin opciones v10 (sin hojas ni hub)", "E1|Óptimo sin vinagre", "E1|Diseño v11 con parámetros v12") if k in d]
     low = dm.solve(objective="gwp", time_limit=240, hint=seeds[0] if seeds else None)
     g_min = low["scen"][0]["products"]["gwp_kg"]
     print("extremo ambiental", round(low["scen"][0]["margin"]), round(g_min / 1000), flush=True)
@@ -86,7 +86,7 @@ def figure(out):
         ax.annotate(tag, (p["gwp"] / 1000, p["margin"]), xytext=(6, -12), textcoords="offset points", fontsize=7.5, color=INK2)
     ax.set_xlabel("GWP de proceso (t CO2e/año)"); ax.set_ylabel("Margen anual del MILP (MM COP/año)")
     ax.set_title("Cada punto es un diseño óptimo con un tope de GWP (ε-restricción)", fontsize=9)
-    fig.suptitle("Fig. 43  Frente de Pareto margen–GWP del dimensionamiento v11", fontsize=10, fontweight="bold", x=0.01, ha="left")
+    fig.suptitle("Fig. 43  Frente de Pareto margen–GWP del dimensionamiento v12", fontsize=10, fontweight="bold", x=0.01, ha="left")
     save(fig, "fig43_pareto.png")
 
 

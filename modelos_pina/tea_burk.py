@@ -148,8 +148,9 @@ def evaluate(case, c=COMMON, overrides=None):
         taxable[t] = max(base - use, 0)
         pool = pool - use + max(-base, 0)
     tax_paid = np.zeros(N + 1)
-    tax_paid[1:] = taxable[:-1] * c["renta"]
-    tax_paid[N] += taxable[N] * c["renta"]
+    rv = np.array(ov.get("renta_years", case.get("renta_years", [c["renta"]] * (N + 1))), dtype=float)[:N + 1]   # v12: renta por año (ZOMAC)
+    tax_paid[1:] = taxable[:-1] * rv[:-1]
+    tax_paid[N] += taxable[N] * rv[N]
     net = gross - tax_paid
     cf = net - inv
     cf[1] -= WC

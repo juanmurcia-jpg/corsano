@@ -535,7 +535,12 @@ if d_opt and cmp10:
 dim, d_opt, tdim = dim_cur, d_opt_cur, tdim_cur
 # ---- v11: panela añadida, demanda de vinagre, xantana con residuo de piña y efluentes (Ebrahimi 2026; Ahamed y Li 2026; Iakovchenko 2026)
 cmp11 = RJ("comparativo_v10_v11.json")
-acv11, soc11, par11, pc11 = (RJ(f) for f in ("acv.json", "social.json", "pareto.json", "puntos_calientes.json"))
+V11P = lambda f: ("v11/" + f) if os.path.exists(os.path.join("results", "v11", f)) else f   # v12: la sección v11 lee su copia
+acv11, soc11, par11, pc11 = (RJ(V11P(f)) for f in ("acv.json", "social.json", "pareto.json", "puntos_calientes.json"))
+dim_cur, d_opt_cur, tdim_cur = dim, d_opt, tdim
+dim = RJ(V11P("dimensionamiento.json")) or dim
+d_opt = dim.get("E1|Óptimo económico", d_opt)
+tdim = RJ(V11P("tea_dimensionado.json")) or tdim
 D10s = RJ("v10/dimensionamiento.json") or {}
 T10s = RJ("v10/tea_dimensionado.json") or {}
 v11_html = ""
@@ -631,6 +636,83 @@ if d_opt and cmp11:
               "<li><b>El efluente entra al balance.</b> El tratamiento con electrocoagulación y humedal suma un costo y una huella pequeños; la DQO del efluente es un supuesto [S] que hay que medir.</li>"
               "<li><b>Lo que la v11 no hizo.</b> La acetificación termotolerante (menos frío) y el vinagre de doble fuerza (menos flete por el río) quedan como alternativas de la etapa 3 para la versión siguiente.</li></ul>")
     v11_html = v11_html.replace("V11_RESULTADOS", t_).replace("V11_LECTURA", lect11)
+dim, d_opt, tdim = dim_cur, d_opt_cur, tdim_cur
+
+# ---- v12: vino embotellado con impuesto al consumo (Ley 1816 de 2016), demanda de botellas y renta ZOMAC por año
+cmp12 = RJ("comparativo_v11_v12.json")
+acv12, soc12 = RJ("acv.json"), RJ("social.json")
+D11s = RJ("v11/dimensionamiento.json") or {}
+v12_html = ""
+if d_opt and cmp12:
+    WB12 = cmp12.get("wine_bottle") or dmod.wine_bottle()
+    reg12 = [r_ for r_ in DTm.registro().values() if r_.get("nota", "").startswith("v12")]
+    par_rows12 = [[E(r_["clave"]), E(r_["valor"]) + " " + E(r_["unidad"]),
+                   (E(r_["minimo"]) + "–" + E(r_["maximo"])) if r_.get("minimo") and r_.get("maximo") else "—", E(r_["etiqueta"]), E(r_["fuente"])] for r_ in reg12]
+    bot_rows = [["Precio de venta al público (con IVA del 5 %)", n0(WB12["pvp"])], ["Precio de fábrica, con impuesto al consumo", n0(WB12["fabrica"])],
+                ["Impuesto al consumo: componente específico", n0(WB12["especifico"])], ["Impuesto al consumo total (específico + ad valórem)", n0(WB12["impuesto"])],
+                ["Botella, tapa, etiqueta y caja", n0(WB12["empaque"])], ["Neto para la planta por botella", n0(WB12["neto"])],
+                ["Neto por litro de vino (frente a 3 000 COP/L a granel en la v11)", n0(WB12["neto_L"])]]
+    p12 = d_opt["scen"][0]["products"]; s12 = d_opt["sizes"]
+    o11 = D11s.get("E1|Óptimo económico", {})
+    dec12 = cmp12.get("decomp", [])
+    e9_rows = [[E(e_["label"]), n0(e_["obj"]), n0(e_["botellas"] / 1000), n0(e_["vinagre_m3"]), n0(e_["azucar_t"]),
+                E(e_["sizes"].get("Embotelladora", "no")), E(e_["sizes"].get("Acetificador", "no"))] for e_ in cmp12.get("e9", [])]
+    ex9 = cmp12.get("e9_extra", {})
+    prod12_rows = [[E(x["label"]), n0(x["v11"]), n0(x["v12"])] for x in cmp12.get("prods", [])]
+    tea12_rows = [[E(x["label"]), n0(x["NPV11"] / MM), n0(x["NPV12"] / MM), n0((x["NPV12_prorroga"] or float("nan")) / MM), pct(x["MIRR12"]), pct(x["P12"], 0), E(x.get("size") or "—")]
+                  for x in cmp12.get("tea", [])]
+    T12 = {x["label"]: x for x in cmp12.get("tea", [])}
+    g12 = lambda k: dim.get(k, {}).get("obj")
+    v12_html = f"""
+<h3>Versión 12: vino embotellado, impuesto al consumo y renta en ZOMAC</h3>
+<div class="prose">
+<p><b>Por qué.</b> La instancia reducida del manuscrito (sec. 6.9) encontró que, con el impuesto al consumo de vinos de la Ley 1816 de 2016, ninguna configuración de sus seis líneas era rentable. Las versiones 1 a 11 valoraban el vino a granel a 3 000 COP/L sin ese impuesto. La v12 lo incorpora con el vino embotellado, que es como se va a vender, y revisa el impuesto de renta: la planta queda en Riosucio o Carmen del Darién, municipios ZOMAC (Decreto 1650 de 2017).</p>
+<p><b>Qué cambia en el modelo.</b> (1) El vino se vende en botellas de 750 mL: el impuesto al consumo combina un componente específico de 243 COP por grado alcoholimétrico (tarifa 2026) y un 20 % ad valórem sobre el precio al público antes de impuestos; el IVA es del 5 %. (2) Una línea de embotellado de 500 a 4 000 botellas por hora, el empaque por botella y un operario. (3) Un tope de demanda de vino embotellado, {n0(DTm.val('demanda_vino_botellas'))} botellas/año como supuesto central [S], barrido en E9. (4) La huella de la botella de vidrio en el ACV. (5) La renta por año: con arranque en 2030, el régimen ZOMAC de la Ley 1819 de 2016 (art. 237) ya no da tarifa reducida, así que la base usa el 35 %; el proyecto de ley 435 de 2025, que llevaría a las MiPymes al 25 % de la tarifa general hasta 2033, entra como escenario. El tamaño de la empresa sale del diseño, por sus ingresos en UVT (Decreto 957 de 2019).</p>
+</div>
+{table(['Parámetro nuevo', 'Valor', 'Rango', 'Etiqueta', 'Fuente'], par_rows12) if par_rows12 else ''}
+{table(['Una botella de 750 mL (COP)', 'Valor'], bot_rows, num_cols=(1,))}
+<div class="prose">V12_RESULTADOS</div>
+{table(['Demanda de vino (E9)', 'Margen (MM COP/año)', 'Botellas (miles/año)', 'Vinagre (m³)', 'Panela (t)', 'Embotelladora', 'Acetificador'], e9_rows, num_cols=(1, 2, 3, 4)) if e9_rows else ''}
+{fig('fig47_comparativo_v11_v12.png', 'Comparación v11 y v12', 'Fig. 47. De la v11 a la v12: cascada del margen con el diseño v11 fijo y reoptimización, barrido de la demanda de vino embotellado (E9), productos del óptimo y VPN de los casos comparables, con el escenario de prórroga ZOMAC.') if os.path.exists('figs/fig47_comparativo_v11_v12.png') else ''}
+{table(['Producto o insumo del óptimo (por año)', 'v11', 'v12'], prod12_rows, num_cols=(1, 2))}
+{table(['Caso del TEA', 'VPN v11 (MM COP)', 'VPN v12 (MM COP)', 'VPN v12 con prórroga ZOMAC', 'MIRR v12', 'P(VPN > 0) v12', 'Tamaño de empresa'], tea12_rows, num_cols=(1, 2, 3, 4, 5)) if tea12_rows else ''}
+<div class="prose">V12_LECTURA</div>"""
+    t_ = ""
+    if len(dec12) >= 3:
+        t_ += (f"<p><b>Con el diseño de la v11 fijo.</b> El margen pasa de {n0(dec12[0]['obj'])} MM COP/año con vino a granel sin impuesto a {n0(dec12[1]['obj'])} con el vino embotellado y el impuesto al consumo "
+               f"({n0(dec12[1]['botellas'] / 1000)} mil botellas, embotelladora de {E(dec12[1].get('embotelladora') or '—')}), y a {n0(dec12[2]['obj'])} con el tope de "
+               f"{n0(DTm.val('demanda_vino_botellas'))} botellas/año. Embotellado, el vino deja a la planta {n0(WB12['neto_L'])} COP por litro después del impuesto, del margen de distribución y del empaque, "
+               f"frente a 3 000 COP/L a granel: el impuesto ({n0(WB12['impuesto'])} COP por botella) pesa menos que el valor que agrega embotellar, siempre que el mercado pague {n0(WB12['pvp'])} COP por botella.</p>")
+    nt = g12("E1|Óptimo sin tope de demanda de vino")
+    t_ += (f"<p><b>El óptimo v12.</b> {n0(d_opt['obj'])} MM COP/año (v11: {n0(o11.get('obj', float('nan')))}) con embotelladora de {E(s12.get('Embotelladora', 'no'))}, "
+           f"acetificador de {E(s12.get('Acetificador', 'no'))}, bodega de jugos de {E(s12.get('Bodega cáscara', 'no'))} y extractora de hojas de {E(s12.get('Extractora hojas', 'no'))}. "
+           f"Vende {n0(p12.get('botellas', 0) / 1000)} mil botellas de vino ({n0(p12['vino_m3'] - p12.get('vino_a_vinagre_m3', 0))} m³) y {n0(p12.get('vinagre_m3', 0))} m³ de vinagre, "
+           f"con {n0(p12.get('azucar_kg', 0) / 1000)} t de panela y {n0(p12.get('hojas_t', 0))} t de hojas. "
+           + (f"Sin tope de demanda de vino, el margen sube a {n0(nt)}. " if nt else "")
+           + "Con los dos mercados topados, la planta deja de fermentar la pulpa que no puede vender como vino y concentra el vinagre en los jugos con panela.</p>")
+    if e9_rows:
+        t_ += ("<p><b>La demanda de vino embotellado.</b> El margen crece con las botellas que absorbe el mercado; "
+               + (f"con PVP de 10 000 COP por botella el margen es {n0(ex9.get('PVP 10 000 COP/botella', {}).get('obj', float('nan')))}, y con 25 000 COP, {n0(ex9.get('PVP 25 000 COP/botella', {}).get('obj', float('nan')))}. " if ex9 else "")
+               + (f"El mismo modelo con vino a granel sin impuesto (como en la v11) da {n0(ex9.get('vino a granel sin impuesto (v11)', {}).get('obj', float('nan')))}. " if 'vino a granel sin impuesto (v11)' in ex9 else "")
+               + "La pregunta de mercado ya no es solo cuánto vinagre se vende, sino cuántas botellas de vino de piña y a qué precio.</p>")
+    to12 = T12.get("Óptimo")
+    if to12:
+        t_ += (f"<p><b>TEA y renta.</b> VPN del óptimo {n0(to12['NPV11'] / MM)} → {n0(to12['NPV12'] / MM)} MM COP; MIRR {pct(to12['MIRR11'])} → {pct(to12['MIRR12'])}; "
+               f"P(VPN > 0) {pct(to12['P11'], 0)} → {pct(to12['P12'], 0)}. Por sus ingresos la empresa es {E(to12.get('size') or '—')}. Con la ley vigente la renta es del 35 % desde el arranque en 2030; "
+               f"si se aprobara la prórroga del PL 435 de 2025, el VPN sería {n0((to12['NPV12_prorroga'] or float('nan')) / MM)} MM COP. La ubicación en ZOMAC no exime del impuesto al consumo, que es departamental.</p>")
+    a12 = (acv12 or {}).get("Óptimo v12")
+    if a12:
+        t_ += (f"<p><b>ACV.</b> GWP de proceso {n0(a12['gwp_total'] / 1000)} t CO2e/año; las botellas de vidrio aportan {n0(a12['gwp'].get('Botellas de vidrio', 0) / 1000)} t "
+               f"(0,5 kg CO2e por botella [S]). Neto frente a dejar fruta y hojas en el campo: {n0(-a12['net_vs_descomposicion'] / 1000)} t CO2e/año evitadas.</p>")
+    sc12 = (soc12 or {}).get("Óptimo v12")
+    if sc12:
+        t_ += f"<p><b>Social.</b> {n0(sc12['empleos_planta'])} empleos en planta y {n0(sc12['empleos_acopio'])} en el acopio; valor que queda en el territorio {n0(sc12['valor_territorio'] / MM)} MM COP/año. El impuesto al consumo no cuenta como compra local, aunque se queda en el departamento.</p>"
+    lect12 = ("<ul class='tight'>"
+              "<li><b>El impuesto no hunde el proyecto si el vino se embotella y se vende a buen precio.</b> La conclusión de la instancia reducida del manuscrito vale para el vino a granel con impuesto; embotellado, el valor agregado supera al impuesto mientras el precio al público se sostenga.</li>"
+              "<li><b>Ahora hay dos mercados que validar.</b> La demanda de vinagre a granel y la de vino de piña embotellado (botellas y precio) fijan el tamaño y el valor de la planta.</li>"
+              "<li><b>ZOMAC no cambia la base.</b> Con arranque en 2030 la tarifa reducida ya venció; sirve como escenario (prórroga) y como argumento de política, junto con obras por impuestos.</li>"
+              "<li><b>Supuestos que más pesan [S].</b> El precio al público de la botella, el margen de distribución, el costo del empaque, la demanda de botellas y la tarifa departamental del Chocó, que puede diferir de la certificada por el Ministerio de Hacienda.</li></ul>")
+    v12_html = v12_html.replace("V12_RESULTADOS", t_).replace("V12_LECTURA", lect12)
 super_rows = [
     ["Extracción de pulpa", "Prensa de banda (compartida con cáscara y corazón, o solo pulpa) · decantadora centrífuga", "Cap. 4: la decantadora es continua, rinde más del 80 % y entrega mosto de 150–400 NTU; consume más energía y mantenimiento", "Decantadora: +4,5 kWh/t de pulpa"],
     ["Clarificación del mosto", "MF cerámica · flotación · centrífuga de discos", "Cap. 8: la MF tangencial «no está adaptada a la clarificación de mostos» por su bajo caudal; la turbidez objetivo es 100–200 NTU. Quesada Salas (2013), jugo pulposo de piña en planta piloto: 2 850–3 570 NTU y 10,5 % de sólidos insolubles; MFT sostenida a 40–50 L/m²·h con FRV 3,7 (73 % de jugo clarificado)", "MF: 45 L/m²·h, 27 % de retenido, membranas 15 %/año · flotación: 2 900 COP/m³, 18 % de espumas · centrífuga: 2 800 COP/m³, 12 % de lodos (escalados con los sólidos de la piña)"],
@@ -658,7 +740,7 @@ html_out = f"""<title>Modelos Corsano para la piña</title>
 {style}
 <main>
 <header class="top">
-  <p class="kicker">Tesis doctoral · Biorrefinería de piña · Bajo Atrato (Chocó) · versión 11</p>
+  <p class="kicker">Tesis doctoral · Biorrefinería de piña · Bajo Atrato (Chocó) · versión 12</p>
   <h1>Moresi, capacidad, diseño TRL-9 y TEA por línea de producción</h1>
   <p class="lede">Esta versión pone en el centro las referencias de Moresi (1989a, b), dimensiona la materia prima y la planta con tecnologías TRL-9, monta un TEA por línea con la metodología Burk de sus TEA de asaí y coco, y decide qué procesar con la producción actual mediante un MILP de síntesis (Grossmann) y un programa semanal con red estado-tarea (Maravelias). Los modelos Corsano de la versión 1 siguen al final.</p>
   <div class="meta"><span>Moresi replicado contra su Tabla 3</span><span>EVA 2022 (UPRA)</span><span>11 libros TEA verificados con LibreOffice</span><span>SCIP 10</span></div>
@@ -886,7 +968,7 @@ html_out = f"""<title>Modelos Corsano para la piña</title>
 <p>{('Con vino a 3 000 COP/L y vinagre a ' + n0(dmod.VIN_PRICE) + ' COP/L, el óptimo agrega un acetificador de ' + d_opt['sizes']['Acetificador'] + ' y una bodega de jugo de cáscara de ' + d_opt['sizes']['Bodega cáscara'] + '. Desvía ' + n0(d_opt['scen'][0]['products']['vino_a_vinagre_m3']) + ' m³/año de vino y ' + n0(d_opt['scen'][0]['products']['jugo_cascara_vinagre_t']) + ' t/año de jugo de cáscara, y produce ' + n0(d_opt['scen'][0]['products']['vinagre_m3']) + ' m³/año de vinagre al 5 %. El margen sube de ' + n0(d_novin['obj']) + ' a ' + n0(d_opt['obj']) + ' MM COP/año con ' + n0(d_opt['FCI'] - d_novin['FCI']) + ' MM COP más de equipos. La razón es simple: un m³ de vino da unos 1,6 m³ de vinagre, que a ' + n0(dmod.VIN_PRICE) + ' COP/L vale más que el vino a 3 000 COP/L y no necesita 90 días de guarda.') if d_opt and d_novin and d_opt['sizes'].get('Acetificador', 'no') != 'no' else ''}</p>
 <p><b>El resultado depende del precio del vinagre, que es un supuesto.</b> El barrido siguiente resuelve el MILP con cuatro precios del vino y dos del vinagre. El volumen de vinagre del óptimo, unos 3 millones de litros al año, habría que contrastarlo con el mercado colombiano de vinagre de frutas a granel antes de tomarlo como base de diseño.</p>
 </div>
-{table(['Vino (COP/L)', 'Vinagre (COP/L)', 'Acetificador', 'Bodega de cáscara', 'Vino vendido (m³)', 'Vino a vinagre (m³)', 'Jugo de cáscara a vinagre (t)', 'Vinagre (m³)', 'Margen (MM COP/año)'], e6_rows, num_cols=(0, 1, 4, 5, 6, 7, 8)) if e6_rows else ''}
+{table(['Vino: neto por litro (COP/L)', 'Vinagre (COP/L)', 'Acetificador', 'Bodega de cáscara', 'Vino vendido (m³)', 'Vino a vinagre (m³)', 'Jugo de cáscara a vinagre (t)', 'Vinagre (m³)', 'Margen (MM COP/año)'], e6_rows, num_cols=(0, 1, 4, 5, 6, 7, 8)) if e6_rows else ''}
 {fig('fig32_vinagre_precios.png', 'Vinagre y precios', 'Fig. 32. Destino del vino según los precios del vino y del vinagre, acetificador elegido y VPN del diseño óptimo de cada par de precios.') if e6_rows else ''}
 {fig('fig34_balance_masa.png', 'Balance de masa ilustrado', 'Fig. 34. Balance de masa del diseño óptimo (t/año): el ancho de cada corriente es proporcional a su masa. El agua de dilución del vinagre cierra el balance; la corona quemada sale por la caldera. Abajo, las hojas de la planta (v10): jugo a la bodega de jugos y pulpa devuelta al campo.') if d_opt else ''}
 {fig('fig35_balance_energia.png', 'Balance de energía ilustrado', 'Fig. 35. Balance de energía del diseño óptimo (GJ/año): electricidad de grupo electrógeno diésel, calor de proceso con caldera de corona y GLP, y calores de reacción retirados por los chillers.') if d_opt else ''}
@@ -899,6 +981,7 @@ html_out = f"""<title>Modelos Corsano para la piña</title>
 {v9_html}
 {v10_html}
 {v11_html}
+{v12_html}
 <h3>Regla de dimensionamiento según la oferta</h3>
 <div class="prose"><p>Se resolvió el mismo modelo desde la mitad de la oferta actual hasta la base de la tesis (21 856 t/año), con libertad total de tamaños, almacén y turnos:</p></div>
 {table(['Oferta (t/año)', 'Tamaños óptimos', 'FCI (MM COP)', 'Margen (MM COP/año)', 'FCI por t/año (miles COP)', 'Fruta procesada', 'Cuellos (≥ 95 %)'], dim_e2, num_cols=(0, 2, 3, 4, 5)) if dim_e2 else ''}
@@ -985,7 +1068,8 @@ html_out = f"""<title>Modelos Corsano para la piña</title>
 <li><b>§4.x, dimensionamiento.</b> Agregar el dimensionamiento simultáneo con el programa anual y la superestructura de tecnologías del mosto. {('Con la oferta actual y vino + harina, el frente de ' + d_opt['sizes']['Frente'] + ', las dos prensas dedicadas de 1 t/h, ' + d_opt['sizes']['Clarificación'].lower() + ', microfiltración de lías de ' + d_opt['sizes']['MF lías'] + ' y un secador de ' + d_opt['sizes']['Secador'] + ' procesan el ' + pct(absorbed(d_opt['scen'][0])) + ' de la fruta con menos inversión que el diseño por flujo medio. El almacén aséptico de mosto y la decantadora no se justifican.') if d_opt else ''}</li>
 <li><b>§4.4 y Cap. 8, cáscara (versión 9).</b> Usar los rendimientos medidos de Campos et al. (2020) (57,8 % de jugo; torta con 17 % de materia seca, que retiene el 41 % de los sólidos) y de Seguí y Fito (2018) (0,36 g de etanol/g de azúcar en el jugo de cáscara), y estabilizar el jugo de cáscara antes de fermentarlo. Con esos datos la harina cae un tercio y el VPN del óptimo baja {(n0(cmpv['tea'][2]['NPV8'] / MM) + ' → ' + n0(cmpv['tea'][2]['NPV9'] / MM) + ' MM COP') if cmpv and len(cmpv.get('tea', [])) > 2 else ''}; la materia seca de la torta y el precio de la harina pasan a ser los datos más urgentes. Presentar la bromelaína del jugo de cáscara (precipitación sin solventes) como una etapa que se agrega desde unas 12 000 t/año, no como una línea aparte, y descartar el prensado con cal mientras la harina valga más que el jugo.</li>
 <li><b>Capítulo de metodología (versión 10).</b> Organizar el método en las tres etapas de Bertran, Tula y Gani (2022): síntesis con la superestructura y el MILP (incluidas las hojas de la planta como segunda materia prima), diseño y verificación (balances, cinética calibrada, SuperPro, TEA de Burk), e innovación desde los puntos calientes. Agregar la evaluación de sostenibilidad de Heinzle et al. (2006): ACV de la cuna a la puerta con línea base sin planta, indicadores sociales y frente de Pareto margen–GWP. Declarar el registro de parámetros con su etiqueta de procedencia como parte del método.{(' Con los supuestos centrales, el óptimo v10 acopia ' + n0(d_opt['scen'][0]['products'].get('hojas_t', 0)) + ' t/año de hojas, produce ' + n0(d_opt['scen'][0]['products'].get('vinagre_m3', 0)) + ' m³/año de vinagre y da ' + n0(d_opt['obj']) + ' MM COP/año de margen; el mercado del vinagre es la condición que hay que validar.') if d_opt else ''}</li>
-<li><b>§4.3 y Cap. 8, vinagre (versión 11).</b> Tratar la demanda de vinagre como un dato de entrada con escenarios, no como una consecuencia del diseño, y presentar el diseño como una familia indexada por esa demanda. Incluir la panela añadida a los jugos antes de fermentar (Ebrahimi 2026; Tanamool et al. 2020), que permite vender el vino y hacer el vinagre con los jugos de cáscara y de hojas, y el tratamiento del efluente del vinagre (electrocoagulación y humedal construido) en el TEA y el ACV. Usar para la xantana el rendimiento medido con residuo de piña (Iakovchenko 2026), no el de glucosa pura.{(' Con la demanda central de ' + n0(dmod.VIN_DEMAND) + ' m³/año, el óptimo da ' + n0(d_opt['obj']) + ' MM COP/año.') if d_opt else ''}</li>
+<li><b>§4.3 y Cap. 8, vinagre (versión 11).</b> Tratar la demanda de vinagre como un dato de entrada con escenarios, no como una consecuencia del diseño, y presentar el diseño como una familia indexada por esa demanda. Incluir la panela añadida a los jugos antes de fermentar (Ebrahimi 2026; Tanamool et al. 2020), que permite vender el vino y hacer el vinagre con los jugos de cáscara y de hojas, y el tratamiento del efluente del vinagre (electrocoagulación y humedal construido) en el TEA y el ACV. Usar para la xantana el rendimiento medido con residuo de piña (Iakovchenko 2026), no el de glucosa pura.</li>
+<li><b>Cap. 8, impuestos y producto (versión 12).</b> Evaluar el vino embotellado con el impuesto al consumo departamental (Ley 1816 de 2016: componente específico por grado y 20 % ad valórem) y el IVA del 5 %, con su línea de embotellado, su empaque y un tope de demanda de botellas. Declarar el régimen de renta: la planta queda en municipios ZOMAC (Decreto 1650 de 2017), pero con arranque en 2030 la Ley 1819 de 2016 ya no da tarifa reducida; la prórroga del PL 435 de 2025 es un escenario, no la base.{(' Con los supuestos centrales, el óptimo v12 da ' + n0(d_opt['obj']) + ' MM COP/año.') if d_opt else ''}</li>
 <li><b>Cap. 6 y 9, selección de líneas.</b> Incorporar el MILP con tamaños discretos y el STN semanal como evidencia de qué procesar con la oferta actual y de dónde están los cuellos de botella.</li>
 </ol>
 </section>

@@ -257,8 +257,8 @@ def build(d):
     fmt = lambda v: f"{v:,.0f}".replace(",", " ")
 
     text(60, 72, "Superestructura de la biorrefinería de piña", 58, INK, font="Caveat", weight=700)
-    text(62, 112, "Cada ∨ es una disyunción (Grossmann cap. 10): el MILP elige una alternativa y su tamaño. En color, el diseño óptimo de la versión 11 "
-                  "(Chocó 2022); en gris, las alternativas descartadas. Nuevo en la v11: panela añadida a los jugos y tope de demanda de vinagre.", 21, "#5e5a53")
+    text(62, 112, "Cada ∨ es una disyunción (Grossmann cap. 10): el MILP elige una alternativa y su tamaño. En color, el diseño óptimo de la versión 12 "
+                  "(Chocó 2022); en gris, las alternativas descartadas. Nuevo en la v12: vino embotellado con impuesto al consumo y tope de demanda de vino.", 21, "#5e5a53")
 
     # fruta y frente
     pineapple(170, 790, 1.0)
@@ -293,7 +293,8 @@ def build(d):
     bB, cB = card(1820, 200, 235, "Bodega", [f"{s['Bodega']}", "+ N₂ y DAP"], "pulpa", chosen=(0, 1), disjunction=False,
                   note="Q ≤ (N_F − 1)·V_F / t")
     arrow(right(bP)[0] + 2, right(bP)[1], left(bB)[0] - 4, left(bB)[1], PAL["pulpa"][1], 2.6, 0.05)
-    product(PX, 170, bottle, "Vino a granel", [f"≈ {fmt(wine_sold)} m³/año", "guarda de 90 días"], "pulpa")
+    product(PX, 170, bottle, "Vino embotellado" if dm_mod.BOTTLED else "Vino a granel",
+            [f"≈ {fmt(pr.get('botellas', 0) / 1000)} mil botellas/año" if dm_mod.BOTTLED else f"≈ {fmt(wine_sold)} m³/año", "guarda de 90 días"], "pulpa")
     arrow(right(bB)[0] + 2, right(bB)[1] - 30, PX + 22, 260, PAL["pulpa"][1], 2.6, -0.1)
 
     # lías

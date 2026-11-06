@@ -14,7 +14,7 @@ import capacidad as cp
 RES = dm.RES
 SECCIONES = {
     "Frente y pulpa": ["Frente", "Prensa", "Decantadora"],
-    "Mosto y bodega de vino": ["Clarificación", "MF lías", "Estabilización", "Bodega", "Almacén de mosto"],
+    "Mosto y bodega de vino": ["Clarificación", "MF lías", "Estabilización", "Bodega", "Almacén de mosto", "Embotelladora"],
     "Cáscara y harina": ["Prensa cáscara", "Pretratamiento cáscara", "Secador", "Enzima cáscara"],
     "Vinagre": ["Bodega cáscara", "Acetificador"],
     "Caldera de biomasa": ["Caldera de corona"],
@@ -47,7 +47,7 @@ def analyse(key="E1|Óptimo económico"):
     heat["Hojas (extracción, etanol, biogás)"] = dm.Q_DEST * p.get("etanol_kg", 0) + dm.Q_AD * p.get("jugo_hojas_digestor_t", 0)
     q_tot = sum(heat.values()) or 1.0
     glp_share = max(p.get("calor_glp_MJ", 0), 0) / q_tot
-    rev = {"Mosto y bodega de vino": (p["vino_m3"] - p.get("vino_a_vinagre_m3", 0)) * 1000 * dm.WINE_PRICE,
+    rev = {"Mosto y bodega de vino": (p["vino_m3"] - p.get("vino_a_vinagre_m3", 0)) * 1000 * (dm.WINE_NET_L if dm.BOTTLED else dm.WINE_PRICE),   # v12: vino embotellado, neto de impuesto
            "Cáscara y harina": (p["harina_t"] + p.get("harina_lias_t", 0)) * 1000 * dm.tl.M("harina_kg"),
            "Vinagre": p.get("vinagre_m3", 0) * 1000 * dm.VIN_PRICE,
            "Hojas (extracción, etanol, biogás)": p.get("etanol_L", 0) * dm.ETOH_PRICE + p.get("levadura_kg", 0) * dm.YEAST_PRICE
@@ -90,7 +90,7 @@ def figure(out):
             ax.text(xi, max(out[s][k] for k, _ in keys) * 100 + 3, "punto caliente", ha="center", fontsize=7.5, color=C[7])
     ax.set_xticks(x); ax.set_xticklabels(secs, fontsize=8, rotation=10); ax.set_ylabel("% del total de la planta"); ax.legend(fontsize=8, ncol=5)
     ax.set_title("Una sección es punto caliente si pesa en costo, energía o GWP más de 10 puntos por encima de lo que aporta en ingresos", fontsize=9)
-    fig.suptitle("Fig. 44  Puntos calientes del diseño óptimo v11 (etapa 3: de los puntos calientes a los objetivos de mejora)",
+    fig.suptitle("Fig. 44  Puntos calientes del diseño óptimo v12 (etapa 3: de los puntos calientes a los objetivos de mejora)",
                  fontsize=10, fontweight="bold", x=0.01, ha="left")
     save(fig, "fig44_puntos_calientes.png")
 

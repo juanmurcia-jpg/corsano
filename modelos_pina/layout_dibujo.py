@@ -104,7 +104,7 @@ def build():
     f = bd.flows_v7()
     sd.text(60, 72, "Layout conceptual de la planta", 58, INK, font="Caveat", weight=700)
     sd.text(62, 112, "Vista en planta, a escala aproximada. Zonas por función y recorrido de los materiales de oeste a este; huellas de equipos del diseño "
-                     "óptimo de la versión 11 (Chocó 2022). Distribución conceptual: no es ingeniería de detalle.", 21, "#5e5a53")
+                     "óptimo de la versión 12 (Chocó 2022). Distribución conceptual: no es ingeniería de detalle.", 21, "#5e5a53")
     # lote y vías
     sd.rrect(X(0), Y(0), 70 * S, 45 * S, INK, 2.8)
     for y0 in (14, 30):

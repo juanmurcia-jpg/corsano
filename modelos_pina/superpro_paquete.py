@@ -1,5 +1,5 @@
 """
-Paquete de verificación del diseño óptimo en SuperPro Designer (v11). Foo (ed., 2023), caps. 10 y 11; Bertran, Tula
+Paquete de verificación del diseño óptimo en SuperPro Designer (v12). Foo (ed., 2023), caps. 10 y 11; Bertran, Tula
 y Gani (2022), etapa 2: el diseño de la síntesis se verifica con un simulador antes de seguir.
 
 SuperPro no corre en este entorno; el script deja en superpro/ lo necesario para armar el modelo y comparar:
@@ -46,6 +46,9 @@ def build(key="E1|Óptimo económico"):
          "30 °C con frío", f"{dm.ACET_PROD} kg/m³·d; ΔH = −493 kJ/mol; {dm.AERATION_KW_M3} kW/m³"),
         ("Caldera de biomasa", "Boiler / Generic Combustor", "continuo 24/7", sz.get("Caldera de corona", "no"), "", "", f"corona {dm.CROWN_MJ_T:.0f} MJ útiles/t; pulpa de hojas {dm.PULP_MJ_T:.0f}"),
     ]
+    if has("Embotelladora"):   # v12
+        procs.append(("Embotellado del vino", "Filling / Generic Box (llenado, tapado, etiquetado)", "continuo (turnos)", sz["Embotelladora"], "", "",
+                      f"{pr.get('botellas', 0):,.0f} botellas de 750 mL al año"))
     if pr.get("azucar_kg", 0) > 1:   # v11
         procs.append(("Dosificación de panela a los jugos", "Blending Tank (disolución)", "continuo", "", "", "30 °C",
                       f"hasta {dm.AZ_MAX * 1000:.0f} g/L de jugo; {dm.A_AZ:.0f} kg de ácido por t de panela"))
@@ -61,7 +64,7 @@ def build(key="E1|Óptimo económico"):
         w = csv.writer(fh); w.writerow(["Procedimiento", "Procedimiento de SuperPro sugerido", "Modo", "Tamaño del modelo", "Tiempo de ciclo u horas", "Temperatura", "Especificación clave"])
         w.writerows(procs)
     streams = [("Fruta de rechazo (entrada)", F), ("Hojas acopiadas (entrada)", pr.get("hojas_t", 0)), ("Mosto clarificado", juice),
-               ("Vino producido (m³)", pr["vino_m3"]), ("Vino vendido (m³)", pr["vino_m3"] - pr.get("vino_a_vinagre_m3", 0)),
+               ("Vino producido (m³)", pr["vino_m3"]), ("Vino vendido (m³)", pr["vino_m3"] - pr.get("vino_a_vinagre_m3", 0)), ("Botellas de 750 mL", pr.get("botellas", 0)),
                ("Vino a vinagre (m³)", pr.get("vino_a_vinagre_m3", 0)), ("Jugo de cáscara a vinagre", pr.get("jugo_cascara_vinagre_t", 0)),
                ("Jugo de hojas a vinagre", pr.get("jugo_hojas_vinagre_t", 0)), ("Panela añadida", pr.get("azucar_kg", 0) / 1000), ("Vinagre al 5 % (m³)", pr.get("vinagre_m3", 0)),
                ("Torta de cáscara al secador", pr.get("torta_t", 0)), ("Harina", pr["harina_t"] + pr.get("harina_lias_t", 0)),
@@ -84,7 +87,7 @@ def build(key="E1|Óptimo económico"):
     with open(os.path.join(OUT, "verificacion.csv"), "w", newline="", encoding="utf-8") as fh:
         w = csv.writer(fh); w.writerow(["Indicador", "Modelo (Python)", "SuperPro", "Diferencia", "Tolerancia"])
         w.writerows([(a, round(b, 2), "", "", c) for a, b, c in checks])
-    readme = f"""# Verificación del diseño óptimo v11 en SuperPro Designer
+    readme = f"""# Verificación del diseño óptimo v12 en SuperPro Designer
 
 Este paquete lo genera `superpro_paquete.py` a partir de `results/dimensionamiento.json` («{key}»). Sirve para la
 etapa 2 del marco de Bertran, Tula y Gani (2022): verificar con un simulador el diseño que eligió la síntesis.

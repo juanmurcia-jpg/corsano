@@ -1,0 +1,74 @@
+{
+ "Referencia TRL-9": {
+  "empleos_planta": 11,
+  "empleos_acopio": 0.0,
+  "empleos_total": 11.0,
+  "empleos_por_1000t_fruta": 1.8561931851535645,
+  "pago_fruta": 2370442923.2865562,
+  "pago_acopio_hojas": 0.0,
+  "nomina_local": 615097159.8717251,
+  "compras_locales": 84218014.75913697,
+  "valor_territorio": 3069758097.9174185,
+  "valor_territorio_por_t": 518005.8237658437
+ },
+ "Dise\u00f1o v10": {
+  "empleos_planta": 13,
+  "empleos_acopio": 1.3392339579016759,
+  "empleos_total": 14.339233957901676,
+  "empleos_por_1000t_fruta": 2.335688272968075,
+  "pago_fruta": 2455675977.630371,
+  "pago_acopio_hojas": 94817764.21943866,
+  "nomina_local": 719109005.9418472,
+  "compras_locales": 217796221.56290677,
+  "valor_territorio": 3487398969.3545637,
+  "valor_territorio_por_t": 568055.2322248579
+ },
+ "\u00d3ptimo sin opciones v10": {
+  "empleos_planta": 13,
+  "empleos_acopio": 0.0,
+  "empleos_total": 13.0,
+  "empleos_por_1000t_fruta": 2.1175432130984118,
+  "pago_fruta": 2455675977.630371,
+  "pago_acopio_hojas": 0.0,
+  "nomina_local": 719109005.9418472,
+  "compras_locales": 254668237.91572273,
+  "valor_territorio": 3429453221.4879413,
+  "valor_territorio_por_t": 558616.5687538673
+ },
+ "\u00d3ptimo sin vinagre": {
+  "empleos_planta": 11,
+  "empleos_acopio": 0.0,
+  "empleos_total": 11.0,
+  "empleos_por_1000t_fruta": 1.7917673341601945,
+  "pago_fruta": 2455675977.630371,
+  "pago_acopio_hojas": 0.0,
+  "nomina_local": 615097159.8717251,
+  "compras_locales": 69171979.70260558,
+  "valor_territorio": 3139945117.204702,
+  "valor_territorio_por_t": 511459.1901875626
+ },
+ "\u00d3ptimo sin az\u00facar": {
+  "empleos_planta": 13,
+  "empleos_acopio": 0.7467948121560791,
+  "empleos_total": 13.746794812156079,
+  "empleos_por_1000t_fruta": 2.2391870812567354,
+  "pago_fruta": 2455675977.630371,
+  "pago_acopio_hojas": 52873072.7006504,
+  "nomina_local": 719109005.9418472,
+  "compras_locales": 101636456.04063901,
+  "valor_territorio": 3329294512.3135076,
+  "valor_territorio_por_t": 542301.922996558
+ },
+ "\u00d3ptimo v11": {
+  "empleos_planta": 13,
+  "empleos_acopio": 1.3392339579016752,
+  "empleos_total": 14.339233957901675,
+  "empleos_por_1000t_fruta": 2.3356882729680746,
+  "pago_fruta": 2455675977.630371,
+  "pago_acopio_hojas": 94817764.21943861,
+  "nomina_local": 719109005.9418472,
+  "compras_locales": 217796221.56290674,
+  "valor_territorio": 3487398969.3545637,
+  "valor_territorio_por_t": 568055.2322248579
+ }
+}

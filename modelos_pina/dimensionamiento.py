@@ -211,6 +211,30 @@ AZ_MAX = DT.val("azucar_max_jugo")                                          # t 
 EF_AZ = DT.val("ef_panela")                                                 # kg CO2e / kg de panela [S]
 SUGAR = True                                                                # v11: opción de azúcar añadido
 VIN_DEMAND = DT.val("demanda_vinagre_m3")                                   # v11: m³/año de vinagre al 5 % que absorbe el mercado [S]; None = sin tope
+# ---- v12: vino embotellado (botella de 750 mL) con impuesto al consumo (Ley 1816 de 2016) e IVA del 5 %
+BOTTLED = True
+BOTTLE_L = 0.75
+EF_BOT = DT.val("ef_botella")                                               # kg CO2e por botella [S]
+
+
+def wine_bottle(pvp=None, margin=None, pack=None):
+    """Precio de fábrica, impuesto al consumo y neto por botella. PVP = (fábrica) × (1 + margen) × (1 + IVA); la fábrica
+    incluye el impuesto al consumo, que paga el productor al entregar (Ley 223 de 1995, art. 204). Impuesto = específico
+    por grado en 750 cm³ + ad valórem sobre el PVP antes de impuestos: T = e + a·(PVP/(1+IVA) − T)."""
+    pvp = pvp if pvp is not None else DT.val("pvp_vino_botella")
+    margin = margin if margin is not None else DT.val("margen_distribucion_vino")
+    pack = pack if pack is not None else DT.val("costo_empaque_botella")
+    iva, a = DT.val("iva_vino"), DT.val("impuesto_vino_ad_valorem")
+    e = DT.val("impuesto_vino_especifico") * DT.val("grado_vino") * BOTTLE_L / 0.75
+    pre = pvp / (1 + iva)
+    tax = (e + a * pre) / (1 + a)
+    fab = pre / (1 + margin)
+    net = fab - tax - pack
+    return dict(pvp=pvp, fabrica=fab, impuesto=tax, especifico=e, empaque=pack, neto=net, neto_L=net / BOTTLE_L)
+
+
+WINE_NET_L = wine_bottle()["neto_L"]                                        # COP/L de vino vendido, neto de impuesto, margen y empaque
+WINE_DEMAND_M3 = DT.val("demanda_vino_botellas") * BOTTLE_L / 1000         # v12: tope de ventas de vino (m³/año) [S]; None = sin tope
 NO_LEAVES = {"Extractora hojas": ["no"]}
 NO_AD = {"Digestor": ["no"], "Motor biogás": ["no"]}
 NO_ETOH = {"Bodega etanol": ["no"], "Destilación": ["no"]}
@@ -291,6 +315,9 @@ def options(with_bromelain=False):
             dict(lab=f"{s:g} kg/h", cap=s, cost=H_["tci"] / LANG * C["TRM"] * (s / ref_kgh) ** 0.6) for s in sizes]   # compra equivalente = TCI/Lang [S]
     O["Almacén de mosto"] = [dict(lab=f"{V:g} m³", cap=V, cost=(buy("tanque_pulmon", V) if V <= 50 else 1.4 * buy("tanque_guarda", V)))
                              for V in (10, 25, 50, 100, 200, 400, 800)]
+    # v12: línea de embotellado (botellas/h); capacidad en m³ de vino por hora con personal
+    O["Embotelladora"] = [dict(lab="no", cap=0.0, cost=0.0)] + [
+        dict(lab=f"{b:g} botellas/h", cap=b * BOTTLE_L / 1000, cost=buy("embotelladora", b)) for b in (500, 1000, 2000, 4000)]
     if with_bromelain:
         O["Aspersión"] = [dict(lab="no", cap=0.0, cost=0.0)] + [
             dict(lab=f"{s:g} kg agua/h", cap=s / 1000 / 0.12,
@@ -311,8 +338,11 @@ REFERENCE = {   # diseño TRL-9 a 6 200 t/año (planta_trl9.design): lavado 2 t/
 REFERENCE_B = dict(REFERENCE, **{"Aspersión": "10 kg agua/h", "Prensa corazón": "1 t/h"})
 
 
-def margins(wine_price=WINE_PRICE, flour_price=None, vinegar_price=None):
-    """Márgenes de contribución por unidad de flujo (COP), del TEA de cada línea a 6 200 t/año."""
+def margins(wine_price=None, flour_price=None, vinegar_price=None):
+    """Márgenes de contribución por unidad de flujo (COP), del TEA de cada línea a 6 200 t/año.
+    v12: sin precio explícito, el vino se valora embotellado y neto de impuesto al consumo, margen y empaque."""
+    if wine_price is None:
+        wine_price = WINE_NET_L if BOTTLED else WINE_PRICE
     D = pt.design(6200)
     cs = tl.cases_from_design(D)
     def var_noraw(key):
@@ -477,6 +507,8 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
             # vinagre: jugo de cáscara fermentado y vino desviado, acetificados en continuo (24/7)
             m.addCons((pj[mt] + hjv[mt] * T_LEAF / T_PEEL) / 1.05 <= cap_expr("Bodega cáscara", mt, False))
             m.addCons(wv[mt] <= WINE_PM * bod[mt])
+            if BOTTLED:   # v12: el vino que no va al vinagre se embotella con personal
+                m.addCons(WINE_PM * bod[mt] - wv[mt] <= cap_expr("Embotelladora", mt, True))
             XE[mt] = opt_flows("Enzima cáscara", mt, True)
             m.addCons(quicksum(XE[mt].values()) <= pj[mt])
             m.addCons(acid[mt] == A_WINE * wv[mt] + A_PJ * pj[mt] + A_LJ * hjv[mt] + A_AZ * az[mt]
@@ -536,7 +568,8 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
                      + EF_CHEM["dap"] * mfv[mt] + EF_CHEM["yeast"] * (bod[mt] + pj[mt] + hjv[mt] + hje[mt]) + EF_CHEM["pect"] * P["pulpa", mt]
                      + EF_CHEM["so2"] * quicksum(SB[mt][k] for k in SB[mt] if OS[k]["lab"].startswith("SO"))
                      + EF_CHEM["lime"] * quicksum(Pco[k, mt] for k in range(len(OPT)) if OPT[k]["lab"] != "agua")
-                     + EF_AZ * 1000 * az[mt])
+                     + EF_AZ * 1000 * az[mt]
+                     + (EF_BOT * 1000 / BOTTLE_L * (WINE_PM * bod[mt] - wv[mt]) if BOTTLED else 0.0))
             Pk = (P["corazon", mt] + (Pd["corazon", mt] if "corazon" in yded else 0)) if with_bromelain else 0
             bal = {
                 "fruta": rate_in[mo_] * d[mt] - fe[mt] - loss[mt],
@@ -565,6 +598,8 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
                 G[mo_, t_] = G[mo_, t_] + EF_KWH * aer / K
         if VIN_DEMAND is not None:   # v11: el mercado absorbe a lo sumo VIN_DEMAND m³/año de vinagre al 5 %
             m.addCons(quicksum(acid.values()) / VIN_ACID <= VIN_DEMAND)
+        if WINE_DEMAND_M3 is not None:   # v12: el mercado absorbe a lo sumo WINE_DEMAND_M3 m³/año de vino embotellado
+            m.addCons(quicksum(WINE_PM * bod[mt] - wv[mt] for mt in MT) <= WINE_DEMAND_M3)
         gwp_s = quicksum(G.values())
         gwp_total = gwp_total + sc["p"] * gwp_s
         unused = FR["corazon"] * (0 if with_bromelain else 1) + B1["crown_t"]
@@ -645,11 +680,16 @@ def extract(m, V, with_bromelain):
                                 ("Bodega", "bod", False), ("Secador", "sec", False), ("Aspersión", "asp", True), ("Enzima cáscara", "enz", True),
                                 ("Extractora hojas", "hx", True), ("Bodega etanol", "hje", False), ("Destilación", "et", False),
                                 ("Digestor", "hjd", False), ("Motor biogás", "eb", False)):
+            if u == "Embotelladora":
+                continue
             if u == "Estabilización" and out["sizes"][u].startswith("SO"):
                 continue
             if u not in cap or cap[u] <= 0:
                 continue
             util[u] = [sum(r[key] for r in rows if r["month"] == mo_) / (cap[u] * (a_st if staffed else AC) * HM[mo_]) for mo_ in range(12)]
+        if cap.get("Embotelladora", 0) > 0:   # v12
+            util["Embotelladora"] = [sum(WINE_PM * r["bod"] - r["wv"] for r in rows if r["month"] == mo_) / (cap["Embotelladora"] * a_st * HM[mo_])
+                                     for mo_ in range(12)]
         util["Prensa"] = [(sum(sum(r["tau"].values()) for r in rows if r["month"] == mo_) + SIGMA * sum(r["W"] for r in rows if r["month"] == mo_))
                           / (a_st * HM[mo_]) for mo_ in range(12)]
         if cap.get("Prensa", 0) <= 0:
@@ -678,7 +718,8 @@ def extract(m, V, with_bromelain):
                     citrico_kg=sum(r["pjc"] for r in rows) * PJ_SUGAR * HUB["Ácido cítrico"]["y"], xantana_kg=sum(r["pjx"] for r in rows) * PJ_SUGAR * HUB["Xantana"]["y"],
                     elec_demanda_kWh=sum(r["edem"] for r in rows), calor_demanda_MJ=sum(r["hdem"] for r in rows),
                     calor_glp_MJ=sum(r["hdem"] - r["hb"] - r["hbu"] for r in rows), gwp_kg=sum(r["gwp"] for r in rows),
-                    azucar_kg=sum(r["az"] for r in rows) * 1000)
+                    azucar_kg=sum(r["az"] for r in rows) * 1000,
+                    botellas=sum(WINE_PM * r["bod"] - r["wv"] for r in rows) * 1000 / BOTTLE_L)
         out["scen"].append(dict(sup=S["sc"]["sup"], p=S["sc"]["p"], supply=S["supply"], contrib=v(S["contrib"]) / 1e6, periods=rows,
                                 util=util, loss=sum(r["loss"] for r in rows), loss_month=[sum(r["loss"] for r in rows if r["month"] == mo_) for mo_ in range(12)],
                                 supply_month=(S["supply"] * pm.SEASON / 12.0).tolist(), changeovers=sum(r["W"] for r in rows), products=prod,
@@ -718,11 +759,11 @@ def brief(r):
 
 
 if __name__ == "__main__":
-    which = sys.argv[1:] or ["E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8"]
+    which = sys.argv[1:] or ["E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "E9"]
     path = os.environ.get("DIM_OUT", f"{RES}/dimensionamiento.json")      # corridas en paralelo, cada una con su archivo
     out = json.load(open(path)) if os.path.exists(path) else {}
     save = lambda: json.dump(out, open(path, "w"), default=float)
-    _H = json.load(open(f"{RES}/v10/dimensionamiento.json")) if os.path.exists(f"{RES}/v10/dimensionamiento.json") else {}   # v11: arranque desde la v10
+    _H = json.load(open(f"{RES}/v11/dimensionamiento.json")) if os.path.exists(f"{RES}/v11/dimensionamiento.json") else {}   # v12: arranque desde la v11
     NEW10 = ("Extractora hojas", "Bodega etanol", "Destilación", "Digestor", "Motor biogás", "Ácido cítrico", "Xantana")
     def leaves_hint(f):   # v10: arranque con jugo de hojas al vinagre, mezclado con el vino (a 1×: +1 590 MM COP/año sobre el diseño v9)
         pick = lambda opts, need: next((o for o in opts if o >= need), opts[-1])
@@ -743,10 +784,10 @@ if __name__ == "__main__":
     print("Lang eq.", round(LANG, 3), "AF", round(AF, 4), "turno 3 MM COP/año", round(shift_cost() / 1e6, 1),
           {k: round(v_) for k, v_ in margins().items()}, "hojas t/año", round(HOJAS_SUPPLY), "acopio COP/t", ACOPIO_VC, flush=True)
     if "E1" in which:   # óptimo vs referencia TRL-9
-        v10 = _H.get("E1|Óptimo económico")
-        if v10:   # v11: el diseño óptimo de la v10 evaluado con los parámetros de la v11 (descomposición v10 → v11)
-            r = solve(fix=dict(v10["sizes"], turno3=v10["turno3"]))
-            out["E1|Diseño v10 con parámetros v11"] = r; save(); print("E1 Diseño v10 con parámetros v11", brief(r), flush=True)
+        v11 = _H.get("E1|Óptimo económico")
+        if v11:   # v12: el diseño óptimo de la v11 (más la embotelladora que elija el modelo) con los parámetros de la v12
+            r = solve(fix=dict(v11["sizes"], turno3=v11["turno3"]))
+            out["E1|Diseño v11 con parámetros v12"] = r; save(); print("E1 Diseño v11 con parámetros v12", brief(r), flush=True)
         for lab, kw, lv in (("Referencia TRL-9 (planta_trl9, 6 200 t)", dict(fix=REFERENCE), False),
                             ("Referencia con prensa única de 3 t/h compartida", dict(fix=dict(REFERENCE, **{"Prensa": "3 t/h", "Prensa cáscara": "no"})), False),
                             ("Óptimo con la topología anterior (prensa, MF de mosto, HTST)", dict(allow=ALLOW_OLD), False),
@@ -758,7 +799,8 @@ if __name__ == "__main__":
                             ("Óptimo sin etanol de hojas", dict(allow=NO_ETOH), False),
                             ("Óptimo sin digestor", dict(allow=NO_AD), True),
                             ("Óptimo sin azúcar añadido", dict(_g=dict(SUGAR=False)), True),
-                            ("Óptimo sin tope de demanda de vinagre", dict(_g=dict(VIN_DEMAND=None)), True)):
+                            ("Óptimo sin tope de demanda de vinagre", dict(_g=dict(VIN_DEMAND=None)), True),
+                            ("Óptimo sin tope de demanda de vino", dict(_g=dict(WINE_DEMAND_M3=None)), True)):
             h_ = hint(f"E1|{lab}", leaves=lv)
             if h_ and "allow" in kw:   # el arranque debe respetar las restricciones del caso
                 for u, pref in kw["allow"].items():
@@ -788,10 +830,12 @@ if __name__ == "__main__":
         ws = [solve(scen=[dict(sup=a, p=1.0)], hint=hint("E4|WS", i, f=a)) for i, (a, pa) in enumerate(es.SUP_F)]
         out["E4|WS"] = dict(obj=sum(r["obj"] * pa for r, (a, pa) in zip(ws, es.SUP_F)), each=[dict(sup=a, obj=r["obj"], sizes=r["sizes"], turno3=r["turno3"]) for r, (a, pa) in zip(ws, es.SUP_F)])
         save(); print("E4 WS", out["E4|WS"]["obj"], "VSS", rp["obj"] - eev["obj"], "EVPI", out["E4|WS"]["obj"] - rp["obj"], flush=True)
-    if "E6" in which:   # precio del vino y del vinagre: ¿cuándo conviene acetificar?
-        for wp in (1600.0, 2200.0, 3000.0, 4000.0):
+    if "E6" in which:   # v12: precio de venta al público del vino embotellado y precio del vinagre (claves E6|neto COP/L|vinagre)
+        for pvp in (10000.0, 16000.0, 25000.0):
+            wp = wine_bottle(pvp=pvp)["neto_L"]
             for vp in (1500.0, 2200.0):
-                r = solve(mg=margins(wine_price=wp, vinegar_price=vp), time_limit=150, hint=hint(f"E6|{wp:.0f}|{vp:.0f}")); out[f"E6|{wp:.0f}|{vp:.0f}"] = r; save()
+                r = solve(mg=margins(wine_price=wp, vinegar_price=vp), time_limit=150, hint=hint("E1|Óptimo económico")); r["pvp"] = pvp
+                out[f"E6|{wp:.0f}|{vp:.0f}"] = r; save()
                 print("E6", wp, vp, brief(r), {k: round(v_) for k, v_ in r["scen"][0]["products"].items()
                                                if k in ("vino_m3", "vino_a_vinagre_m3", "jugo_cascara_vinagre_t", "vinagre_m3")}, flush=True)
         margins()   # restituye el precio base del vinagre
@@ -817,4 +861,17 @@ if __name__ == "__main__":
             r = solve(time_limit=180, hint=hint("E1|Óptimo económico")); out[f"E8|{lab}"] = r; save()
             print("E8", lab, brief(r), {k: round(v_) for k, v_ in r["scen"][0]["products"].items() if k in ("vino_m3", "vino_a_vinagre_m3", "vinagre_m3", "azucar_kg", "hojas_t")}, flush=True)
         VIN_DEMAND, AZ_PRICE, SUGAR = base["D"], base["AZ"], True
+    if "E9" in which:   # v12: demanda de vino embotellado, precio al público y vino a granel sin impuesto (como en la v11)
+        base = dict(W=WINE_DEMAND_M3)
+        for lab, ch in (("demanda 250 000 botellas/año", dict(W=250000 * BOTTLE_L / 1000)), ("demanda 1 000 000 botellas/año", dict(W=1e6 * BOTTLE_L / 1000)),
+                        ("demanda 2 000 000 botellas/año", dict(W=2e6 * BOTTLE_L / 1000)),
+                        ("PVP 10 000 COP/botella", dict(mg=dict(wine_price=wine_bottle(pvp=10000.0)["neto_L"]))),
+                        ("PVP 25 000 COP/botella", dict(mg=dict(wine_price=wine_bottle(pvp=25000.0)["neto_L"]))),
+                        ("vino a granel sin impuesto (v11)", dict(B=False, W=None))):
+            WINE_DEMAND_M3, BOTTLED = ch.get("W", base["W"]), ch.get("B", True)
+            r = solve(time_limit=180, hint=hint("E1|Óptimo económico"), **({"mg": margins(**ch["mg"])} if "mg" in ch else {}))
+            out[f"E9|{lab}"] = r; save()
+            print("E9", lab, brief(r), {k: round(v_) for k, v_ in r["scen"][0]["products"].items() if k in ("vino_m3", "vino_a_vinagre_m3", "vinagre_m3", "botellas", "azucar_kg")}, flush=True)
+        WINE_DEMAND_M3, BOTTLED = base["W"], True
+        margins()
     save()

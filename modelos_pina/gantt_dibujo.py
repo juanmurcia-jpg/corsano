@@ -288,7 +288,7 @@ def panel_week(y0, s, r):
 def build():
     d = json.load(open(os.path.join(HERE, "results", "dimensionamiento.json")))
     sd.text(60, 72, "Diagrama de Gantt del diseño óptimo", 58, INK, font="Caveat", weight=700)
-    sd.text(62, 112, "Versión 11 · arriba, el año completo (rejilla continua de 24 periodos agregada por mes); abajo, una semana típica de abril con lotes "
+    sd.text(62, 112, "Versión 12 · arriba, el año completo (rejilla continua de 24 periodos agregada por mes); abajo, una semana típica de abril con lotes "
                      "desfasados (Moresi 1989b).", 21, GREY)
     y, s, r = panel_year(d, 190)
     sd.rline(60, y + 6, sd.W - 60, y + 6, "#c9c3b8", 1.4, 1, dash="10 10")

@@ -67,6 +67,8 @@ CAT = {   # catálogo: tamaños discretos, unidad, referencia (tamaño, USD 2024
     "intercambiador_placas": dict(sizes=[1], unit="u", ref=(1, 10_000), n=1.0),
     "centrifuga_discos": dict(sizes=[0.5, 1, 2, 3, 5], unit="m3/h", ref=(2, 85_000), n=0.6),
     "tanque_guarda": dict(sizes=[10, 20, 30, 50, 80, 100, 160], unit="m3", ref=(100, 55_000), n=0.6),
+    # v12: línea de embotellado monobloque (enjuague, llenado, tapado) con etiquetadora y encajonado [S]
+    "embotelladora": dict(sizes=[500, 1000, 2000, 4000], unit="botellas/h", ref=(1000, 120_000), n=0.6),
     "filtro_cartuchos": dict(sizes=[0.5, 1, 2, 3], unit="m3/h", ref=(2, 18_000), n=0.6),
     "acetador": dict(sizes=[1, 2, 4, 6, 10, 20], unit="m3", ref=(10, 260_000), n=0.6),
     "tanque_estatico": dict(sizes=[10, 20, 50], unit="m3", ref=(50, 25_000), n=0.6),
