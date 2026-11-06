@@ -116,8 +116,8 @@ def evaluate(case, c=COMMON, overrides=None):
     for bp in case.get("byproducts", []):
         rev_bp += bp["qty_year"] * ov.get("bp_qty_" + bp["name"], 1.0) * f_prod * c["vendido"] * ov.get("bp_price_" + bp["name"], bp["price"])
     revenue = revenue_main + rev_bp
-    raw = sum(r["qty_year"] * f_prod * r["price"] * (ov.get("raw_scale", 1.0) if r.get("main") else 1.0)
-              for r in case["raw"])
+    raw = sum(r["qty_year"] * f_prod * ov.get("raw_price_" + r.get("key", ""), r["price"]) * (ov.get("raw_scale", 1.0) if r.get("main") else 1.0)
+              for r in case["raw"])   # v10: raw_price_<key> cambia el precio de un insumo con clave (tornado y Monte Carlo)
     # v9: si solo llega a planta una fracción de la corona (crown_avail), el calor que no da la caldera se compra
     util = sum((u["qty_year"] + (1 - ov.get("crown_avail", 1.0)) * u.get("crown_MJ", 0.0)) * f_prod
                * (c[u["price_key"]] if "price_key" in u else u["price"]) for u in case["utilities"])

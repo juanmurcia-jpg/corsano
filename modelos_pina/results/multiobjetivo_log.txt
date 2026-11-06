@@ -1,0 +1,14 @@
+extremo económico 4040 804
+    arranque en caliente: aceptado 0
+extremo ambiental -1090 0
+    arranque en caliente: aceptado 2279
+ε 670 → margen 2279 GWP 670 2 t/h 20 m³
+    arranque en caliente: aceptado 434
+ε 536 → margen 1055 GWP 335 2 t/h no
+    arranque en caliente: aceptado 1055
+ε 402 → margen 1436 GWP 335 2 t/h no
+    arranque en caliente: aceptado 768
+ε 268 → margen 899 GWP 268 no no
+    arranque en caliente: aceptado -590
+ε 134 → margen -590 GWP 134 no no
+fig fig43_pareto.png

@@ -8,6 +8,7 @@ Salidas: figs/fig36_pfd.svg (autocontenido) y figs/fig36_pfd.png.
 import json, math, os, subprocess, tempfile
 import superestructura_dibujo as sd
 import balance_dibujo as bd
+import dimensionamiento as dm
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FIGS = os.path.join(HERE, "figs")
@@ -185,7 +186,7 @@ def build():
     r = d["E1|Óptimo económico"]; s = r["sizes"]; f = bd.flows_v7()
     pr = r["scen"][0]["products"]
     sd.text(60, 72, "Diagrama de flujo del proceso", 58, INK, font="Caveat", weight=700)
-    sd.text(62, 112, "Diseño óptimo de la versión 9 · Chocó 2022. Equipos con su tamaño de catálogo; corrientes numeradas con sus caudales en la tabla "
+    sd.text(62, 112, "Diseño óptimo de la versión 10 · Chocó 2022. Equipos con su tamaño de catálogo; corrientes numeradas con sus caudales en la tabla "
                      "(t/año). Línea continua: proceso; terracota discontinua: calor; azul discontinua: frío.", 21, "#5e5a53")
     # --- frente
     pipe([(40, 330), (108, 330)], INK, num=1, at=0.45)
@@ -267,6 +268,14 @@ def build():
     sd.text(828, 1000, "aire caliente", 17, HOT)
     pipe([(760, 1300), (700, 1300), (700, 380), (727, 380)], HOT, sw=2.0, dash="9 6", head=True)
     sd.text(692, 1240, "agua caliente al macerador", 16, HOT, anchor="end")
+    # --- hojas de la planta (v10)
+    if s.get("Extractora hojas", "no") != "no":
+        pipe([(1000, 1330), (1078, 1330)], PAL["corazon"][1], num=20, at=0.4)
+        sd.text(1000, 1300, "hojas", 20, "#5e5a53")
+        rollers(1080, 1292, 150, 76, "corazon"); label(1155, 1410, "EX-101", "Extractora de hojas", s["Extractora hojas"])
+        pipe([(1130, 1292), (1130, 1080), (1027, 1080)], PAL["vinagre"][1], num=21, at=0.35)
+        pipe([(1232, 1330), (1330, 1330)], PAL["corazon"][1], num=22, at=0.5)
+        sd.text(1340, 1338, "pulpa al campo", 18, PAL["corazon"][1])
     # --- servicios
     sd.text(60, 1530, "Servicios", 32, INK, font="Caveat", weight=700)
     util_icon(60, 1550, "G", "elec", "Grupo electrógeno diésel", "zona no interconectada; obligatorio para la aireación")
@@ -295,6 +304,10 @@ def build():
         (18, "Corona a la caldera", f.get("crown_b", 0), "picada y secada"),
         (19, "Calor de la caldera", pr.get("calor_corona_GJ", 0), "GJ/año al secador y al macerador"),
     ]
+    if s.get("Extractora hojas", "no") != "no":
+        rows += [(20, "Hojas acopiadas", f.get("hojas", 0), "acopio en finca (v10)"),
+                 (21, "Jugo de hojas", f.get("lj", 0), f"{dm.JF_H:.2f} t/t; a F-201 con el jugo de cáscara"),
+                 (22, "Pulpa y pérdidas de hojas", f.get("l_campo", 0) + f.get("l_cald", 0), "devueltas al campo")]
     rh = 52
     th = 60 + rh * len(rows)
     sd.rrect(tx, ty, tw, th, PAL["neutro"][1], 2.0)

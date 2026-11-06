@@ -1,0 +1,14 @@
+Indicador,Modelo (Python),SuperPro,Diferencia,Tolerancia
+Calor de proceso total (GJ/año),2360.33,,,±10 %
+Calor de la caldera de biomasa (GJ/año),2360.33,,,±10 %
+Calor con GLP (GJ/año),0.0,,,±15 %
+Electricidad de proceso sin aireación (MWh/año),380.01,,,±15 %
+Aireación del acetificador (MWh/año),189.35,,,±15 %
+Frío del acetificador (GJ/año),2345.45,,,±10 %
+Agua evaporada en el secador (t/año),629.13,,,±5 %
+Llenado de un fermentador de vino (h),37.39,,,±10 %
+Ciclo de la bodega de jugo de cáscara (h),12.64,,,±20 %
+Vino producido (m³/año),2046.7,,,±3 %
+Vinagre al 5 % (m³/año),5709.01,,,±3 %
+Harina (t/año),157.0,,,±5 %
+Ocupación pico del acetificador,1.0,,,±10 %

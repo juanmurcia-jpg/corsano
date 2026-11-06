@@ -1,0 +1,14 @@
+Procedimiento,Procedimiento de SuperPro sugerido,Modo,Tamaño del modelo,Tiempo de ciclo u horas,Temperatura,Especificación clave
+"Recepción, lavado y selección",Generic Box / Washing,continuo (turnos),3 t/h,3187 h/año,28 °C,fracciones 45/30/10/15 % (capacidad.FR)
+Extracción de pulpa,Belt Filter Press,continuo (turnos),1 t/h,,28 °C,jugo 0.87 t/t pulpa
+Maceración enzimática,Blending Tank,continuo,,,55 °C,42 MJ/t pulpa con 60 % de recuperación
+Clarificación,Disk-Stack Centrifuge,continuo (turnos),Centrífuga 1 m³/h,,,lodos 12% del mosto
+MF de lías,Microfiltration,continuo (turnos),2 m²,,,recupera 60% del jugo
+Estabilización,Blending Tank (dosificación),continuo,SO₂,,,≈ 50 mg/L de SO₂
+Fermentación alcohólica,Fermentation (Batch Stoich.) in Fermentor,lote escalonado,2×10 m³,"llenado 37.4 h + 12.5 h + 2,5 h",30 °C,65.31 g/L de etanol a las 12.5 h (Murcia Palacios)
+Prensa de cáscara,Belt Filter Press,continuo (turnos),1 t/h,,,jugo 0.578 t/t
+Secado de torta y molienda,Belt Dryer + Grinder,continuo 24/7,100 kg agua/h,7889 h/año,,0.81 t agua/t torta; 2590 MJ/t torta
+Fermentación del jugo de cáscara,Fermentation in Fermentor,lote escalonado,4×10 m³,12.6 h (cinética calibrada),30 °C,0.36 g/g (Seguí y Fito 2018)
+Acetificación,Fermentation in Airlift/Stirred Fermentor (semicontinuo),semicontinuo 24/7,20 m³,descarga del 50 %,30 °C con frío,50.0 kg/m³·d; ΔH = −493 kJ/mol; 1.2 kW/m³
+Caldera de biomasa,Boiler / Generic Combustor,continuo 24/7,100 kWt,,,corona 2720 MJ útiles/t; pulpa de hojas 6527
+Extracción de jugo de hojas,Screw Press,continuo (turnos),2 t/h,,,jugo 0.76 t/t; pulpa 0.18 t/t

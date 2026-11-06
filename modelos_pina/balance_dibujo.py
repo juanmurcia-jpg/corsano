@@ -13,7 +13,7 @@ import dimensionamiento as dm
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FIGS = os.path.join(HERE, "figs")
-sd.W, sd.H = 2840, 1720
+sd.W, sd.H = 2840, 1960
 K = 0.042                                  # px por t/año
 RHO_J, RHO_W, RHO_V = cp.RHO_JUICE, 0.99, 1.01
 PAL = sd.PAL
@@ -44,7 +44,13 @@ def flows_v7():
     torta = p.get("torta_t", fr["cascara"] * (1 - cp.Y["peel_juice_frac"]))
     sold_pj = fr["cascara"] - torta - pj                     # jugo vendido al hub (cierra el balance de la cáscara)
     co2_pj = pj * dm.PJ_SUGAR / 1000 * dm.PJ_ETOH * 44 / 46  # CO2 de la fermentación del jugo de cáscara (v9: 0,36 g/g)
-    pwine = pj - co2_pj
+    lj = p.get("jugo_hojas_vinagre_t", 0.0)                  # v10: jugo de hojas al vinagre
+    co2_lj = lj * dm.E_LJ / 1000 * 44 / 46
+    hojas = p.get("hojas_t", 0.0)
+    l_cald = p.get("pulpa_hojas_caldera_t", 0.0)
+    l_campo = hojas - lj - l_cald
+    pwine = pj - co2_pj + lj - co2_lj
+    co2_pj = co2_pj + co2_lj
     acid = p["acido_kg"] / 1000
     o2 = acid * 32 / 60
     vin = p["vinagre_m3"] * RHO_V
@@ -54,7 +60,8 @@ def flows_v7():
     crown_b = p.get("corona_caldera_t", 0.0)
     return dict(F=F, loss=s["loss"], fr=fr, crown_b=crown_b, juice=juice, bagazo=bagazo, lodos=lodos, clar=clar, rec=rec, ret=ret, l_sec=l_sec,
                 l_comp=l_comp, must=must, wine=wine, co2_l=co2_l, w_vin=w_vin, w_sold=w_sold, pj=pj, sold_pj=sold_pj, torta=torta,
-                co2_pj=co2_pj, pwine=pwine, o2=o2, water=water, vin=vin, flour=flour, vapor=vapor, sizes=r["sizes"])
+                co2_pj=co2_pj, pwine=pwine, o2=o2, water=water, vin=vin, flour=flour, vapor=vapor, sizes=r["sizes"],
+                hojas=hojas, lj=lj, l_cald=l_cald, l_campo=l_campo)
 
 
 # ----------------------------------------------------------------------------- motor de Sankey a mano alzada
@@ -150,7 +157,7 @@ def build():
     f = flows_v7()
     S = Sankey()
     sd.text(60, 72, "Balance de masa de la biorrefinería de piña", 58, sd.INK, font="Caveat", weight=700)
-    sd.text(62, 112, f"Diseño óptimo de la versión 9 · Chocó 2022 · {fmt(f['F'])} t/año de fruta procesada. El ancho de cada corriente es "
+    sd.text(62, 112, f"Diseño óptimo de la versión 10 · Chocó 2022 · {fmt(f['F'])} t/año de fruta procesada. El ancho de cada corriente es "
                      "proporcional a su masa (t/año); los líquidos se pasan a masa con sus densidades.", 21, "#5e5a53")
     # nodos
     S.node("fruta", 250, 700, "Fruta", "cascara", f"{fmt(f['F'])} t/año", side="left")
@@ -175,6 +182,10 @@ def build():
     S.node("p_emis", PX, 1040, "Vapor y CO₂", "vapor", None, side="right")
     S.node("p_cald", PX, 1185, "Caldera de biomasa", "corona", None, side="right")
     S.node("p_comp", PX, 1330, "Compost", "compost", None, side="right")
+    if f["hojas"] > 1:   # v10: hojas de la planta
+        S.node("hojas", 250, 1540, "Hojas", "corazon", f"{fmt(f['hojas'])} t/año", side="left")
+        S.node("extr", 720, 1540, "Extractora", "corazon", "hojas", side="top")
+        S.node("p_campo", PX, 1520, "Devuelto al campo", "corazon", None, side="right")
     # flujos (en el orden de apilamiento de cada nodo)
     S.flow("fruta", "frente", f["F"], "cascara", None)
     S.flow("frente", "pulpa", f["fr"]["pulpa"], "pulpa", fmt(f["fr"]["pulpa"]), 0.55)
@@ -202,13 +213,20 @@ def build():
     S.flow("agua", "acet", f["water"], "agua", fmt(f["water"]), 0.5)
     S.flow("acet", "p_vinagre", f["vin"], "vinagre", fmt(f["vin"]), 0.5)
     S.flow("corazon", "p_comp", f["fr"]["corazon"], "corazon", "corazón (B: bromelaína)", 0.25)
+    if f["hojas"] > 1:
+        S.flow("hojas", "extr", f["hojas"], "corazon", None)
+        if f["lj"] > 1:
+            S.flow("extr", "fermc", f["lj"], "vinagre", f"jugo de hojas {fmt(f['lj'])}", 0.35)
+        if f["l_cald"] > 1:
+            S.flow("extr", "p_cald", f["l_cald"], "corona", f"pulpa a la caldera {fmt(f['l_cald'])}", 0.4)
+        S.flow("extr", "p_campo", f["l_campo"], "corazon", f"pulpa y pérdidas {fmt(f['l_campo'])}", 0.5)
     if f["crown_b"] > 1:
         S.flow("corona", "p_cald", f["crown_b"], "corona", f"corona a la caldera {fmt(f['crown_b'])}", 0.3)
     if f["fr"]["corona"] - f["crown_b"] > 1:
         S.flow("corona", "p_comp", f["fr"]["corona"] - f["crown_b"], "corona", "corona", 0.25)
     S.draw()
     # dibujos y valores de los destinos
-    tot = {k: S.nodes[k]["tot_in"] for k in ("p_vino", "p_harina", "p_vinagre", "p_emis", "p_cald", "p_comp")}
+    tot = {k: S.nodes[k]["tot_in"] for k in ("p_vino", "p_harina", "p_vinagre", "p_emis", "p_cald", "p_comp") + (("p_campo",) if f["hojas"] > 1 else ())}
     sd.bottle(PX + 500, 205, "pulpa"); sd.sack(PX + 500, 505, "cascara"); sd.jar(PX + 500, 800, "vinagre")
     cloud(PX + 500, 1060); flame_small(PX + 500, 1205); mound(PX + 500, 1385)
     for k, y, extra in (("p_vino", 170, f"≈ {fmt(f['w_sold'] / RHO_W)} m³"), ("p_harina", 480, "cáscara + lías"),
@@ -218,23 +236,24 @@ def build():
         sd.text(PX + 26, y + h / 2 + 34, f"{fmt(tot[k])} t/año · {extra}", 18, "#5e5a53")
     sd.text(240, 900, f"no procesada {fmt(f['loss'])} t", 18, "#8f8a82", anchor="end", italic=True)
     # cierre del balance
-    ins = f["F"] + f["o2"] + f["water"]
+    ins = f["F"] + f["o2"] + f["water"] + f["hojas"]
     outs = sum(tot.values())
-    bx, by = 60, 1480
+    bx, by = 60, 1740
     sd.rrect(bx, by, 1180, 175, PAL["neutro"][1], 1.8, dash="8 7", passes=1)
     sd.text(bx + 20, by + 40, "Cierre del balance (t/año)", 30, sd.INK, font="Caveat", weight=700)
-    sd.text(bx + 20, by + 78, f"Entradas: fruta {fmt(f['F'])} + O₂ {fmt(f['o2'])} + agua de dilución {fmt(f['water'])} = {fmt(ins)}", 21, sd.INK)
+    sd.text(bx + 20, by + 78, f"Entradas: fruta {fmt(f['F'])} + hojas {fmt(f['hojas'])} + O₂ {fmt(f['o2'])} + agua de dilución {fmt(f['water'])} = {fmt(ins)}", 21, sd.INK)
     sd.text(bx + 20, by + 110, f"Salidas: vino {fmt(tot['p_vino'])} + vinagre {fmt(tot['p_vinagre'])} + harina {fmt(tot['p_harina'])} + "
-                               f"vapor y CO₂ {fmt(tot['p_emis'])} + caldera {fmt(tot['p_cald'])} + compost {fmt(tot['p_comp'])} = {fmt(outs)}", 21, sd.INK)
+                               f"vapor y CO₂ {fmt(tot['p_emis'])} + caldera {fmt(tot['p_cald'])} + compost {fmt(tot['p_comp'])}"
+                               + (f" + campo {fmt(tot['p_campo'])}" if 'p_campo' in tot else "") + f" = {fmt(outs)}", 21, sd.INK)
     sd.text(bx + 20, by + 144, f"Productos vendibles: {100 * (tot['p_vino'] + tot['p_vinagre'] + tot['p_harina']) / ins:.0f} % de la masa que entra; "
                                f"la fruta deja {100 * (tot['p_comp']) / f['F']:.0f} % como residuo sólido.", 19, "#5e5a53")
-    lx, ly = 1300, 1480
+    lx, ly = 1300, 1740
     sd.rrect(lx, ly, 1460, 175, PAL["neutro"][1], 1.8, dash="8 7", passes=1)
     sd.text(lx + 20, ly + 40, "Supuestos", 30, sd.INK, font="Caveat", weight=700)
     for i, t in enumerate(["Prensa de pulpa: 87 % de jugo (Quesada Salas 2013); centrífuga: 12 % de lodos; la MF de lías recupera el 60 % del jugo.",
                            "Bodega: CO₂ y lías por diferencia entre mosto y vino; jugo de cáscara con 104 g/kg de azúcar.",
                            "Acetificación: 46 g de etanol + 32 g de O₂ → 60 g de ácido; vinagre al 5 %; el agua de dilución cierra el balance.",
-                           "La corona va a la caldera de biomasa (límite del balance: no se detalla la combustión); el corazón, a compost (con bromelaína, a la línea B)."]):
+                           "Corona a la caldera (no se detalla la combustión); hojas: 76 % de jugo y 18 % de pulpa (Liao et al. 2026), jugo con 21,8 kg de etanol por t."]):
         sd.text(lx + 20, ly + 74 + i * 26, t, 17.5, "#5e5a53")
     return f
 

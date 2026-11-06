@@ -8,7 +8,7 @@ from figuras import C, INK, INK2, GRID, SURF, save, J
 
 MES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
 CUM = np.cumsum([0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31])
-ORDER = ["Frente", "Prensa", "Decantadora", "Prensa cáscara", "Prensa corazón", "Clarificación", "MF lías", "Estabilización", "Bodega", "Secador", "Aspersión", "Enzima cáscara", "Acetificador", "Caldera de corona"]
+ORDER = ["Frente", "Prensa", "Decantadora", "Prensa cáscara", "Prensa corazón", "Clarificación", "MF lías", "Estabilización", "Bodega", "Secador", "Aspersión", "Enzima cáscara", "Bodega cáscara", "Acetificador", "Caldera de corona", "Extractora hojas"]
 
 
 def _key(d, start):
@@ -85,7 +85,7 @@ def fig28_escala(d):
                        fontsize=6.4, color="white" if (M[i, j] == M[i, j] and M[i, j] > 0.7) else INK)
     ax[0].set_yticks(range(len(units))); ax[0].set_yticklabels([u + {"Frente": " (t/h)", "Prensa": " (t/h)", "Prensa cáscara": " (t/h)", "Decantadora": " (t/h)", "MF lías": " (m²)",
                                                                        "Secador": " (kg agua/h)", "Almacén de mosto": " (m³)", "Clarificación": " (C/F/MF, m³/h o m²)",
-                                                                       "Enzima cáscara": " (P = precipitación, t/h)", "Acetificador": " (m³)", "Caldera de corona": " (kWt)"}.get(u, "") for u in units], fontsize=7.5)
+                                                                       "Enzima cáscara": " (P = precipitación, t/h)", "Acetificador": " (m³)", "Caldera de corona": " (kWt)", "Bodega cáscara": " (n × m³)", "Extractora hojas": " (t/h)"}.get(u, "") for u in units], fontsize=7.5)
     ax[0].set_xticks(range(len(ks))); ax[0].set_xticklabels([f"{x/1000:.1f}k" + ("\nT3" if d[k]["turno3"] else "") for x, k in zip(sup, ks)], fontsize=7)
     ax[0].set_xlabel("Oferta de fruta (t/año); T3 = tercer turno"); ax[0].grid(False)
     ax[0].set_title("Tamaño óptimo (texto) y ocupación del mes pico (color)", fontsize=9)

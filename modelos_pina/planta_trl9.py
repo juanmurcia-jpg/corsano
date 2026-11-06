@@ -46,6 +46,11 @@ TECH = {   # tecnología: (TRL, nota)
     "Prensado de cáscara con Ca(OH)2 al 0,1 %": (6, "planta piloto neumática (Seguí y Fito 2018); sin referencia industrial"),
     "Bromelaína por precipitación con polisacárido": (5, "laboratorio con jugo industrial (Campos et al. 2020)"),
     "Bromelaína por UF 10 kDa + liofilización": (6, "UF industrial madura; con jugo de piña solo en laboratorio (Seguí y Fito 2018)"),
+    "Extracción de jugo de hojas de piña": (6, "extrusora a escala piloto (Chen et al. 2020); prensas de tornillo industriales maduras"),
+    "Etanol y levadura de jugo de hojas (K. marxianus)": (5, "laboratorio (Chen et al. 2020); TEA conceptual (Liao et al. 2022)"),
+    "Digestión anaerobia de jugo de hojas + motor a biogás": (7, "CSTR de banco (Liao et al. 2026); digestión agroindustrial y motores a biogás maduros"),
+    "Ácido cítrico por fermentación (A. niger)": (9, "industria; con jugo de piña sin referencia (SuperPro, Petrides)"),
+    "Goma xantana por fermentación": (9, "industria; con jugo de piña sin referencia (SuperPro, Petrides)"),
 }
 
 CAT = {   # catálogo: tamaños discretos, unidad, referencia (tamaño, USD 2024), exponente   [S] salvo indicación
@@ -92,6 +97,10 @@ CAT = {   # catálogo: tamaños discretos, unidad, referencia (tamaño, USD 2024
     # v9: pretratamiento con cal (Seguí y Fito 2018) y separación de enzima del jugo de cáscara (Campos 2020)   [S]
     "mezclador_cal": dict(sizes=[1, 2, 3, 5], unit="t/h", ref=(2, 12_000), n=0.6),
     "liofilizador": dict(sizes=[5, 10, 25, 50, 100, 250, 500], unit="kg agua/d", ref=(25, 90_000), n=0.6),
+    # v10: residuos de planta (Chen et al. 2020; Liao et al. 2022 y 2026)   [S]
+    "extrusora_hojas": dict(sizes=[2, 5, 10, 20], unit="t/h", ref=(5, 70_000), n=0.6),
+    "digestor_anaerobio": dict(sizes=[250, 500, 1000, 2000, 4000], unit="m3", ref=(1000, 300_000), n=0.6),
+    "motor_biogas": dict(sizes=[50, 100, 200, 400], unit="kWe", ref=(100, 130_000), n=0.7),
 }
 
 

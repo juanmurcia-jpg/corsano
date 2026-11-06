@@ -22,6 +22,7 @@ import tea_lineas as tl
 import planta_trl9 as pt
 import capacidad as cp
 import dimensionamiento as dm
+import datos as DT
 import tea_excel_run as tx
 
 RES = os.path.join(os.path.dirname(__file__), "results")
@@ -104,6 +105,22 @@ def option_equipment(u, lab):
             return [E("tanque_precipitacion", q, "Tanques de precipitación con polisacárido (×2)") | dict(qty=2 * pt.pick("tanque_precipitacion", q)[0]),
                     E("centrifuga_discos", q, "Centrífuga del precipitado"), lio]
         return [E("centrifuga_discos", q, "Centrífuga de prefiltrado"), E("UF_bromelaina", q * 1000 / 25, "Ultrafiltración 10 kDa del jugo de cáscara"), lio]
+    # ---- v10
+    if u == "Extractora hojas":
+        return [E("extrusora_hojas", num(), "Extractora de jugo de hojas (tornillo)")]
+    if u == "Bodega etanol":
+        n = int(lab.split("×")[0]); q = (n - 1) * dm.VF / dm.T_LEAF
+        return [dict(name=f"Fermentador de jugo de hojas {dm.VF:.0f} m³", qty=n, size=dm.VF, ref_size=dm.VF, ref_USD=pt.fermenter_moresi(dm.VF, True), n=1.0),
+                E("centrifuga_discos", q, "Centrífuga de levadura (proteína unicelular)")]
+    if u == "Destilación":
+        return [E("columna_destilacion", num(), "Columna de destilación de etanol hidratado")]
+    if u == "Digestor":
+        return [E("digestor_anaerobio", num(), "Digestor anaerobio CSTR (35 °C) con gasómetro")]
+    if u == "Motor biogás":
+        return [E("motor_biogas", num(), "Motor-generador a biogás con limpieza de H2S")]
+    if u in dm.HUB:
+        H_ = dm.HUB[u]; s = num(); ref = H_["cap"] * 1000 / (dm.AC * 8766)
+        return [dict(name=f"Planta de {u.lower()} (escalada del ejemplo de SuperPro)", qty=1, size=s, ref_size=ref, ref_USD=H_["tci"] / dm.LANG, n=0.6)]
     raise KeyError(u)
 
 
@@ -156,16 +173,29 @@ def build_case(r, label, with_bromelain):
            dict(name="Cal y mezcla de la cáscara (t)", qty_year=pr.get("cascara_cal_t", 0.0), price=dm.LIME_VC),
            dict(name="Reactivos, energía y liofilización de la enzima (t de jugo)", qty_year=enz_t if has_enz else 0.0,
                 price=dm.ENZ_TECH[enz_lab.split()[0]]["vc"] if has_enz else 0.0),
-           dict(name="Nutrientes y filtración del vinagre (kg ácido)", qty_year=acid_kg, price=500.0)]
+           dict(name="Nutrientes y filtración del vinagre (kg ácido)", qty_year=acid_kg, price=500.0),
+           # v10: hojas, etanol, biogás y hub
+           dict(name="Acopio de hojas puestas en planta (t)", qty_year=pr.get("hojas_t", 0.0), price=dm.ACOPIO_VC, key="acopio"),
+           dict(name="Levadura e inóculo del jugo de hojas (t)", qty_year=pr.get("jugo_hojas_etanol_t", 0.0), price=dm.ETOH_VC),
+           dict(name="Levadura, nutrientes y SO2 del jugo de hojas a vinagre (t)", qty_year=pr.get("jugo_hojas_vinagre_t", 0.0), price=dm.PJ_VC),
+           dict(name="Operación del motor a biogás (kWh)", qty_year=pr.get("elec_bio_kWh", 0.0), price=dm.BIO_OM)]
+    for prod, key in (("Ácido cítrico", "citrico_kg"), ("Xantana", "xantana_kg")):
+        if pr.get(key, 0.0) > 0:
+            raw.append(dict(name=f"Servicios y reactivos de {prod.lower()} (kg)", qty_year=pr[key], price=dm.HUB[prod]["vc"]))
     lines = [v, h] + ([br] if with_bromelain else [])
     scale = [1.0, torta_t / (h["flows"]["peel_t"] * dm.CAKE)] + ([brom_frac] if with_bromelain else [])   # v9: la línea de harina sigue a la torta secada
     kwh_extra = (dec_t * 4.5 + must * {"MF": 0.0, "Flotación": 1.0, "Centrífuga": 2.0}[clar.split()[0]] + pr.get("lias_MF_m3", 0.0) * 1.0
                  + (stab_m3 * 100.0 if stab.startswith("UHPH") else 0.0) + pr["vino_m3"] * 0.5
                  + (dm.AERATION_KW_M3 * float(r["sizes"]["Acetificador"].split()[0]) * 0.9 * 8766 if has_vin else 0.0)
-                 + acid_kg * dm.ACID_HEAT / 3.6 / 4.0 + pr.get("corona_caldera_t", 0.0) * 10.0)
+                 + acid_kg * dm.ACID_HEAT / 3.6 / 4.0 + pr.get("corona_caldera_t", 0.0) * 10.0
+                 + dm.KWH_LEAF["ext"] * pr.get("hojas_extraidas_t", 0.0) + dm.KWH_LEAF["etoh"] * pr.get("jugo_hojas_etanol_t", 0.0)
+                 + dm.KWH_LEAF["ad"] * pr.get("jugo_hojas_digestor_t", 0.0) + dm.KWH_LEAF["pulp"] * pr.get("pulpa_hojas_caldera_t", 0.0)
+                 - pr.get("elec_bio_usada_kWh", 0.0))                                                       # v10: hojas y biogás
     heat_past = 0.0 if stab.startswith("HTST") else v["flows"]["juice_m3"] * dm.HTST_VC / dm.H_COP   # MJ de pasteurización que no se gastan
     heat_past -= pr.get("lias_secador_t", 0.0) * dm.LEES_DRY_EQ * h["heat_MJ"] / (h["flows"]["peel_t"] * dm.CAKE)   # secado de lías y retenidos
-    heat_past += pr.get("calor_corona_GJ", 0.0) * 1000                                                          # calor de la caldera de corona
+    heat_past += pr.get("calor_corona_GJ", 0.0) * 1000                                                          # calor de la caldera (corona y pulpa de hojas)
+    heat_past -= dm.Q_DEST * pr.get("etanol_kg", 0.0) + dm.Q_AD * pr.get("jugo_hojas_digestor_t", 0.0)          # v10: destilación y digestor
+    heat_past += pr.get("calor_bio_usado_MJ", 0.0)                                                              # v10: calor del motor a biogás
     util = [dict(name="Electricidad", qty_year=sum(l["elec_kWh"] * 1.3 * f for l, f in zip(lines, scale)) + kwh_extra, price_key="elec_COP_kWh"),
             dict(name="Calor de proceso (MJ)", qty_year=sum(l["heat_MJ"] * f for l, f in zip(lines, scale)) - heat_past, price_key="calor_COP_MJ",
                  crown_MJ=pr.get("calor_corona_GJ", 0.0) * 1000),
@@ -176,6 +206,11 @@ def build_case(r, label, with_bromelain):
              dict(name="Lías y espumas a compostaje (m³)", qty_year=pr.get("lias_compost_m3", 0.0), price=dm.LEES_DISP)]
     byp = [dict(name="harina", qty_year=(pr["harina_t"] + pr.get("harina_lias_t", 0.0)) * 1000, price=tl.M("harina_kg")),
            dict(name="jugo", qty_year=max(juice_t * 1000 - pj_t * 1000, 0.0), price=tl.M("jugo_cascara_kg"))]
+    for nm_, key, price in (("etanol", "etanol_L", dm.ETOH_PRICE), ("levadura", "levadura_kg", dm.YEAST_PRICE),
+                            ("electricidad_excedente", "elec_excedente_kWh", dm.VAL_EXC), ("citrico", "citrico_kg", dm.HUB["Ácido cítrico"]["price"]),
+                            ("xantana", "xantana_kg", dm.HUB["Xantana"]["price"])):
+        if pr.get(key, 0.0) > 1e-6:
+            byp.append(dict(name=nm_, qty_year=pr[key], price=price))
     if has_enz:
         byp.append(dict(name="bromelaina_cascara", qty_year=enz_kg, price=dm.BROM_PRICE * dm.ENZ_TECH[enz_lab.split()[0]]["pf"]))
     if vin_m3 > 0:
@@ -185,7 +220,9 @@ def build_case(r, label, with_bromelain):
                 dict(name="Empaques y reactivos de bromelaína (COP)", qty_year=pr["bromelaina_kg"], price=8_000)]
         byp += [dict(name="bromelaina", qty_year=pr["bromelaina_kg"], price=tl.M("bromelaina_kg")),
                 dict(name="polvo", qty_year=br["flows"]["powder_t"] * brom_frac * 1000, price=tl.M("polvo_kg"))]
-    pos = math.ceil((4 + 2 + (2 if with_bromelain else 0) + (1 if has_vin else 0) + (1 if has_enz else 0)) * 0.75)
+    lv_pos = (1 if pr.get("hojas_extraidas_t", 0) > 0 else 0) + (1 if pr.get("etanol_kg", 0) > 0 else 0) + (1 if pr.get("ch4_kg", 0) > 0 else 0) \
+        + sum(1 for k_ in ("citrico_kg", "xantana_kg") if pr.get(k_, 0) > 0)
+    pos = math.ceil((4 + 2 + (2 if with_bromelain else 0) + (1 if has_vin else 0) + (1 if has_enz else 0) + lv_pos) * 0.75)
     cal = dict(tb.calendar(3), shifts=3) if r.get("turno3") else 3
     vin_share_pj = (dm.A_PJ * pj_t / acid_kg) if acid_kg > 0 else 0.0
     return dict(name=label, vin_share_pj=vin_share_pj, product=dict(name="Vino de piña a granel", unit="L", qty_year=wine_m3 * 1000, price=WINE_PRICE),
@@ -226,6 +263,17 @@ def run(case, mc_n=1000):
         specs = specs + [("Rendimiento del jugo de cáscara (0,23–0,43 g/g)", "bp_qty_vinagre", lo, mo_, hi)]
         dists = dists + [("bp_qty_vinagre", lo, mo_, hi)]
         R = [rw + [0.0] for rw in R] + [[0.0] * len(R) + [1.0]]
+    ep = next((bp["price"] for bp in case["byproducts"] if bp["name"] == "etanol" and bp["qty_year"] > 0), None)
+    if ep:   # v10: precio del etanol (rango de tea_lineas.M) y costo de acopio de hojas (registro de parámetros)
+        lo, mo_, hi = DT.tri("precio_etanol_L")
+        specs = specs + [("Precio del etanol", "bp_price_etanol", lo, mo_, hi)]
+        dists = dists + [("bp_price_etanol", lo, mo_, hi)]
+        R = [rw + [0.0] for rw in R] + [[0.0] * len(R) + [1.0]]
+    if any(r_.get("key") == "acopio" and r_["qty_year"] > 0 for r_ in case["raw"]):
+        lo, mo_, hi = DT.tri("costo_acopio_hojas")
+        specs = specs + [("Costo de acopio de hojas", "raw_price_acopio", hi, mo_, lo)]
+        dists = dists + [("raw_price_acopio", lo, mo_, hi)]
+        R = [rw + [0.0] for rw in R] + [[0.0] * len(R) + [1.0]]
     if any(u.get("crown_MJ", 0) > 0 for u in case["utilities"]):
         specs = specs + [("Corona que llega a planta (40–100 %)", "crown_avail", 0.4, 0.9, 1.0)]
         dists = dists + [("crown_avail", 0.4, 0.9, 1.0)]
@@ -246,10 +294,10 @@ if __name__ == "__main__":
            ("A · Óptimo sin vinagre", "E1|Óptimo sin vinagre", False),
            ("A · Óptimo sin caldera de corona", "E1|Óptimo sin caldera de corona", False),
            ("A · Óptimo sin SO₂", "E1|Óptimo sin SO₂", False),
-           ("A · Diseño v8 con parámetros v9", "E1|Diseño v8 con parámetros v9", False),
-           ("A · Óptimo sin opciones v9", "E1|Óptimo sin opciones v9 (sin cal ni enzima)", False),
-           ("A · Óptimo sin cal", "E1|Óptimo sin cal", False),
-           ("A · Óptimo sin enzima de cáscara", "E1|Óptimo sin enzima de cáscara", False),
+           ("A · Diseño v9 con parámetros v10", "E1|Diseño v9 con parámetros v10", False),
+           ("A · Óptimo sin opciones v10", "E1|Óptimo sin opciones v10 (sin hojas ni hub)", False),
+           ("A · Óptimo sin etanol de hojas", "E1|Óptimo sin etanol de hojas", False),
+           ("A · Óptimo sin digestor", "E1|Óptimo sin digestor", False),
            ("B · Referencia TRL-9 con bromelaína", "E5|B referencia (prensas dedicadas TRL-9)", True),
            ("B · Óptimo con la topología anterior", "E5|B óptimo con la topología anterior", True),
            ("B · Óptimo con la superestructura ampliada", "E5|B óptimo económico", True)]

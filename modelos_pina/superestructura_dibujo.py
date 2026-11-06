@@ -7,12 +7,13 @@ la alternativa elegida en cada disyunción; las descartadas quedan en gris punte
 Salidas: figs/fig33_superestructura.svg (autocontenido, fuentes OFL incrustadas) y figs/fig33_superestructura.png.
 """
 import base64, json, math, os, random
+import dimensionamiento as dm_mod
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FIGS = os.path.join(HERE, "figs")
 rng = random.Random(20261105)
 
-W, H = 2580, 1660
+W, H = 2580, 2190
 PX = 2120   # columna de productos
 INK = "#3d3a35"
 GREY = "#b9b3aa"
@@ -256,8 +257,8 @@ def build(d):
     fmt = lambda v: f"{v:,.0f}".replace(",", " ")
 
     text(60, 72, "Superestructura de la biorrefinería de piña", 58, INK, font="Caveat", weight=700)
-    text(62, 112, "Cada ∨ es una disyunción (Grossmann cap. 10): el MILP elige una alternativa y su tamaño. En color, el diseño óptimo de la versión 9 "
-                  "(Chocó 2022); en gris, las alternativas descartadas. Nuevo en la v9: pretratamiento de la cáscara y bromelaína del jugo de cáscara.", 21, "#5e5a53")
+    text(62, 112, "Cada ∨ es una disyunción (Grossmann cap. 10): el MILP elige una alternativa y su tamaño. En color, el diseño óptimo de la versión 10 "
+                  "(Chocó 2022); en gris, las alternativas descartadas. Nuevo en la v10: hojas de la planta, etanol, biogás y productos del hub.", 21, "#5e5a53")
 
     # fruta y frente
     pineapple(170, 790, 1.0)
@@ -318,8 +319,9 @@ def build(d):
     product(PX, 770, sack, "Harina de fibra", [f"≈ {fmt(pr['harina_t'] + pr.get('harina_lias_t', 0))} t/año", "cáscara + lías"], "cascara")
     arrow(right(bD)[0] + 2, right(bD)[1], PX + 10, 850, PAL["cascara"][1], 2.6, 0.06)
 
-    bJ, cJ = card(945, 1010, 290, "Jugo de cáscara", [f"fermentar {s['Bodega cáscara']}", "venta al hub (150 COP/kg)"], "vinagre",
-                  chosen=(0,) if s["Bodega cáscara"] != "no" else (1,))
+    hub_on = (pr.get("citrico_kg", 0) + pr.get("xantana_kg", 0)) > 0
+    bJ, cJ = card(945, 1010, 290, "Jugo de cáscara", [f"fermentar {s['Bodega cáscara']}", "venta al hub (150 COP/kg)", "ácido cítrico · xantana (v10)"], "vinagre",
+                  chosen=tuple(i for i, on in enumerate((s["Bodega cáscara"] != "no", pr.get("jugo_cascara_t", 0) > pr.get("jugo_cascara_vinagre_t", 0) + 1, hub_on)) if on) or (1,))
     arrow(bK[0] + 125, bK[1] + bK[3] + 2, left(bJ)[0] - 4, left(bJ)[1], PAL["vinagre"][1], 2.4, 0.15, label=f"jugo ({jf * 100:.0f} %)", lab_size=19, lab_dy=28)
     enz = s.get("Enzima cáscara", "no")
     eo = ["precipitación con polisacárido", "UF 10 kDa + liofilización", "sin separar"]
@@ -342,9 +344,9 @@ def build(d):
                   chosen=(0,) if b.get("Prensa corazón", "no") == "no" and b else (), optional=True)
     arrow(hx + 2, hy + 8, left(bR)[0] - 4, left(bR)[1], PAL["corazon"][1], 2.4, 0.2, dash="9 7", label="corazón 10 %", lab_dy=40,
           lab_color=PAL["corazon"][1])
-    bU, cU = card(1280, 1275, 290, "Bromelaína", [f"aspersión {b.get('Aspersión', '25 kg agua/h')}", "UF 10 kDa (o 75 + 10 kDa)"], "corazon",
+    bU, cU = card(985, 1275, 290, "Bromelaína", [f"aspersión {b.get('Aspersión', '25 kg agua/h')}", "UF 10 kDa (o 75 + 10 kDa)"], "corazon",
                   chosen=(0, 1), disjunction=False, optional=True, note="Vasiljevic 2020")
-    arrow(right(bR)[0] + 2, cR[0][1], left(bU)[0] - 4, left(bU)[1], PAL["corazon"][1], 2.4, -0.04, dash="9 7", label="jugo de corazón", lab_size=18)
+    arrow(right(bR)[0] + 2, cR[0][1], left(bU)[0] - 4, left(bU)[1], PAL["corazon"][1], 2.4, -0.04, dash="9 7")
     product(PX, 1220, vial, "Bromelaína cruda", [f"≈ {fmt(pr.get('enzima_cascara_kg', 0))} kg/año del jugo de cáscara" if enz != "no" else "del jugo de cáscara: desde 2× la oferta",
                                                   "del corazón: solo en la config. B"], "corazon")
     arrow(right(bU)[0] + 2, right(bU)[1], PX + 38, 1300, PAL["corazon"][1], 2.4, 0.05, dash="9 7")
@@ -358,8 +360,37 @@ def build(d):
                  note=(f"→ {fmt(pr.get('calor_corona_GJ', 0))} GJ/año de calor al secador" if boiler != "no" else "calor para el secador"))
     arrow(hx - 2, hy + 10, left(bO)[0] - 4, left(bO)[1], PAL["corona"][1], 2.2, 0.28, label="corona 15 %", lab_dy=120, lab_color=PAL["corona"][1])
 
+    # ---- hojas de la planta (v10: Chen et al. 2020; Liao et al. 2022 y 2026)
+    ext = s.get("Extractora hojas", "no")
+    text(170, 1770, "Hojas de la planta", 30, INK, anchor="middle", font="Caveat", weight=700)
+    text(170, 1798, "renovación del cultivo", 19, "#5e5a53", anchor="middle")
+    text(170, 1822, f"{fmt(dm_mod.HOJAS_SUPPLY)} t/año acopiables", 19, "#6f6a62", anchor="middle", italic=True)
+    for k_ in range(5):
+        rline(120 + k_ * 22, 1745, 140 + k_ * 16, 1690 - (k_ % 2) * 18, PAL["corazon"][1], 2.4, 2)
+    bH, cH = card(650, 1700, 300, "Hojas", [f"extractora {ext}" if ext != "no" else "extractora 2–60 t/h", "dejar en el campo"], "corazon",
+                  chosen=(0,) if ext != "no" else (1,), note=(f"≈ {fmt(pr.get('hojas_t', 0))} t/año acopiadas" if ext != "no" else "Chen 2020 · Liao 2022, 2026"))
+    arrow(300, 1790, left(bH)[0] - 4, left(bH)[1], PAL["corazon"][1], 2.4, 0.0)
+    flows = (pr.get("jugo_hojas_vinagre_t", 0), pr.get("jugo_hojas_etanol_t", 0), pr.get("jugo_hojas_digestor_t", 0), pr.get("jugo_hojas_campo_t", 0))
+    bLJ, cLJ = card(1010, 1700, 330, "Jugo de hojas (76 %)", ["vinagre (mezclado con vino)", "etanol + levadura (K. marxianus)", "digestor → electricidad", "devolver al campo"],
+                    "vinagre", chosen=tuple(i for i, f_ in enumerate(flows) if f_ > 1) if ext != "no" else ())
+    arrow(right(bH)[0] + 2, cH[0][1], left(bLJ)[0] - 4, cLJ[0][1], PAL["vinagre"][1], 2.4, 0.0)
+    pflows = (pr.get("pulpa_hojas_caldera_t", 0), pr.get("pulpa_hojas_campo_t", 0))
+    bPH, cPH = card(1400, 1700, 300, "Pulpa de hojas (18 %)", ["combustible de la caldera", "devolver al campo"], "corona",
+                    chosen=tuple(i for i, f_ in enumerate(pflows) if f_ > 1) if ext != "no" else ())
+    ylow = bLJ[1] + bLJ[3] + 26          # la pulpa pasa por debajo de la tarjeta del jugo
+    rline(bH[0] + 150, bH[1] + bH[3] + 2, bH[0] + 150, ylow, PAL["corona"][1], 2.0, 2, dash="7 6")
+    rline(bH[0] + 150, ylow, bPH[0] + 60, ylow, PAL["corona"][1], 2.0, 2, dash="7 6")
+    arrow(bPH[0] + 60, ylow, bPH[0] + 60, bPH[1] + bPH[3] + 4, PAL["corona"][1], 2.0, 0.0, dash="7 6")
+    text(bH[0] + 170, ylow - 8, "pulpa", 18, PAL["corona"][1])
+    if flows[0] > 1:
+        arrow(right(bLJ)[0] + 2, cLJ[0][1], bA[0] + 40, bA[1] + bA[3] + 4, PAL["vinagre"][1], 2.4, 0.15, label="al acetificador", lab_size=18, lab_dy=-8)
+    if pflows[0] > 1:
+        arrow(bPH[0] + 40, bPH[1] - 4, bO[0] + 300, bO[1] + bO[3] + 4, PAL["corona"][1], 2.2, 0.2)
+    if pr.get("etanol_L", 0) > 1 or pr.get("elec_bio_kWh", 0) > 1:
+        product(PX, 1700, vial, "Etanol y energía", [f"≈ {fmt(pr.get('etanol_L', 0))} L/año de etanol", f"≈ {fmt(pr.get('elec_bio_kWh', 0) / 1000)} MWh/año de biogás"], "corazon")
+
     # ---- leyenda y palancas
-    lx, ly = 1180, 1490
+    lx, ly = 1180, 2000
     rrect(lx, ly, 1340, 160, PAL["neutro"][1], 1.8, dash="8 7", passes=1)
     text(lx + 20, ly + 38, "Cómo leer", 30, INK, font="Caveat", weight=700)
     hachure(lx + 20, ly + 56, 120, 34, PAL["pulpa"][1], gap=6.5, sw=1.4, op=0.6, fill=PAL["pulpa"][0], fill_op=0.75)

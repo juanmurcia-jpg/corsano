@@ -104,7 +104,7 @@ def build():
     f = bd.flows_v7()
     sd.text(60, 72, "Layout conceptual de la planta", 58, INK, font="Caveat", weight=700)
     sd.text(62, 112, "Vista en planta, a escala aproximada. Zonas por función y recorrido de los materiales de oeste a este; huellas de equipos del diseño "
-                     "óptimo de la versión 9 (Chocó 2022). Distribución conceptual: no es ingeniería de detalle.", 21, "#5e5a53")
+                     "óptimo de la versión 10 (Chocó 2022). Distribución conceptual: no es ingeniería de detalle.", 21, "#5e5a53")
     # lote y vías
     sd.rrect(X(0), Y(0), 70 * S, 45 * S, INK, 2.8)
     for y0 in (14, 30):
@@ -118,10 +118,15 @@ def build():
         sd.text(X(0.6), Y(y0 + 3.6), "portón", 16, "#7a746b")
     # ---------------- zonas norte
     zone(0, 0, 12, 14, "cascara", "Recepción de fruta", "patio cubierto · 3 días de pico")
-    for i in range(3):
+    leaves = s.get("Extractora hojas", "no") != "no"
+    for i in range(2 if leaves else 3):
         for k in range(4):
             sd.rrect(X(1 + k * 2.6), Y(4 + i * 3), 2.0 * S, 2.0 * S, PAL["cascara"][1], 1.4, passes=1)
-    sd.text(X(6), Y(13.4), "canastillas de fruta", 15, "#5e5a53", anchor="middle")
+    if leaves:      # v10: hojas de la planta
+        sd.rellipse(X(2.6), Y(11.0), 1.5 * S, 1.0 * S, PAL["corazon"][1], 1.6, n=16)
+        sd.text(X(2.6), Y(12.9), "hojas", 15, "#5e5a53", anchor="middle")
+        eq(5.6, 10.0, 5.6, 2.0, "corazon", f"extractora hojas {s['Extractora hojas']}", 13)
+    sd.text(X(6), Y(13.4) if not leaves else Y(9.4), "canastillas de fruta", 15, "#5e5a53", anchor="middle")
     zone(12, 0, 22, 14, "neutro", "Nave de proceso húmedo", "piso sanitario, drenajes")
     eq(13, 3, 8, 2, "neutro", f"lavado y selección {s['Frente']}")
     eq(21.6, 2.6, 2.6, 1.8, "neutro", "peladora"); eq(21.6, 4.8, 2.6, 1.8, "neutro", "peladora")
@@ -141,10 +146,13 @@ def build():
     for k in range(ng):
         tank(37.5 + k * 5.6, 10.6, sg, "pulpa", f"guarda {sg} m³" if k == 0 else None)
     zone(54, 0, 16, 14, "vinagre", "Vinagre", "acetificación y tanques")
-    tank(56.4, 4.4, 10, "vinagre", "F-201"); tank(59.4, 4.4, 10, "vinagre", "F-202")
-    tank(63.4, 4.4, float(s["Acetificador"].split()[0]), "vinagre", f"acetificador {s['Acetificador']}")
-    eq(66.0, 2.6, 1.4, 1.4, "vinagre", "espuma", 12); eq(66.0, 4.6, 2.6, 1.2, "vinagre", "MF vinagre", 12)
-    vV = f["vin"] / 1.01 * 30 / 365 * 1.1
+    bc = s.get("Bodega cáscara", "no")
+    nbc, vbc = (int(bc.split("×")[0]), float(bc.split("×")[1].split()[0])) if bc != "no" else (2, 10.0)
+    for k in range(nbc):
+        tank(55.6 + k * 2.3, 4.4, vbc, "vinagre", f"F-20{k + 1}" if k in (0, nbc - 1) else None)
+    tank(64.9, 4.4, float(s["Acetificador"].split()[0]), "vinagre", f"acetificador {s['Acetificador']}")
+    eq(67.0, 2.6, 1.4, 1.4, "vinagre", "espuma", 12); eq(67.0, 4.6, 2.6, 1.2, "vinagre", "MF vinagre", 12)
+    vV = f["vin"] / 1.01 * 15 / 365 * 1.1          # v10: 15 días de vinagre en planta; despacho quincenal
     nv, sv, _ = pt.pick("tanque_guarda", vV)
     for k in range(nv):
         tank(57.0 + k * 5.6, 10.6, sv, "vinagre", f"vinagre {sv} m³" if k == 0 else None)
@@ -200,6 +208,8 @@ def build():
     flow([(45.5, 6.5), (47.5, 6.5), (47.5, 8.6)], "pulpa", None)
     flow([(50.5, 7.8), (55.0, 7.8)], "vinagre", "vino a vinagre", at=0.5)
     flow([(23.3, 10.7), (23.3, 17.7), (23.3, 20.9)], "cascara", "torta", at=0.62)
+    if s.get("Extractora hojas", "no") != "no":
+        flow([(9.0, 12.1), (9.0, 15.5), (55.6, 15.5), (55.6, 5.8)], "vinagre", "jugo de hojas", at=0.36, lab_dy=-8)
     flow([(19, 12.6), (19, 16.0), (6, 16.0), (6, 18.2)], "corona", "corona", at=0.55)
     flow([(25.5, 10.8), (25.5, 16.3), (57.2, 16.3), (57.2, 8.3)], "vinagre", "jugo de cáscara", at=0.72)
     flow([(11.0, 22.4), (13.1, 22.4)], "#b0694f", "aire caliente", at=0.5, dash="9 6", lab_dy=-14)

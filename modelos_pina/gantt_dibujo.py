@@ -54,7 +54,8 @@ def panel_year(d, y0):
     r = d["E1|Óptimo económico"]; s = r["scen"][0]; sz = r["sizes"]; U = s["util"]; rows = s["periods"]
     cap = r["caps"]
     U = dict(U)
-    U["Bodega cáscara"] = [sum(x["pj"] for x in rows if x["month"] == m) / (cap["Bodega cáscara"] * dm.AC * dm.HM[m]) for m in range(12)]
+    U["Bodega cáscara"] = [sum((x["pj"] + x.get("hjv", 0.0) * dm.T_LEAF / dm.T_PEEL) / 1.05 for x in rows if x["month"] == m)
+                          / (cap["Bodega cáscara"] * dm.AC * dm.HM[m]) for m in range(12)]   # v10: + jugo de hojas
     sd.text(60, y0, "A · El año de operación", 40, INK, font="Caveat", weight=700)
     sd.text(400, y0, "ocupación mensual de cada equipo del diseño óptimo (Chocó 2022, 6 146 t/año); más trazo = más ocupado", 21, GREY)
     mw = LW / 12
@@ -81,6 +82,7 @@ def panel_year(d, y0):
     lanes = [("Frente de lavado", sz["Frente"], "neutro", U["Frente"], "turnos"),
              ("Prensa de pulpa", sz["Prensa"], "pulpa", U["Prensa"], "turnos"),
              ("Prensa de cáscara", sz["Prensa cáscara"], "cascara", U["Prensa cáscara"], "turnos"),
+             ("Extractora de hojas", sz.get("Extractora hojas", "no"), "corazon", U.get("Extractora hojas", [0] * 12), "turnos"),
              ("Clarificación", sz["Clarificación"], "agua", U["Clarificación"], "turnos"),
              ("MF de lías", sz["MF lías"], "agua", U["MF lías"], "turnos"),
              ("Bodega de vino", sz["Bodega"], "pulpa", U["Bodega"], "24 h"),
@@ -88,6 +90,7 @@ def panel_year(d, y0):
              ("Acetificador", sz["Acetificador"], "vinagre", U["Acetificador"], "24 h"),
              ("Secador de banda", sz["Secador"], "cascara", U["Secador"], "24 h"),
              ("Caldera de corona", sz["Caldera de corona"], "corona", U["Caldera de corona"], "24 h")]
+    lanes = [l for l in lanes if l[1] != "no"]
     ly, lh, gap = cy0 + ch + 30, 62, 12
     for i, (name, size_txt, key, u, regime) in enumerate(lanes):
         y = ly + i * (lh + gap)
@@ -106,20 +109,22 @@ def panel_year(d, y0):
     # notas al margen derecho
     nx = LX + LW + 40
     sd.text(nx, ly + 14, "Lectura", 30, INK, font="Caveat", weight=700)
+    rng = lambda u: f"{min(u) * 100:.0f}–{max(u) * 100:.0f} %"
+    top = lambda u: ", ".join(MES[m] for m in range(12) if u[m] >= 0.95) or "ningún mes"
     notes = [("#b0563f", "óvalo: el equipo topa (≥ 95 %)"),
-             (INK, "La prensa de pulpa topa en abr–may y"),
-             (INK, "roza el tope en oct–nov; solo en abril"),
-             (INK, f"deja fruta sin procesar ({fmt(sum(loss))} t/año)."),
-             (INK, "MF de lías y acetificador van al 100 %"),
-             (INK, "todo el año: el modelo los dimensiona"),
-             (INK, "justos porque su producto lo paga."),
-             (INK, "La bodega va al 32–46 %: 2 × 10 m³"),
-             (INK, "es el mínimo de Moresi (N_F ≥ 2),"),
-             (INK, "no un sobredimensionamiento."),
-             (INK, "Caldera y secador siguen la cosecha;"),
-             (INK, "la caldera llega al 97 % en el pico.")]
+             (INK, f"Prensa de pulpa: tope en {top(U['Prensa'])};"),
+             (INK, f"deja {fmt(sum(loss))} t/año de fruta sin procesar."),
+             (INK, f"Extractora de hojas {sz.get('Extractora hojas', '—')}: {rng(U.get('Extractora hojas', [0]))}."),
+             (INK, f"MF de lías {rng(U['MF lías'])}; el acetificador"),
+             (INK, f"topa en {top(U['Acetificador'])}:"),
+             (INK, "el modelo los dimensiona justos."),
+             (INK, f"Bodega de vino {rng(U['Bodega'])}: {sz['Bodega']} es"),
+             (INK, "el mínimo de Moresi (N_F ≥ 2)."),
+             (INK, f"Bodega de cáscara {rng(U['Bodega cáscara'])} con el"),
+             (INK, f"jugo de hojas ({fmt(dm.T_LEAF, 1)} h por lote)."),
+             (INK, f"Caldera {rng(U['Caldera de corona'])}; sigue la cosecha.")]
     for i, (c, t) in enumerate(notes):
-        sd.text(nx, ly + 52 + i * 29 + (12 if i >= 1 else 0) + (12 if i >= 4 else 0) + (12 if i >= 7 else 0) + (12 if i >= 10 else 0), t, 19, c)
+        sd.text(nx, ly + 52 + i * 29 + (12 if i >= 1 else 0) + (12 if i >= 4 else 0) + (12 if i >= 7 else 0) + (12 if i >= 9 else 0), t, 19, c)
     return yb + 40, s, r
 
 
@@ -151,7 +156,11 @@ def panel_week(y0, s, r):
     top = y0 + 70
     # bandas de noche y domingo
     # ejes de días
-    lanes_n = 12
+    leaves = sz.get("Extractora hojas", "no") != "no"
+    bc = sz.get("Bodega cáscara", "2×10 m³")
+    nbc = int(bc.split("×")[0]) if "×" in bc else 2
+    o = 1 if leaves else 0
+    lanes_n = 10 + o + nbc
     lh, gap = 56, 10
     yb = top + 50 + lanes_n * (lh + gap)
     for dday in range(7):
@@ -183,8 +192,10 @@ def panel_week(y0, s, r):
     staffed(0, "Frente de lavado", "neutro", U["Frente"][3], sz["Frente"])
     staffed(1, "Prensa de pulpa", "pulpa", U["Prensa"][3], sz["Prensa"])
     staffed(2, "Prensa de cáscara", "cascara", U["Prensa cáscara"][3], sz["Prensa cáscara"])
-    staffed(3, "Clarificación", "agua", U["Clarificación"][3], sz["Clarificación"])
-    staffed(4, "MF de lías", "agua", U["MF lías"][3], sz["MF lías"])
+    if leaves:
+        staffed(3, "Extractora de hojas", "corazon", U["Extractora hojas"][3], sz["Extractora hojas"])
+    staffed(3 + o, "Clarificación", "agua", U["Clarificación"][3], sz["Clarificación"])
+    staffed(4 + o, "MF de lías", "agua", U["MF lías"][3], sz["MF lías"])
     # bodega de vino (Moresi): Q medio desde el pulmón de mosto
     Qw = sum(x["bod"] for x in rows) / hours
     fill_w = dm.VF / Qw
@@ -192,27 +203,28 @@ def panel_week(y0, s, r):
     colors = {"llenado": ("pulpa", 0.35), "fermentación": ("pulpa", 1.0), "descarga": ("neutro", 0.7),
               "llenado c": ("cascara", 0.35), "fermentación c": ("cascara", 1.0),
               "acetificación": ("vinagre", 1.0), "carga": ("vinagre", 0.35), "descarga 50 %": ("neutro", 0.7)}
-    sub = {"llenado": "llenado", "fermentación": "ferm. 12,5 h", "descarga": "", "llenado c": "llenado", "fermentación c": "fermentación 30 h"}
+    sub = {"llenado": "llenado", "fermentación": "ferm. 12,5 h", "descarga": "", "llenado c": "llenado", "fermentación c": f"fermentación {fmt(dm.T_PEEL, 1)} h"}
     for j in range(2):
-        y = lane_y(5 + j)
+        y = lane_y(5 + o + j)
         lane_label(y, lh, f"Bodega vino F-10{j + 1}", "10 m³" + (f" · Q = {fmt(Qw, 2)} m³/h" if j == 0 else ""), "pulpa")
     for tk, a, du, ph in cycles(fill_w, PH_W, 2, H, t_off=-8.0):
         key, it = colors[ph]
-        block(X(a), lane_y(5 + tk) + 8, X(a + du) - X(a), lh - 16, key, it, sub.get(ph, ""))
-    Qp = sum(x["pj"] for x in rows) / hours
+        block(X(a), lane_y(5 + o + tk) + 8, X(a + du) - X(a), lh - 16, key, it, sub.get(ph, ""))
+    Qp = sum(x["pj"] + x.get("hjv", 0.0) for x in rows) / 1.05 / hours          # v10: jugo de cáscara + jugo de hojas
     fill_p = dm.VF / Qp
-    PH_P = [("llenado c", fill_p), ("fermentación c", 30.0), ("descarga", 2.5)]
-    for j in range(2):
-        lane_label(lane_y(7 + j), lh, f"Cáscara F-20{j + 1}", "10 m³" + (f" · Q = {fmt(Qp, 2)} m³/h" if j == 0 else ""), "cascara")
-    for tk, a, du, ph in cycles(fill_p, PH_P, 2, H, t_off=-40.0):
+    PH_P = [("llenado c", fill_p), ("fermentación c", dm.T_PEEL), ("descarga", 2.5)]
+    for j in range(nbc):
+        lane_label(lane_y(7 + o + j), lh, f"Jugos F-20{j + 1}", "10 m³" + (f" · Q = {fmt(Qp, 2)} m³/h" if j == 0 else ""), "cascara")
+    for tk, a, du, ph in cycles(fill_p, PH_P, nbc, H, t_off=-20.0):
         key, it = colors[ph]
-        block(X(a), lane_y(7 + tk) + 8, X(a + du) - X(a), lh - 16, key, it, sub.get(ph, "") if du > 20 else "")
+        block(X(a), lane_y(7 + o + tk) + 8, X(a + du) - X(a), lh - 16, key, it, sub.get(ph, "") if du > 20 else "")
     # acetificador semicontinuo
-    feed = (sum(x["wv"] for x in rows) + sum(x["pj"] for x in rows)) / hours
+    feed = (sum(x["wv"] for x in rows) + sum(x["pj"] + x.get("hjv", 0.0) for x in rows) / 1.05) / hours
     acid_h = sum(x["acid"] for x in rows) / hours
-    cyc = 0.5 * 10.0 / feed
+    V_a = float(sz["Acetificador"].split()[0])
+    cyc = 0.5 * V_a / feed
     PH_A = [("descarga 50 %", 0.8), ("carga", 1.5), ("acetificación", cyc - 2.3)]
-    y = lane_y(9)
+    y = lane_y(7 + o + nbc)
     lane_label(y, lh, "Acetificador", f"{sz['Acetificador']} · ciclo {fmt(cyc, 1)} h", "vinagre")
     for tk, a, du, ph in cycles(cyc, PH_A, 1, H, t_off=-3.0):
         key, it = colors[ph]
@@ -222,7 +234,7 @@ def panel_week(y0, s, r):
     stop = (1 - dm.AC) * 168
     for i, (name, key, u, size_txt) in enumerate((("Secador de banda", "cascara", U["Secador"][3], sz["Secador"]),
                                                   ("Caldera de corona", "corona", U["Caldera de corona"][3], sz["Caldera de corona"]))):
-        y = lane_y(10 + i)
+        y = lane_y(8 + o + nbc + i)
         lane_label(y, lh, name, size_txt, key)
         a0 = 6.0 if i == 1 else 7.0
         block(X(a0), y + 8, X(168 - stop + a0 - 6.0) - X(a0), lh - 16, key, u, f"continuo · carga {u * 100:.0f} %")
@@ -255,8 +267,8 @@ def panel_week(y0, s, r):
              "el ciclo; el segundo tanque",
              "fermenta mientras el primero se llena.",
              "",
-             f"Jugo de cáscara: llenado de {fmt(fill_p, 0)} h",
-             "y 30 h de fermentación.",
+             f"Jugos de cáscara y hojas: llenado",
+             f"de {fmt(fill_p, 0)} h y {fmt(dm.T_PEEL, 1)} h de fermentación.",
              "",
              f"Acetificador: ≈ {fmt(acid_h * 24, 0)} kg de ácido/d;",
              f"descarga la mitad cada {fmt(cyc, 0)} h y la",
@@ -274,7 +286,7 @@ def panel_week(y0, s, r):
 def build():
     d = json.load(open(os.path.join(HERE, "results", "dimensionamiento.json")))
     sd.text(60, 72, "Diagrama de Gantt del diseño óptimo", 58, INK, font="Caveat", weight=700)
-    sd.text(62, 112, "Versión 9 · arriba, el año completo (rejilla continua de 24 periodos agregada por mes); abajo, una semana típica de abril con lotes "
+    sd.text(62, 112, "Versión 10 · arriba, el año completo (rejilla continua de 24 periodos agregada por mes); abajo, una semana típica de abril con lotes "
                      "desfasados (Moresi 1989b).", 21, GREY)
     y, s, r = panel_year(d, 190)
     sd.rline(60, y + 6, sd.W - 60, y + 6, "#c9c3b8", 1.4, 1, dash="10 10")
