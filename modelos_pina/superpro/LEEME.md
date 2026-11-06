@@ -1,4 +1,4 @@
-# Verificación del diseño óptimo v10 en SuperPro Designer
+# Verificación del diseño óptimo v11 en SuperPro Designer
 
 Este paquete lo genera `superpro_paquete.py` a partir de `results/dimensionamiento.json` («E1|Óptimo económico»). Sirve para la
 etapa 2 del marco de Bertran, Tula y Gani (2022): verificar con un simulador el diseño que eligió la síntesis.

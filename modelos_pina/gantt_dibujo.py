@@ -110,7 +110,9 @@ def panel_year(d, y0):
     nx = LX + LW + 40
     sd.text(nx, ly + 14, "Lectura", 30, INK, font="Caveat", weight=700)
     rng = lambda u: f"{min(u) * 100:.0f}–{max(u) * 100:.0f} %"
-    top = lambda u: ", ".join(MES[m] for m in range(12) if u[m] >= 0.95) or "ningún mes"
+    def top(u):
+        ms = [MES[m] for m in range(12) if u[m] >= 0.95]
+        return ", ".join(ms) if 0 < len(ms) <= 4 else (f"{len(ms)} de 12 meses" if ms else "ningún mes")
     notes = [("#b0563f", "óvalo: el equipo topa (≥ 95 %)"),
              (INK, f"Prensa de pulpa: tope en {top(U['Prensa'])};"),
              (INK, f"deja {fmt(sum(loss))} t/año de fruta sin procesar."),

@@ -119,12 +119,12 @@ const intro = [
   p("SuperPro no corre en el entorno de los modelos. Quien tiene la licencia arma el modelo con las tablas de este documento, llena las columnas vacías de la sección 6 y devuelve los resultados para corregir los coeficientes del registro de parámetros (datos/parametros.csv)."),
 
   h1("2. Diseño que se verifica"),
-  p("Oferta de 6 146 t/año de fruta de rechazo (EVA 2022), de las que se procesan 6 139 t/año, más 3 567 t/año de hojas de la planta acopiadas en la renovación del cultivo. Margen del MILP: 4 040 MM COP/año."),
+  p("Oferta de 6 146 t/año de fruta de rechazo (EVA 2022), de las que se procesan 6 139 t/año, más 2 678 t/año de hojas de la planta acopiadas en la renovación del cultivo y 107 t/año de panela añadida a los jugos. Demanda de vinagre supuesta: 3 000 m³/año. Margen del MILP: 4 652 MM COP/año."),
   table(["Sección", "Equipos y tamaños del modelo"], [
     ["Frente y pulpa", "Recepción y lavado 3 t/h · prensa de banda de pulpa 1 t/h · macerador a 55 °C"],
     ["Mosto y vino", "Centrífuga de discos 1 m³/h · MF de lías 2 m² · SO₂ · pulmón de mosto 10 m³ · bodega de vino 2 × 10 m³"],
     ["Cáscara y harina", "Prensa de cáscara 1 t/h (sin pretratamiento) · secador de banda 100 kg de agua/h · molino"],
-    ["Vinagre", "Bodega de jugos 4 × 10 m³ (cáscara y hojas) · acetificador Frings 20 m³"],
+    ["Vinagre", "Bodega de jugos 2 × 10 m³ (cáscara y hojas, con panela) · acetificador Frings 10 m³"],
     ["Hojas", "Extractora de tornillo 2 t/h; la pulpa de hojas vuelve al campo"],
     ["Servicios", "Caldera de biomasa con corona 100 kWt · grupo electrógeno diésel · chillers agua-glicol · generador de N₂"],
   ], [2400, 6906]),
@@ -144,7 +144,7 @@ const intro = [
     ["Fermentación del jugo de cáscara", "0,36 g de etanol por g de azúcar; 12,6 h por lote", "Seguí y Fito (2018); cinética calibrada"],
     ["Fermentación del jugo de hojas", "21,8 kg de etanol por t de jugo; 14,5 h por lote", "Chen et al. (2020)"],
     ["Acetificación", "C₂H₅OH + O₂ → CH₃COOH + H₂O; 46 g de etanol → 60 g de ácido al 94 % del teórico; ΔH = −493 kJ/mol; 50 kg/m³·d; aireación 1,2 kW/m³; vinagre al 5 % (50 kg/m³)", "Emde (2017)"],
-    ["Mezcla del vinagre", "El acetificador solo diluye: los jugos fermentados de cáscara y hojas necesitan vino para llegar al 5 %; el agua de dilución cierra el balance", "Restricción del MILP v10"],
+    ["Mezcla del vinagre", "El acetificador solo diluye: la panela añadida (hasta 150 g/L) lleva los jugos fermentados de cáscara y hojas al 5 % sin vino; el agua de dilución cierra el balance", "Restricción del MILP; Tanamool et al. (2020) en Ebrahimi (2026)"],
     ["Maceración enzimática", "42 MJ por t de pulpa con 60 % de recuperación de calor; 55 °C", "Modelo de planta"],
     ["Secado de torta", "0,81 t de agua por t de torta; 2 590 MJ por t de torta", "Campos et al. (2020); modelo de planta"],
     ["Caldera de corona", "2 720 MJ útiles por t de corona (20 % de materia seca, 17 MJ/kg, eficiencia 80 %)", "Línea L7b del TEA"],
@@ -176,7 +176,7 @@ const restSection = [
   p("Con la tabla de la sección 6 llena, los resultados se cargan en el informe y, si hace falta, se reoptimiza con los coeficientes corregidos.", { para: { spacing: { before: 160, after: 120 } } }),
 
   h2("Fuentes"),
-  p("Bertran, Tula y Gani (2022); Campos et al. (2020); Chen et al. (2020); Emde (2017); Foo (2023), caps. 10 y 11; Moresi (1989b); Murcia Palacios (2013); Seguí y Fito (2018). Las referencias completas están en la bibliografía del informe v10."),
+  p("Bertran, Tula y Gani (2022); Campos et al. (2020); Ebrahimi (2026); Chen et al. (2020); Emde (2017); Foo (2023), caps. 10 y 11; Moresi (1989b); Murcia Palacios (2013); Seguí y Fito (2018). Las referencias completas están en la bibliografía del informe v10."),
 ];
 
 const doc = new Document({

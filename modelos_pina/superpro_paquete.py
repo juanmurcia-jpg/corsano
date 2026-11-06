@@ -1,5 +1,5 @@
 """
-Paquete de verificación del diseño óptimo en SuperPro Designer (v10). Foo (ed., 2023), caps. 10 y 11; Bertran, Tula
+Paquete de verificación del diseño óptimo en SuperPro Designer (v11). Foo (ed., 2023), caps. 10 y 11; Bertran, Tula
 y Gani (2022), etapa 2: el diseño de la síntesis se verifica con un simulador antes de seguir.
 
 SuperPro no corre en este entorno; el script deja en superpro/ lo necesario para armar el modelo y comparar:
@@ -84,7 +84,7 @@ def build(key="E1|Óptimo económico"):
     with open(os.path.join(OUT, "verificacion.csv"), "w", newline="", encoding="utf-8") as fh:
         w = csv.writer(fh); w.writerow(["Indicador", "Modelo (Python)", "SuperPro", "Diferencia", "Tolerancia"])
         w.writerows([(a, round(b, 2), "", "", c) for a, b, c in checks])
-    readme = f"""# Verificación del diseño óptimo v10 en SuperPro Designer
+    readme = f"""# Verificación del diseño óptimo v11 en SuperPro Designer
 
 Este paquete lo genera `superpro_paquete.py` a partir de `results/dimensionamiento.json` («{key}»). Sirve para la
 etapa 2 del marco de Bertran, Tula y Gani (2022): verificar con un simulador el diseño que eligió la síntesis.

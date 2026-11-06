@@ -276,6 +276,9 @@ def build():
         pipe([(1130, 1292), (1130, 1080), (1027, 1080)], PAL["vinagre"][1], num=21, at=0.35)
         pipe([(1232, 1330), (1330, 1330)], PAL["corazon"][1], num=22, at=0.5)
         sd.text(1340, 1338, "pulpa al campo", 18, PAL["corazon"][1])
+    if f.get("az", 0) > 0.1:   # v11: panela a la bodega de jugos
+        pipe([(1150, 975), (1029, 975)], PAL["cascara"][1], num=23, at=0.4)
+        sd.text(1160, 981, "panela", 18, PAL["cascara"][1])
     # --- servicios
     sd.text(60, 1530, "Servicios", 32, INK, font="Caveat", weight=700)
     util_icon(60, 1550, "G", "elec", "Grupo electrógeno diésel", "zona no interconectada; obligatorio para la aireación")

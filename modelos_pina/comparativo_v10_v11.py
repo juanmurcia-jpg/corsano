@@ -85,7 +85,7 @@ def figure(out):
     d11 = json.load(open(f"{RES}/dimensionamiento.json"))
     g = lambda k: d11[k]["obj"] if k in d11 else None
     seq = [(s["label"], s["obj"]) for s in out["decomp"]]
-    seq += [("Reoptimización sin azúcar añadido", g("E1|Óptimo sin azúcar añadido")), ("Reoptimización con panela (óptimo v11)", g("E1|Óptimo económico"))]
+    seq += [("Reoptimización del diseño (óptimo v11)", g("E1|Óptimo económico"))]
     seq = [(l, v) for l, v in seq if v is not None] + [("Óptimo v11", g("E1|Óptimo económico"))]
     fig, ax = plt.subplots(2, 2, figsize=(15.5, 9.6))
     a = ax[0, 0]; prev = 0.0

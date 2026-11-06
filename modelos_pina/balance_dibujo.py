@@ -57,13 +57,14 @@ def flows_v7():
     o2 = acid * 32 / 60
     vin = p["vinagre_m3"] * RHO_V
     water = vin - (w_vin + pwine + o2)
+    evap = max(-water, 0.0); water = max(water, 0.0)          # v11: con panela, el cierre sale como agua evaporada en la aireación
     flour = p["harina_t"] + p.get("harina_lias_t", 0)
     vapor = torta + l_sec - flour
     crown_b = p.get("corona_caldera_t", 0.0)
     return dict(F=F, loss=s["loss"], fr=fr, crown_b=crown_b, juice=juice, bagazo=bagazo, lodos=lodos, clar=clar, rec=rec, ret=ret, l_sec=l_sec,
                 l_comp=l_comp, must=must, wine=wine, co2_l=co2_l, w_vin=w_vin, w_sold=w_sold, pj=pj, sold_pj=sold_pj, torta=torta,
                 co2_pj=co2_pj, pwine=pwine, o2=o2, water=water, vin=vin, flour=flour, vapor=vapor, sizes=r["sizes"],
-                hojas=hojas, lj=lj, l_cald=l_cald, l_campo=l_campo, az=az)
+                hojas=hojas, lj=lj, l_cald=l_cald, l_campo=l_campo, az=az, evap=evap)
 
 
 # ----------------------------------------------------------------------------- motor de Sankey a mano alzada
@@ -175,7 +176,8 @@ def build():
     S.node("secador", 1220, 660, "Secador", "cascara", "de banda", side="top")
     S.node("fermc", 1220, 930, "Fermentación", "vinagre", "jugo de cáscara", side="top")
     S.node("aire", 1700, 860, "Aire (O₂)", "aire", None, side="left")
-    S.node("agua", 1700, 1000, "Agua de dilución", "agua", "cierre del balance", side="left")
+    if f["water"] > 0.1:
+        S.node("agua", 1700, 1000, "Agua de dilución", "agua", "cierre del balance", side="left")
     S.node("acet", 1960, 700, "Acetificador", "vinagre", None, side="top")
     if f["az"] > 0.1:   # v11
         S.node("panela", 900, 1100, "Panela", "cascara", f"{fmt(f['az'])} t/año", side="left")
@@ -216,8 +218,11 @@ def build():
     S.flow("fermc", "acet", f["pwine"], "vinagre", f"vino de cáscara {fmt(f['pwine'])}", 0.28)
     S.flow("fermc", "p_emis", f["co2_pj"], "vapor", f"CO₂ {fmt(f['co2_pj'])}", 0.5)
     S.flow("aire", "acet", f["o2"], "aire", f"O₂ {fmt(f['o2'])}", 0.5, -4)
-    S.flow("agua", "acet", f["water"], "agua", fmt(f["water"]), 0.5)
+    if f["water"] > 0.1:
+        S.flow("agua", "acet", f["water"], "agua", fmt(f["water"]), 0.5)
     S.flow("acet", "p_vinagre", f["vin"], "vinagre", fmt(f["vin"]), 0.5)
+    if f["evap"] > 0.1:
+        S.flow("acet", "p_emis", f["evap"], "vapor", f"agua evaporada en la aireación {fmt(f['evap'])}", 0.5)
     S.flow("corazon", "p_comp", f["fr"]["corazon"], "corazon", "corazón (B: bromelaína)", 0.25)
     if f["hojas"] > 1:
         S.flow("hojas", "extr", f["hojas"], "corazon", None)
@@ -248,7 +253,7 @@ def build():
     sd.rrect(bx, by, 1180, 175, PAL["neutro"][1], 1.8, dash="8 7", passes=1)
     sd.text(bx + 20, by + 40, "Cierre del balance (t/año)", 30, sd.INK, font="Caveat", weight=700)
     sd.text(bx + 20, by + 78, f"Entradas: fruta {fmt(f['F'])} + hojas {fmt(f['hojas'])}" + (f" + panela {fmt(f['az'])}" if f["az"] > 0.1 else "")
-                               + f" + O₂ {fmt(f['o2'])} + agua de dilución {fmt(f['water'])} = {fmt(ins)}", 21, sd.INK)
+                               + f" + O₂ {fmt(f['o2'])}" + (f" + agua de dilución {fmt(f['water'])}" if f["water"] > 0.1 else "") + f" = {fmt(ins)}", 21, sd.INK)
     sd.text(bx + 20, by + 110, f"Salidas: vino {fmt(tot['p_vino'])} + vinagre {fmt(tot['p_vinagre'])} + harina {fmt(tot['p_harina'])} + "
                                f"vapor y CO₂ {fmt(tot['p_emis'])} + caldera {fmt(tot['p_cald'])} + compost {fmt(tot['p_comp'])}"
                                + (f" + campo {fmt(tot['p_campo'])}" if 'p_campo' in tot else "") + f" = {fmt(outs)}", 21, sd.INK)

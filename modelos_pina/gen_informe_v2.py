@@ -576,8 +576,8 @@ if d_opt and cmp11:
     # textos
     t_ = ""
     if len(dec11) >= 4:
-        t_ += (f"<p><b>Con el diseño de la v10 fijo.</b> El margen pasa de {n0(dec11[0]['obj'])} a {n0(dec11[1]['obj'])} MM COP/año con el rendimiento de xantana con residuo de piña "
-               f"(la xantana no se elegía), a {n0(dec11[2]['obj'])} con el tope de {n0(dmod.VIN_DEMAND)} m³/año de vinagre "
+        t_ += (f"<p><b>Con el diseño de la v10 fijo.</b> El margen, {n0(dec11[0]['obj'])} MM COP/año, no cambia con el rendimiento de xantana con residuo de piña "
+               f"(la xantana no se elegía); baja a {n0(dec11[2]['obj'])} con el tope de {n0(dmod.VIN_DEMAND)} m³/año de vinagre "
                f"({n0(dec11[1]['vinagre_m3'])} → {n0(dec11[2]['vinagre_m3'])} m³), y a {n0(dec11[3]['obj'])} con la panela, que deja vender "
                f"{n0(dec11[3]['vino_vendido_m3'])} m³/año de vino (antes {n0(dec11[2]['vino_vendido_m3'])}) con {n0(dec11[3]['azucar_kg'] / 1000)} t/año de panela.</p>")
     nos = g11("E1|Óptimo sin azúcar añadido"); notope = g11("E1|Óptimo sin tope de demanda de vinagre")
@@ -587,11 +587,15 @@ if d_opt and cmp11:
            f"y {n0(p11.get('azucar_kg', 0) / 1000)} t de panela; acopia {n0(p11.get('hojas_t', 0))} t de hojas. "
            + (f"Sin panela, con el mismo tope, el margen es {n0(nos)}; " if nos else "")
            + (f"sin tope de demanda, {n0(notope)}. " if notope else "")
-           + "La caída frente a la v10 no es un empeoramiento del proceso: es el costo de reconocer que el mercado del vinagre tiene un límite, que la v10 suponía sin decirlo.</p>")
+           + "El óptimo v11 supera al v10 aunque vende la mitad del vinagre: el vino vuelve a venderse a 3 000 COP/L, la panela reemplaza al vino en la mezcla a un costo mucho menor, y el acetificador y la bodega de jugos se achican. "
+           "La comparación justa no es con los 4 040 de la v10, que suponían vender 5,7 millones de litros, sino con los "
+           + (n0(dec11[2]['obj']) if len(dec11) >= 3 else "—") + " que daría el diseño v10 con el mismo tope de demanda.</p>")
     if e8_rows:
-        t_ += ("<p><b>La demanda de vinagre decide el diseño.</b> En el barrido E8 el margen crece con la demanda mientras el vinagre la llena; "
-               "por encima, el límite pasa al acetificador y a los jugos disponibles. Con poca demanda el vino se vende y el vinagre sale de los jugos con panela; "
-               "con mucha, el vino vuelve al vinagre. "
+        e8d = {e_["label"]: e_ for e_ in cmp11.get("e8", [])}
+        nt = e8d.get("sin tope", {})
+        t_ += ("<p><b>La demanda de vinagre decide el diseño.</b> En el barrido E8 el vino se vende en todos los niveles; lo que crece con la demanda es el vinagre hecho con jugos y panela: "
+               "el acetificador pasa de 6 a 40 m³, la extractora de 2 a 5 t/h y las hojas acopiadas de unas 700 a más de 13 000 t/año. El margen crece casi en proporción a la demanda. "
+               + (f"Sin tope, el modelo llega a {n0(nt.get('vinagre_m3', 0))} m³/año, limitado por los jugos y la panela que admite cada m³ de jugo; ese caso no es un diseño, es la señal de que el vinagre a 2 200 COP/L con panela es tan rentable que solo el mercado lo frena. " if nt else "")
                + (f"Con 6 000 m³/año sin panela el margen es {n0(ex8.get('demanda 6 000 m³/año sin azúcar', {}).get('obj', float('nan')))}, "
                   f"y con la panela a 5 000 COP/kg, {n0(ex8.get('panela a 5 000 COP/kg', {}).get('obj', float('nan')))}. " if ex8 else "")
                + "Mientras no haya un estudio de mercado, la tesis debe presentar el diseño como una familia de diseños indexada por la demanda de vinagre, no como un único óptimo.</p>")
@@ -600,7 +604,9 @@ if d_opt and cmp11:
         t_ += (f"<p><b>TEA.</b> VPN del óptimo {n0(to11['NPV10'] / MM)} → {n0(to11['NPV11'] / MM)} MM COP; MIRR {pct(to11['MIRR10'])} → {pct(to11['MIRR11'])}; "
                f"P(VPN > 0) {pct(to11['P10'], 0)} → {pct(to11['P11'], 0)}. El TEA v11 incluye además el tratamiento del efluente ({n0(DTm.val('costo_ptar_m3'))} COP/m³ [S]). "
                + (f"El precio de equilibrio del vinagre es {n0(be11)} COP/L. " if be11 else "")
-               + (f"En el tornado, el precio de la panela mueve el VPN entre {n0(min(tpan['NPV_worst'], tpan['NPV_best']) / MM)} y {n0(max(tpan['NPV_worst'], tpan['NPV_best']) / MM)} MM COP. " if tpan else "")
+               + (f"En el tornado, el precio del vinagre mueve el VPN entre {n0(min(tvin['NPV_worst'], tvin['NPV_best']) / MM)} y {n0(max(tvin['NPV_worst'], tvin['NPV_best']) / MM)} MM COP, " if tvin else "")
+               + (f"y el de la panela solo entre {n0(min(tpan['NPV_worst'], tpan['NPV_best']) / MM)} y {n0(max(tpan['NPV_worst'], tpan['NPV_best']) / MM)}. " if tpan else "")
+               + (f"En el programa estocástico (oferta 0,7, 1,0 y 1,3 veces) el EVPI es {n0(dim['E4|WS']['obj'] - dim['E4|RP']['obj'])} MM COP/año: con la demanda de vinagre como límite, el mismo diseño es el mejor en los tres escenarios de oferta. " if 'E4|WS' in dim and 'E4|RP' in dim else "")
                + "</p>")
     if a11:
         ef = a11.get("efluente", {})
@@ -609,12 +615,18 @@ if d_opt and cmp11:
                + f"; la panela aporta {n0(a11['gwp'].get('Panela añadida', 0) / 1000)} t y el tratamiento del efluente {n0(a11['gwp'].get('Tratamiento de efluentes', 0) / 1000)} t. "
                f"El efluente ({n0(ef.get('m3', 0))} m³/año, {n0(ef.get('dqo_kg', 0) / 1000)} t de DQO [S]) sale con {n0(ef.get('dqo_vertida_kg', 0) / 1000)} t/año de DQO tras la electrocoagulación y el humedal. "
                f"Neto frente a dejar fruta y hojas en el campo: {n0(-a11['net_vs_descomposicion'] / 1000)} t CO2e/año evitadas.</p>")
+    P11 = sorted((par11 or {}).get("points", []), key=lambda z: z["gwp"])
+    if len(P11) >= 3:
+        t_ += ("<p><b>Frente margen–GWP.</b> " + "; ".join(f"{n0(q['gwp'] / 1000)} t CO2e/año → {n0(q['margin'])} MM COP/año"
+                                                         + (" (sin vinagre)" if q['sizes'].get('Acetificador', 'no') == 'no' else f" (acetificador {E(q['sizes']['Acetificador'])})")
+                                                         for q in P11[1:][::-1])
+               + ". El extremo de mínimo GWP sigue siendo casi no procesar; el frente confirma que el vinagre, por su electricidad diésel, es lo que más pesa en el GWP de proceso.</p>")
     if sc11:
         t_ += (f"<p><b>Social.</b> {n0(sc11['empleos_planta'])} empleos en planta y {n0(sc11['empleos_acopio'])} en el acopio; valor que queda en el territorio {n0(sc11['valor_territorio'] / MM)} MM COP/año"
                + (f" (v10: {n0(s10_['valor_territorio'] / MM)})" if s10_ else "") + ". La panela es una compra local: el registro supone que el 30 % de los insumos distintos de la fruta se compra en la región [S].</p>")
     lect11 = ("<ul class='tight'>"
               "<li><b>El límite real del vinagre es el mercado.</b> La v10 vendía 5,7 millones de litros al año porque la mezcla ataba el volumen al vino; la panela suelta esa atadura y deja ver que hace falta un dato de demanda. El estudio de mercado del vinagre a granel es la tarea más importante para la tesis.</li>"
-              "<li><b>La panela devuelve el vino al mercado.</b> Con demanda limitada, el vinagre sale de los jugos de cáscara y de hojas con panela, y el vino se vende.</li>"
+              "<li><b>La panela devuelve el vino al mercado.</b> En todos los niveles de demanda el vinagre sale de los jugos de cáscara y de hojas con panela, y el vino se vende. La panela cuesta unos 8 COP por gramo de ácido; el vino desviado costaba su precio de venta.</li>"
               "<li><b>La xantana queda descartada con más razón.</b> Con el rendimiento medido en residuo de piña (0,083 g/g), su ingreso por tonelada de jugo es siete veces menor que el supuesto anterior.</li>"
               "<li><b>El efluente entra al balance.</b> El tratamiento con electrocoagulación y humedal suma un costo y una huella pequeños; la DQO del efluente es un supuesto [S] que hay que medir.</li>"
               "<li><b>Lo que la v11 no hizo.</b> La acetificación termotolerante (menos frío) y el vinagre de doble fuerza (menos flete por el río) quedan como alternativas de la etapa 3 para la versión siguiente.</li></ul>")
