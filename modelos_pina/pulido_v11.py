@@ -147,7 +147,8 @@ if __name__ == "__main__":
     if "E6" in which:
         for wp in (1600.0, 2200.0, 3000.0, 4000.0):
             for vp in (1500.0, 2200.0):
-                polish(f"E6|{wp:.0f}|{vp:.0f}", dict(mg=dm.margins(wine_price=wp, vinegar_price=vp)))
+                polish(f"E6|{wp:.0f}|{vp:.0f}", dict(mg=dm.margins(wine_price=wp, vinegar_price=vp)),
+                       light=tuple(k_ for k_ in d if k_.startswith("E6|")) + ("E1|Óptimo económico", "E1|Óptimo sin vinagre"))
         dm.margins()
     if "E5" in which:
         polish("E5|B óptimo económico", dict(with_bromelain=True))
