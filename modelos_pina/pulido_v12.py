@@ -33,7 +33,7 @@ NEW10 = ("Extractora hojas", "Bodega etanol", "Destilación", "Digestor", "Motor
 PRETREAT = ["agua", "cal 0,1 %"]
 ENZ = ["no", "Precipitación 0.5 t/h", "Precipitación 1 t/h"]
 VARY = ["Extractora hojas", "Bodega etanol", "Destilación", "Digestor", "Motor biogás", "Ácido cítrico", "Xantana", "Secador", "Acetificador",
-        "Bodega cáscara", "Embotelladora"]
+        "Bodega cáscara", "Embotelladora", "Almacén de mosto", "Bodega"]
 _O = dm.options(False)
 
 
@@ -78,7 +78,9 @@ def fixed(sizes, turno3, **kw):
 def polish(key, kw, extra_keys=(), light=()):
     """light: casos cuyo diseño se prueba tal cual, sin tamaños vecinos (v11: escalas vecinas en E2)."""
     r0 = d[key]; b0 = bound(r0)
-    cands = [(dict(d[k2]["sizes"]), d[k2]["turno3"]) for k2 in light if d.get(k2, {}).get("sizes")]
+    # v12: el propio diseño se re-evalúa primero, con la regla de llenado de la bodega (las corridas libres no la tenían)
+    cands = [(dict(r0["sizes"]), r0["turno3"])] if r0.get("sizes") else []
+    cands += [(dict(d[k2]["sizes"]), d[k2]["turno3"]) for k2 in light if d.get(k2, {}).get("sizes")]
     for k2 in (key,) + tuple(extra_keys):
         r2 = d.get(k2)
         if not r2 or not r2.get("sizes"):
@@ -100,7 +102,7 @@ def polish(key, kw, extra_keys=(), light=()):
             cands.append((dict(z["sizes"], **{"Embotelladora": b}), z["turno3"]))
         for lab in neighbors("Acetificador", z["sizes"].get("Acetificador", "no")):
             cands.append((dict(z["sizes"], **{"Acetificador": lab}), z["turno3"]))
-    seen, best = set(), r0
+    seen, best = set(), None
     for sz, t3 in cands:
         sig = (json.dumps(sz, sort_keys=True), t3)
         if sig in seen:
@@ -109,8 +111,9 @@ def polish(key, kw, extra_keys=(), light=()):
         if (kw.get("allow_shift") is False and t3) or not allowed(sz, kw):
             continue
         r = fixed(sz, t3, **kw)
-        if r and r["obj"] > best["obj"] + 1e-6:
+        if r and (best is None or r["obj"] > best["obj"] + 1e-6):
             best = r
+    best = best or r0
     if best is not r0:
         best["status"] = "pulida"
         best["gap"] = (b0 - best["obj"]) / best["obj"] if b0 else None
@@ -126,7 +129,7 @@ if __name__ == "__main__":
     sc2 = [dict(sup=2.0, p=1.0)]
     e3 = ("E3|libre (almacén y turno 3 disponibles)", "E3|sin almacén aséptico (≤ 25 m³)", "E3|sin turno 3", "E3|sin almacén ni turno 3")
     import sys
-    which = sys.argv[1:] or ["E1", "E2", "E3", "E6", "E5", "E4", "E7", "E8", "E9"]
+    which = sys.argv[1:] or ["FIJOS", "E1", "E2", "E3", "E6", "E5", "E4", "E7", "E8", "E9"]
     if "E1" in which:
         polish("E1|Óptimo económico", {})
         polish("E1|Óptimo sin SO₂", dict(allow=dm.NO_SO2), ("E1|Óptimo económico",))
@@ -138,8 +141,20 @@ if __name__ == "__main__":
         polish("E1|Óptimo sin etanol de hojas", dict(allow=dm.NO_ETOH), ("E1|Óptimo económico",))
         polish("E1|Óptimo sin digestor", dict(allow=dm.NO_AD), ("E1|Óptimo económico",))
         polish("E1|Óptimo económico", {}, ("E1|Óptimo sin etanol de hojas", "E1|Óptimo sin digestor", "E1|Óptimo sin opciones v10 (sin hojas ni hub)",
-                                          "E1|Óptimo sin azúcar añadido", "E1|Diseño v11 con parámetros v12"))
+                                          "E1|Óptimo sin azúcar añadido", "E1|Diseño v11 con parámetros v12", "E1|Óptimo sin SO₂",
+                                          "E1|Óptimo sin caldera de corona", "E1|Óptimo sin vinagre"), light=("E2|0.750", "E2|0.500"))
         polish("E1|Óptimo sin caldera de corona", dict(allow=dm.NO_BOILER), ("E1|Óptimo económico",))
+    if "FIJOS" in which:   # v12: casos de diseño fijo o no pulidos, re-evaluados con la regla de llenado
+        for k, kw in (("E1|Referencia TRL-9 (planta_trl9, 6 200 t)", {}), ("E1|Referencia con prensa única de 3 t/h compartida", {}),
+                      ("E1|Óptimo con la topología anterior (prensa, MF de mosto, HTST)", {}), ("E1|Diseño v11 con parámetros v12", {}),
+                      ("E5|B referencia (prensas dedicadas TRL-9)", dict(with_bromelain=True)),
+                      ("E5|B óptimo con la topología anterior", dict(with_bromelain=True))):
+            if k in d and d[k].get("sizes"):
+                r = fixed(d[k]["sizes"], d[k]["turno3"], **kw)
+                if r:
+                    print(f"{k}: {d[k]['obj']:,.0f} -> {r['obj']:,.0f} (regla de llenado)", flush=True)
+                    r["gap"] = d[k].get("gap"); d[k] = r
+        json.dump(d, open(path, "w"), default=float)
     if "E2" in which:
         fs = (0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 21856 / dm.SUPPLY)
         for i, f in enumerate(fs):
@@ -160,7 +175,7 @@ if __name__ == "__main__":
                        light=tuple(k_ for k_ in d if k_.startswith("E6|")) + ("E1|Óptimo económico", "E1|Óptimo sin vinagre"))
         dm.margins()
     if "E5" in which:
-        polish("E5|B óptimo económico", dict(with_bromelain=True))
+        polish("E5|B óptimo económico", dict(with_bromelain=True), ("E1|Óptimo económico",))
     if "E4" in which:
         # E4: el RP no puede ser peor que el diseño de valor medio evaluado en los escenarios (EEV)
         sc = [dict(sup=a, p=pa) for a, pa in es.SUP_F]

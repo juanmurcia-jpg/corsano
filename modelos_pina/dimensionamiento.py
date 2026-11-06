@@ -215,6 +215,10 @@ VIN_DEMAND = DT.val("demanda_vinagre_m3")                                   # v1
 BOTTLED = True
 BOTTLE_L = 0.75
 EF_BOT = DT.val("ef_botella")                                               # kg CO2e por botella [S]
+# v12: tiempo máximo de llenado de un fermentador de vino. Con el caudal medio de mosto bod/(AC·d) un fermentador
+# de V_F tarda V_F·AC·d/bod en llenarse; si eso supera TAU_FILL, el mosto se acumula en el almacén aséptico y el
+# fermentador se llena desde él con la bomba (reserva de V_F en el almacén durante ese periodo). Disyunción por periodo.
+TAU_FILL = DT.val("tau_llenado_max")                                        # h [S]; None = sin restricción
 
 
 def wine_bottle(pvp=None, margin=None, pack=None):
@@ -446,7 +450,7 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
         P = {(i, mt): m.addVar(lb=0) for i in modes for mt in MT}
         Pd = {(j, mt): m.addVar(lb=0) for j in yded for mt in MT}
         fe = {mt: m.addVar(lb=0) for mt in MT}; mfv = {mt: m.addVar(lb=0) for mt in MT}
-        bod = {mt: m.addVar(lb=0) for mt in MT}; sec = {mt: m.addVar(lb=0) for mt in MT}
+        bod = {mt: m.addVar(lb=0) for mt in MT}; sec = {mt: m.addVar(lb=0) for mt in MT}; wf = {}
         asp = {mt: m.addVar(lb=0) for mt in MT}
         loss = {mt: m.addVar(lb=0) for mt in MT}
         ml = {mt: m.addVar(lb=0) for mt in MT}; ld = {mt: m.addVar(lb=0) for mt in MT}     # lías a MF y a compostaje
@@ -503,6 +507,12 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
             m.addCons(quicksum(SB[mt].values()) == quicksum((1 - OC[k]["loss"]) * XC[mt][k] for k in XC[mt]) + LEES_REC * ml[mt])
             m.addCons(ml[mt] <= cap_expr("MF lías", mt, True))
             m.addCons(bod[mt] <= cap_expr("Bodega", mt, False))
+            if TAU_FILL is not None:   # v12: llenado directo (caudal ≥ V_F/τ) o reserva de V_F en el almacén de mosto
+                wf[mt] = m.addVar(vtype="B")
+                m.addCons(bod[mt] >= VF / TAU_FILL * AC * (d[mt] - Hx * (1 - wf[mt])))
+                for qq in (q, q + 1):
+                    m.addCons(I["mosto", qq] + VF * (1 - wf[mt]) <= quicksum(O["Almacén de mosto"][k]["cap"] * y["Almacén de mosto", k]
+                                                                               for k in range(len(O["Almacén de mosto"]))))
             m.addCons(sec[mt] + LEES_DRY_EQ * (ldry[mt] + rdry[mt]) <= cap_expr("Secador", mt, False))
             # vinagre: jugo de cáscara fermentado y vino desviado, acetificados en continuo (24/7)
             m.addCons((pj[mt] + hjv[mt] * T_LEAF / T_PEEL) / 1.05 <= cap_expr("Bodega cáscara", mt, False))
@@ -629,7 +639,7 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
                                       for pr, var in (("Ácido cítrico", pjc), ("Xantana", pjx)))
                            for mt in MT)
         second = second + sc["p"] * contrib
-        V["scen"].append(dict(sc=sc, supply=supply, d=d, w=w, tau=tau, ncy=ncy, P=P, Pd=Pd, fe=fe, mfv=mfv, bod=bod, sec=sec,
+        V["scen"].append(dict(sc=sc, supply=supply, d=d, w=w, wf=wf, tau=tau, ncy=ncy, P=P, Pd=Pd, fe=fe, mfv=mfv, bod=bod, sec=sec,
                               asp=asp, loss=loss, comp=comp, I=I, contrib=contrib, Hs=Hs, XC=XC, SB=SB, ml=ml, ld=ld,
                               ldry=ldry, rdry=rdry, rd=rd, pj=pj, wv=wv, acid=acid, hb=hb, cr=cr, Pco=Pco, XE=XE,
                               hh=hh, hx=hx, hje=hje, hjv=hjv, hjd=hjd, hjr=hjr, hpb=hpb, et=et, eb=eb, eu=eu, hbio=hbio, hbu=hbu,
@@ -671,7 +681,8 @@ def extract(m, V, with_bromelain):
                              hh=v(S["hh"][mt]), hx=v(S["hx"][mt]), hje=v(S["hje"][mt]), hjv=v(S["hjv"][mt]), hjd=v(S["hjd"][mt]), hjr=v(S["hjr"][mt]),
                              hpb=v(S["hpb"][mt]), et=v(S["et"][mt]), eb=v(S["eb"][mt]), eu=v(S["eu"][mt]), hbu=v(S["hbu"][mt]),
                              pjc=v(S["pjc"][mt]), pjx=v(S["pjx"][mt]), az=v(S["az"][mt]), edem=v(S["Edem"][mt]), hdem=v(S["Hdem"][mt]), gwp=v(S["G"][mt]),
-                             loss=v(S["loss"][mt]), comp=v(S["comp"][mt]), I_mosto=v(S["I"]["mosto", V["MT"].index(mt) + 1])))
+                             loss=v(S["loss"][mt]), comp=v(S["comp"][mt]), I_mosto=v(S["I"]["mosto", V["MT"].index(mt) + 1]),
+                             llenado_directo=(round(v(S["wf"][mt])) if mt in S.get("wf", {}) else None)))
             T0 += dur
         util = {}
         cap = out["caps"]
@@ -725,6 +736,24 @@ def extract(m, V, with_bromelain):
                                 supply_month=(S["supply"] * pm.SEASON / 12.0).tolist(), changeovers=sum(r["W"] for r in rows), products=prod,
                                 margin=v(S["contrib"]) / 1e6 - out["capex_ann"]))
     return out
+
+
+def check_fill(r, tau=None, si=0):
+    """v12: revisa una solución guardada contra la regla de llenado (sirve para soluciones obtenidas sin ella).
+    Por periodo: tiempo de llenado directo V_F·AC·dur/bod; si supera τ, el almacén de mosto debe tener V_F libre al
+    inicio y al final del periodo. Devuelve la lista de periodos que la violan y el margen libre mínimo (m³)."""
+    tau = tau or DT.val("tau_llenado_max")
+    S = r["scen"][si]; rows = S["periods"]; capS = r["caps"].get("Almacén de mosto", 0.0)
+    bad, free = [], []
+    for i, row in enumerate(rows):
+        t = VF * AC * row["dur"] / row["bod"] if row["bod"] > 1e-6 else float("inf")
+        I0, I1 = rows[i - 1]["I_mosto"], row["I_mosto"]
+        f = capS - max(I0, I1)
+        if t > tau + 1e-6:
+            free.append(f)
+            if f < VF - 1e-3:
+                bad.append(dict(month=row["month"], k=row["k"], t_llenado=t, libre=f))
+    return dict(violaciones=bad, libre_min=min(free) if free else None, n_reserva=len(free), n=len(rows))
 
 
 def solve(scen=None, K=2, with_bromelain=False, time_limit=240, gap=0.005, hint=None, **kw):
