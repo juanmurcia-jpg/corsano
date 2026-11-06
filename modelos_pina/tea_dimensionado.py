@@ -142,6 +142,7 @@ def option_equipment(u, lab):
 
 
 def build_case(r, label, with_bromelain):
+    with_bromelain = with_bromelain and r["sizes"].get("Aspersión", "no") != "no"   # v12: el óptimo B puede no tener módulo de bromelaína
     """Caso TEA de planta a partir de una solución de dimensionamiento.py (primer escenario)."""
     sc = r["scen"][0]; pr = sc["products"]
     F = pr["fruta_t"]
