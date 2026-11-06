@@ -371,6 +371,11 @@ if __name__ == "__main__":
     out["prices"] = []
     for k in sorted([k for k in dim if k.startswith("E6|")], key=lambda k: (float(k.split("|")[1]), float(k.split("|")[2]))):
         rr = dim[k]; wp, vp = float(k.split("|")[1]), float(k.split("|")[2])
+        if rr["scen"][0]["products"]["fruta_t"] < 1:   # v12: con PVP bajo y vinagre barato el óptimo no procesa fruta (solo hojas)
+            out["prices"].append(dict(wine_price=wp, pvp=None, vinegar_price=vp, sizes=rr["sizes"], NPV=float("nan"), FCI=float("nan"), MIRR=float("nan"), nota="sin fruta procesada",
+                                      vino_vendido_m3=0.0, vino_a_vinagre_m3=0.0, jugo_cascara_vinagre_t=0.0, vinagre_m3=rr["scen"][0]["products"].get("vinagre_m3", 0.0)))
+            print("precios", wp, vp, "sin fruta procesada", flush=True)
+            continue
         c = build_case(rr, f"Vino {wp:.0f} · vinagre {vp:.0f}", False)
         pvp = None
         if dm.BOTTLED:   # v12: E6 se indexa por el neto por litro; se recupera el PVP y se fijan precio de fábrica e impuesto

@@ -1,5 +1,5 @@
 // Paquete de verificación en SuperPro como .docx, a partir de superpro/*.csv
-// Uso: NODE_PATH=$(npm root -g) node superpro_docx.js superpro superpro/Paquete_SuperPro_v11.docx
+// Uso: NODE_PATH=$(npm root -g) node superpro_docx.js superpro superpro/Paquete_SuperPro_v12.docx
 const fs = require("fs");
 const path = require("path");
 const {
@@ -105,12 +105,12 @@ const verRows = ver.slice(1).map(([ind, model, , , tol]) => {
 const PORTRAIT = { size: { width: 11906, height: 16838 }, margin: { top: 1300, bottom: 1300, left: 1300, right: 1300 } };
 const LANDSCAPE = { size: { width: 11906, height: 16838, orientation: PageOrientation.LANDSCAPE }, margin: { top: 1100, bottom: 1100, left: 1100, right: 1100 } };
 const footer = new Footer({ children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [
-  new TextRun({ text: "Paquete de verificación en SuperPro · diseño óptimo v11 · página ", font: FONT, size: 16, color: MUTED }),
+  new TextRun({ text: "Paquete de verificación en SuperPro · diseño óptimo v12 · página ", font: FONT, size: 16, color: MUTED }),
   new TextRun({ children: [PageNumber.CURRENT], font: FONT, size: 16, color: MUTED })] })] });
 
 const intro = [
   new Paragraph({ spacing: { after: 80 }, children: [new TextRun({ text: "Paquete de verificación en SuperPro Designer", font: FONT, size: 40, bold: true, color: INK })] }),
-  new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: "Diseño óptimo de la versión 11 · Biorrefinería de piña del Bajo Atrato (Chocó)", font: FONT, size: 24, color: MUTED })] }),
+  new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: "Diseño óptimo de la versión 12 · Biorrefinería de piña del Bajo Atrato (Chocó)", font: FONT, size: 24, color: MUTED })] }),
   new Paragraph({ spacing: { after: 280 }, border: { bottom: { style: BorderStyle.SINGLE, size: 8, color: BORDER, space: 6 } },
     children: [new TextRun({ text: "Generado con superpro_paquete.py a partir de results/dimensionamiento.json (caso «E1 | Óptimo económico», oferta Chocó 2022) · noviembre de 2026", font: FONT, size: 18, color: MUTED })] }),
 
@@ -119,14 +119,14 @@ const intro = [
   p("SuperPro no corre en el entorno de los modelos. Quien tiene la licencia arma el modelo con las tablas de este documento, llena las columnas vacías de la sección 6 y devuelve los resultados para corregir los coeficientes del registro de parámetros (datos/parametros.csv)."),
 
   h1("2. Diseño que se verifica"),
-  p("Oferta de 6 146 t/año de fruta de rechazo (EVA 2022), de las que se procesan 6 139 t/año, más 2 678 t/año de hojas de la planta acopiadas en la renovación del cultivo y 107 t/año de panela añadida a los jugos. Demanda de vinagre supuesta: 3 000 m³/año. Margen del MILP: 4 652 MM COP/año."),
+  p("Oferta de 6 146 t/año de fruta de rechazo (EVA 2022), de las que se procesan 1 276 t/año: con el vino topado en 500 000 botellas/año y el vinagre en 3 000 m³/año, la planta queda limitada por el mercado y no por la fruta. Se acopian 3 746 t/año de hojas de la planta en la renovación del cultivo y se añaden 146 t/año de panela a los jugos. Margen del MILP: 3 196 MM COP/año."),
   table(["Sección", "Equipos y tamaños del modelo"], [
-    ["Frente y pulpa", "Recepción y lavado 3 t/h · prensa de banda de pulpa 1 t/h · macerador a 55 °C"],
-    ["Mosto y vino", "Centrífuga de discos 1 m³/h · MF de lías 2 m² · SO₂ · pulmón de mosto 10 m³ · bodega de vino 2 × 10 m³"],
-    ["Cáscara y harina", "Prensa de cáscara 1 t/h (sin pretratamiento) · secador de banda 100 kg de agua/h · molino"],
+    ["Frente y pulpa", "Recepción y lavado 1 t/h · prensa de banda 1 t/h, compartida por pulpa y cáscara · macerador a 55 °C"],
+    ["Mosto y vino", "Flotación 0,5 m³/h · SO₂ · almacén aséptico de mosto 10 m³ (los fermentadores se llenan desde él con bomba) · bodega de vino 2 × 10 m³ · embotelladora de 500 botellas/h"],
+    ["Cáscara y harina", "Cáscara prensada en la prensa compartida (sin pretratamiento) · secador de banda 50 kg de agua/h · molino"],
     ["Vinagre", "Bodega de jugos 2 × 10 m³ (cáscara y hojas, con panela) · acetificador Frings 10 m³"],
     ["Hojas", "Extractora de tornillo 2 t/h; la pulpa de hojas vuelve al campo"],
-    ["Servicios", "Caldera de biomasa con corona 100 kWt · grupo electrógeno diésel · chillers agua-glicol · generador de N₂"],
+    ["Servicios", "Caldera a GLP para el secador (sin caldera de corona) · grupo electrógeno diésel · chillers agua-glicol · generador de N₂"],
   ], [2400, 6906]),
   note("No se eligen en el óptimo: etanol de hojas, destilación, digestor y motor de biogás, ácido cítrico y xantana. No hace falta modelarlos."),
 
@@ -172,16 +172,16 @@ const restSection = [
   bullet([r("Calor y electricidad. ", { bold: true }), r("El modelo de Python usa coeficientes por unidad de flujo y SuperPro calcula entalpías. Si la diferencia supera la tolerancia, se corrige el coeficiente correspondiente en datos/parametros.csv (consumo por tonelada, calor de maceración o de secado, aireación).")]),
   bullet([r("Ciclos. ", { bold: true }), r("El llenado de los fermentadores sale de la bodega de Moresi (Q ≤ (N − 1)·V/t) y el ciclo de la bodega de jugos, de la cinética calibrada. La programación de lotes de SuperPro los verifica.")]),
   bullet([r("Producción. ", { bold: true }), r("Vino, vinagre y harina deben coincidir dentro de pocos puntos si los balances están bien cerrados. Una diferencia grande apunta a una pérdida o un rendimiento mal cargado.")]),
-  bullet([r("Ocupación del acetificador. ", { bold: true }), r("El MILP lo deja al 100 % en los meses pico; SuperPro debe confirmar que 20 m³ alcanzan con la aireación y el frío del modelo.")]),
+  bullet([r("Ocupación del acetificador. ", { bold: true }), r("El MILP lo deja al 100 % en los meses pico; SuperPro debe confirmar que 10 m³ alcanzan con la aireación y el frío del modelo.")]),
   p("Con la tabla de la sección 6 llena, los resultados se cargan en el informe y, si hace falta, se reoptimiza con los coeficientes corregidos.", { para: { spacing: { before: 160, after: 120 } } }),
 
   h2("Fuentes"),
-  p("Bertran, Tula y Gani (2022); Campos et al. (2020); Ebrahimi (2026); Chen et al. (2020); Emde (2017); Foo (2023), caps. 10 y 11; Moresi (1989b); Murcia Palacios (2013); Seguí y Fito (2018). Las referencias completas están en la bibliografía del informe v10."),
+  p("Bertran, Tula y Gani (2022); Campos et al. (2020); Ebrahimi (2026); Chen et al. (2020); Emde (2017); Foo (2023), caps. 10 y 11; Moresi (1989b); Murcia Palacios (2013); Seguí y Fito (2018). Las referencias completas están en la bibliografía del informe v12."),
 ];
 
 const doc = new Document({
   creator: "Modelos Corsano para la piña",
-  title: "Paquete de verificación en SuperPro – diseño óptimo v11",
+  title: "Paquete de verificación en SuperPro – diseño óptimo v12",
   styles: {
     default: { document: { run: { font: FONT, size: 21 } } },
     paragraphStyles: [

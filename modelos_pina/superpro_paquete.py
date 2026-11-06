@@ -26,6 +26,7 @@ def build(key="E1|Óptimo económico"):
     F = pr["fruta_t"]; H_st = dm.A2 * 8766; H_c = dm.AC * 8766
     juice = pr["mosto_m3"]; bod = pr["vino_m3"] / dm.WINE_PM; Q = bod / H_c
     fill = dm.VF / Q if Q > 0 else 0
+    store_fill = dm.TAU_FILL is not None and fill > dm.TAU_FILL   # v12: lote acumulado en el almacén y cargado con bomba (~1 h)
     has = lambda u: sz.get(u, "no") != "no"
     procs = [
         ("Recepción, lavado y selección", "Generic Box / Washing", "continuo (turnos)", sz["Frente"], f"{H_st:.0f} h/año", "28 °C", "fracciones 45/30/10/15 % (capacidad.FR)"),
@@ -37,7 +38,7 @@ def build(key="E1|Óptimo económico"):
         ("MF de lías", "Microfiltration", "continuo (turnos)", sz["MF lías"], "", "", f"recupera {dm.LEES_REC:.0%} del jugo"),
         ("Estabilización", "Blending Tank (dosificación)" if sz["Estabilización"].startswith("SO") else "Heat Sterilizer", "continuo", sz["Estabilización"], "", "", "≈ 50 mg/L de SO₂"),
         ("Fermentación alcohólica", "Fermentation (Batch Stoich.) in Fermentor", "lote escalonado", sz["Bodega"],
-         f"llenado {fill:.1f} h + {p.T_REF} h + 2,5 h", "30 °C", f"{p.P_REF} g/L de etanol a las {p.T_REF} h (Murcia Palacios)"),
+         (f"carga desde el almacén 1 h (un lote cada {fill:.0f} h) + {p.T_REF} h + 2,5 h" if store_fill else f"llenado {fill:.1f} h + {p.T_REF} h + 2,5 h"), "30 °C", f"{p.P_REF} g/L de etanol a las {p.T_REF} h (Murcia Palacios)"),
         ("Prensa de cáscara", "Belt Filter Press", "continuo (turnos)", sz["Prensa cáscara"], "", "", f"jugo {dm.PJ_FRAC.get(sz.get('Pretratamiento cáscara', 'agua'), 0.578):.3f} t/t"),
         ("Secado de torta y molienda", "Belt Dryer + Grinder", "continuo 24/7", sz["Secador"], f"{H_c:.0f} h/año", "", f"{dm.DRY_W:.2f} t agua/t torta; {dm.Q_CAKE:.0f} MJ/t torta"),
         ("Fermentación del jugo de cáscara", "Fermentation in Fermentor", "lote escalonado", sz.get("Bodega cáscara", "no"),
@@ -80,7 +81,7 @@ def build(key="E1|Óptimo económico"):
               ("Aireación del acetificador (MWh/año)", dm.AERATION_KW_M3 * V_acet * dm.AC * 8766 / 1000, "±15 %"),
               ("Frío del acetificador (GJ/año)", pr.get("acido_kg", 0) * dm.ACID_HEAT / 1000, "±10 %"),
               ("Agua evaporada en el secador (t/año)", pr.get("torta_t", 0) * dm.DRY_W, "±5 %"),
-              ("Llenado de un fermentador de vino (h)", fill, "±10 %"),
+              (("Intervalo entre lotes de vino, acumulados en el almacén (h)" if store_fill else "Llenado de un fermentador de vino (h)"), fill, "±10 %"),
               ("Ciclo de la bodega de jugo de cáscara (h)", dm.T_PEEL, "±20 %"),
               ("Vino producido (m³/año)", pr["vino_m3"], "±3 %"), ("Vinagre al 5 % (m³/año)", pr.get("vinagre_m3", 0), "±3 %"),
               ("Harina (t/año)", pr["harina_t"] + pr.get("harina_lias_t", 0), "±5 %"), ("Ocupación pico del acetificador", max(s["util"].get("Acetificador", [0])), "±10 %")]
@@ -100,7 +101,9 @@ etapa 2 del marco de Bertran, Tula y Gani (2022): verificar con un simulador el 
    fibra (celulosa como sustituto) y cenizas.
 3. Agregar los procedimientos de `procedimientos.csv` con su modo y tamaño. Para la bodega usar fermentadores
    escalonados (*staggered*) con el número de unidades del modelo, como en el ejemplo de ácido cítrico de
-   Koulouris (Foo 2023, cap. 11); el tiempo de ciclo de la receta es el llenado de un fermentador.
+   Koulouris (Foo 2023, cap. 11); el tiempo de ciclo de la receta es el llenado de un fermentador. v12: si ese
+   llenado supera el tiempo máximo (tau_llenado_max), el mosto se acumula en el almacén aséptico y cada lote se carga
+   con bomba en ~1 h; el ciclo de la receta es entonces el intervalo entre lotes.
 4. Cargar las estequiometrías: alcohólica con el rendimiento medido (no el teórico); acética 46 g etanol → 60 g
    ácido con 94 % del teórico y ΔH = −493 kJ/mol.
 5. Usar las entradas de `corrientes.csv` como base anual y comparar con `verificacion.csv`.

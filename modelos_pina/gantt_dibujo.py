@@ -76,20 +76,21 @@ def panel_year(d, y0):
         sd.rellipse(x, y, 5, 5, PAL["pulpa"][1], 2.0, n=10)
         sd.text(x, y - 14, fmt(sup[m]), 17, INK, anchor="middle")
         if loss[m] > 0.5:
-            sd.text(x, cy0 + ch - 8, f"pierde {fmt(loss[m])} t", 15, "#a4513f", anchor="middle")
+            sd.text(x, cy0 + ch - 8, f"sin procesar {fmt(loss[m])} t", 15, "#a4513f", anchor="middle")
     sd.rline(LX, cy0 + ch, LX + LW, cy0 + ch, "#9a948a", 1.4, 1)
     # carriles
-    lanes = [("Frente de lavado", sz["Frente"], "neutro", U["Frente"], "turnos"),
-             ("Prensa de pulpa", sz["Prensa"], "pulpa", U["Prensa"], "turnos"),
-             ("Prensa de cáscara", sz["Prensa cáscara"], "cascara", U["Prensa cáscara"], "turnos"),
+    lanes = [("Frente de lavado", sz.get("Frente", "no"), "neutro", U.get("Frente", [0] * 12), "turnos"),
+             ("Prensa de pulpa", sz.get("Prensa", "no"), "pulpa", U.get("Prensa", [0] * 12), "turnos"),
+             ("Prensa de cáscara", sz.get("Prensa cáscara", "no"), "cascara", U.get("Prensa cáscara", [0] * 12), "turnos"),
              ("Extractora de hojas", sz.get("Extractora hojas", "no"), "corazon", U.get("Extractora hojas", [0] * 12), "turnos"),
-             ("Clarificación", sz["Clarificación"], "agua", U["Clarificación"], "turnos"),
-             ("MF de lías", sz["MF lías"], "agua", U["MF lías"], "turnos"),
-             ("Bodega de vino", sz["Bodega"], "pulpa", U["Bodega"], "24 h"),
-             ("Bodega de cáscara", sz["Bodega cáscara"], "cascara", U["Bodega cáscara"], "24 h"),
-             ("Acetificador", sz["Acetificador"], "vinagre", U["Acetificador"], "24 h"),
-             ("Secador de banda", sz["Secador"], "cascara", U["Secador"], "24 h"),
-             ("Caldera de corona", sz["Caldera de corona"], "corona", U["Caldera de corona"], "24 h")]
+             ("Clarificación", sz.get("Clarificación", "no"), "agua", U.get("Clarificación", [0] * 12), "turnos"),
+             ("MF de lías", sz.get("MF lías", "no"), "agua", U.get("MF lías", [0] * 12), "turnos"),
+             ("Bodega de vino", sz.get("Bodega", "no"), "pulpa", U.get("Bodega", [0] * 12), "24 h"),
+             ("Bodega de cáscara", sz.get("Bodega cáscara", "no"), "cascara", U.get("Bodega cáscara", [0] * 12), "24 h"),
+             ("Acetificador", sz.get("Acetificador", "no"), "vinagre", U.get("Acetificador", [0] * 12), "24 h"),
+             ("Secador de banda", sz.get("Secador", "no"), "cascara", U.get("Secador", [0] * 12), "24 h"),
+             ("Caldera de corona", sz.get("Caldera de corona", "no"), "corona", U.get("Caldera de corona", [0] * 12), "24 h"),
+             ("Embotelladora", sz.get("Embotelladora", "no"), "pulpa", U.get("Embotelladora", [0] * 12), "turnos")]
     lanes = [l for l in lanes if l[1] != "no"]
     ly, lh, gap = cy0 + ch + 30, 62, 12
     for i, (name, size_txt, key, u, regime) in enumerate(lanes):
@@ -113,18 +114,20 @@ def panel_year(d, y0):
     def top(u):
         ms = [MES[m] for m in range(12) if u[m] >= 0.95]
         return ", ".join(ms) if 0 < len(ms) <= 4 else (f"{len(ms)} de 12 meses" if ms else "ningún mes")
+    G = lambda k: U.get(k, [0] * 12)
     notes = [("#b0563f", "óvalo: el equipo topa (≥ 95 %)"),
-             (INK, f"Prensa de pulpa: tope en {top(U['Prensa'])};"),
+             (INK, f"Prensa de pulpa: tope en {top(G('Prensa'))};"),
              (INK, f"deja {fmt(sum(loss))} t/año de fruta sin procesar."),
-             (INK, f"Extractora de hojas {sz.get('Extractora hojas', '—')}: {rng(U.get('Extractora hojas', [0]))}."),
-             (INK, f"MF de lías {rng(U['MF lías'])}; el acetificador"),
-             (INK, f"topa en {top(U['Acetificador'])}:"),
+             (INK, f"Extractora de hojas {sz.get('Extractora hojas', '—')}: {rng(G('Extractora hojas'))}."),
+             (INK, (f"MF de lías {rng(G('MF lías'))}; el acetificador" if sz.get("MF lías", "no") != "no" else "Sin MF de lías; el acetificador")),
+             (INK, f"topa en {top(G('Acetificador'))}:"),
              (INK, "el modelo los dimensiona justos."),
-             (INK, f"Bodega de vino {rng(U['Bodega'])}: {sz['Bodega']} es"),
+             (INK, f"Bodega de vino {rng(G('Bodega'))}: {sz['Bodega']} es"),
              (INK, "el mínimo de Moresi (N_F ≥ 2)."),
-             (INK, f"Bodega de cáscara {rng(U['Bodega cáscara'])} con el"),
+             (INK, f"Bodega de cáscara {rng(G('Bodega cáscara'))} con el"),
              (INK, f"jugo de hojas ({fmt(dm.T_LEAF, 1)} h por lote)."),
-             (INK, f"Caldera {rng(U['Caldera de corona'])}; sigue la cosecha.")]
+             (INK, (f"Caldera {rng(G('Caldera de corona'))}; sigue la cosecha." if sz.get("Caldera de corona", "no") != "no"
+                    else f"Embotelladora {sz.get('Embotelladora', '—')}: {rng(G('Embotelladora'))}."))]
     for i, (c, t) in enumerate(notes):
         sd.text(nx, ly + 52 + i * 29 + (12 if i >= 1 else 0) + (12 if i >= 4 else 0) + (12 if i >= 7 else 0) + (12 if i >= 9 else 0), t, 19, c)
     return yb + 40, s, r
@@ -161,8 +164,14 @@ def panel_week(y0, s, r):
     leaves = sz.get("Extractora hojas", "no") != "no"
     bc = sz.get("Bodega cáscara", "2×10 m³")
     nbc = int(bc.split("×")[0]) if "×" in bc else 2
-    o = 1 if leaves else 0
-    lanes_n = 10 + o + nbc
+    ST = [(n_, k_, u_) for n_, k_, u_ in (("Frente de lavado", "neutro", "Frente"), ("Prensa de pulpa", "pulpa", "Prensa"),
+                                          ("Prensa de cáscara", "cascara", "Prensa cáscara"), ("Extractora de hojas", "corazon", "Extractora hojas"),
+                                          ("Clarificación", "agua", "Clarificación"), ("MF de lías", "agua", "MF lías"), ("Embotelladora", "pulpa", "Embotelladora"))
+          if sz.get(u_, "no") != "no" and u_ in U]                   # v12: solo los equipos con personal que tiene el diseño
+    CONT = [(n_, k_, u_) for n_, k_, u_ in (("Secador de banda", "cascara", "Secador"), ("Caldera de corona", "corona", "Caldera de corona"))
+            if sz.get(u_, "no") != "no" and u_ in U]
+    o = len(ST) - 5
+    lanes_n = len(ST) + 3 + nbc + len(CONT)
     lh, gap = 56, 10
     yb = top + 50 + lanes_n * (lh + gap)
     for dday in range(7):
@@ -191,17 +200,13 @@ def panel_week(y0, s, r):
                     block(X(t0 + used), y + 8, X(t0 + L) - X(t0 + used), lh - 16, key, 0.0, dash="6 5")
         sd.text(X(144) + 12, y + lh / 2 + 7, f"{util * 100:.0f} % del turno", 18, GREY)
 
-    staffed(0, "Frente de lavado", "neutro", U["Frente"][3], sz["Frente"])
-    staffed(1, "Prensa de pulpa", "pulpa", U["Prensa"][3], sz["Prensa"])
-    staffed(2, "Prensa de cáscara", "cascara", U["Prensa cáscara"][3], sz["Prensa cáscara"])
-    if leaves:
-        staffed(3, "Extractora de hojas", "corazon", U["Extractora hojas"][3], sz["Extractora hojas"])
-    staffed(3 + o, "Clarificación", "agua", U["Clarificación"][3], sz["Clarificación"])
-    staffed(4 + o, "MF de lías", "agua", U["MF lías"][3], sz["MF lías"])
+    for i, (n_, k_, u_) in enumerate(ST):
+        staffed(i, n_, k_, U[u_][3], sz[u_])
     # bodega de vino (Moresi): Q medio desde el pulmón de mosto
     Qw = sum(x["bod"] for x in rows) / hours
     fill_w = dm.VF / Qw
-    PH_W = [("llenado", fill_w), ("fermentación", 12.5), ("descarga", 2.5)]
+    from_store = dm.TAU_FILL is not None and fill_w > dm.TAU_FILL   # v12: llenado desde el almacén de mosto con bomba (~1 h)
+    PH_W = [("llenado", 1.0 if from_store else fill_w), ("fermentación", 12.5), ("descarga", 2.5)]
     colors = {"llenado": ("pulpa", 0.35), "fermentación": ("pulpa", 1.0), "descarga": ("neutro", 0.7),
               "llenado c": ("cascara", 0.35), "fermentación c": ("cascara", 1.0),
               "acetificación": ("vinagre", 1.0), "carga": ("vinagre", 0.35), "descarga 50 %": ("neutro", 0.7)}
@@ -234,11 +239,10 @@ def panel_week(y0, s, r):
     sd.rline(X(0), y + lh - 4, X(168), y + lh - 4, PAL["vinagre"][1], 1.6, 1, dash="3 5")
     # secador y caldera: continuos con parada semanal (disponibilidad 0,9 → 16,8 h)
     stop = (1 - dm.AC) * 168
-    for i, (name, key, u, size_txt) in enumerate((("Secador de banda", "cascara", U["Secador"][3], sz["Secador"]),
-                                                  ("Caldera de corona", "corona", U["Caldera de corona"][3], sz["Caldera de corona"]))):
+    for i, (name, key, u, size_txt) in enumerate((n_, k_, U[u_][3], sz[u_]) for n_, k_, u_ in CONT):
         y = lane_y(8 + o + nbc + i)
         lane_label(y, lh, name, size_txt, key)
-        a0 = 6.0 if i == 1 else 7.0
+        a0 = 6.0 if key == "corona" else 7.0
         block(X(a0), y + 8, X(168 - stop + a0 - 6.0) - X(a0), lh - 16, key, u, f"continuo · carga {u * 100:.0f} %")
         block(X(168 - stop + a0 - 6.0), y + 8, X(168) - X(168 - stop + a0 - 6.0), lh - 16, "neutro", 0.0, "mantenimiento", dash="6 5", size=15)
         if a0 > 0:
@@ -264,10 +268,15 @@ def panel_week(y0, s, r):
     # notas
     nx = LX + LW + 40
     sd.text(nx, ly + 14, "Lectura", 30, INK, font="Caveat", weight=700)
-    notes = [f"A {fmt(Qw, 2)} m³/h el llenado de un",
-             f"fermentador tarda {fmt(fill_w, 0)} h y domina",
-             "el ciclo; el segundo tanque",
-             "fermenta mientras el primero se llena.",
+    notes = ([f"A {fmt(Qw, 2)} m³/h, llenar un fermentador",
+              f"directo tardaría {fmt(fill_w, 0)} h (> {fmt(dm.TAU_FILL, 0)} h):",
+              "el mosto se acumula en el almacén",
+              "aséptico y cada lote se carga con",
+              f"bomba en ~1 h; un lote cada {fmt(fill_w, 0)} h."] if from_store else
+             [f"A {fmt(Qw, 2)} m³/h el llenado de un",
+              f"fermentador tarda {fmt(fill_w, 0)} h y domina",
+              "el ciclo; el segundo tanque",
+              "fermenta mientras el primero se llena."]) + [
              "",
              f"Jugos de cáscara y hojas: llenado",
              f"de {fmt(fill_p, 0)} h y {fmt(dm.T_PEEL, 1)} h de fermentación.",
