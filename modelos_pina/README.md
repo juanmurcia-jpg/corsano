@@ -31,7 +31,7 @@ Corsano, Montagna, Iribarren y Aguirre, adaptados a la tesis *Biorrefinería de 
 | `localizacion.py` | Bertran et al. (2022, sec. 5.1); Liao et al. (2026) | MILP estilizado de localización: planta central o depósitos de extracción para las hojas; costo de acopio (Fig. 42) |
 | `pulido_v10.py`, `comparativo_v9_v10.py` | — | Pulido v10 con tamaños vecinos y comparación v9–v10 (Fig. 45) |
 | `pulido_v11.py`, `comparativo_v10_v11.py` | Ebrahimi (2026); Iakovchenko (2026); Ahamed y Li (2026) | v11: panela añadida a los jugos, tope de demanda de vinagre (E8), xantana con residuo de piña, efluentes; pulido y comparación v10–v11 (Fig. 46). Los resultados y figuras de la v10 quedan en `results/v10/` y `figs/v10/` |
-| `pulido_v12.py`, `comparativo_v11_v12.py` | Ley 1816 de 2016; Ley 1819 de 2016 (ZOMAC); Palacios et al. (2019) | v12: vino embotellado con impuesto al consumo e IVA, línea de embotellado, tope de demanda de botellas (E9), renta por año según el tamaño de la empresa y el régimen ZOMAC; pulido y comparación v11–v12 (Fig. 47). Los resultados y figuras de la v11 quedan en `results/v11/` y `figs/v11/` |
+| `pulido_v12.py`, `comparativo_v11_v12.py` | Ley 1816 de 2016; Ley 1819 de 2016 (ZOMAC); Palacios et al. (2019) | v12: vino embotellado con impuesto al consumo e IVA, línea de embotellado, tope de demanda de botellas (E9), renta por año según el tamaño de la empresa y el régimen ZOMAC; regla de tiempo máximo de llenado de la bodega (llenado directo en ≤ `tau_llenado_max` o carga desde el almacén de mosto, disyunción por periodo; `check_fill()` revisa soluciones guardadas); pulido y comparación v11–v12 (Fig. 47). Los resultados y figuras de la v11 quedan en `results/v11/` y `figs/v11/` |
 | `acv.py` | Heinzle et al. (2006); IPCC AR6 | ACV de la cuna a la puerta: GWP100, energía fósil, agua, MP evitado, línea base sin planta, expansión del sistema, asignación económica (Fig. 40) |
 | `social.py` | Heinzle et al. (2006, cap. 4.4) | Empleos, pagos a productores y valor que queda en el territorio |
 | `multiobjetivo.py` | Bertran et al. (2022); Liao et al. (2026) | Frente de Pareto margen–GWP por ε-restricción (Fig. 43) |
@@ -59,9 +59,10 @@ python estocastico.py && python anual_continuo.py   # ~10 min (SCIP)
 python datos.py check                               # v10: registro de parámetros frente a las constantes del código
 python cinetica_jugos.py && python localizacion.py  # v10: tiempos de la bodega de jugos y costo de acopio de hojas
 python dimensionamiento.py E1 E2 E3 E4 E5 E6 E7 E8 E9 # ~3 h en serie; en paralelo: DIM_OUT=archivo python dimensionamiento.py E2 (y fusionar)
-python pulido_v12.py                                # pulido con tamaños vecinos (acepta grupos: E1 E2 ...)
+python pulido_v12.py                                # pulido con tamaños vecinos (acepta grupos: FIJOS E1 E2 ...); en paralelo, DIM_OUT por grupo
+CRUCE=1 python pulido_v12.py                        # segunda pasada: cada caso con los mejores diseños de E1 (sin vecinos)
 python tea_dimensionado.py                          # TEA con tamaños óptimos + libros Excel
-python acv.py && python social.py && python puntos_calientes.py && python superpro_paquete.py
+python acv.py && python social.py && python puntos_calientes.py && python superpro_paquete.py && NODE_PATH=$(npm root -g) node superpro_docx.js superpro superpro/Paquete_SuperPro_v12.docx
 python multiobjetivo.py                             # frente de Pareto margen–GWP (~40 min)
 python comparativo_v11_v12.py decomp && python comparativo_v11_v12.py compare # descomposición v11 → v12 y Fig. 47 (lee results/v11/)
 python figuras_v3.py && python figuras_v4.py

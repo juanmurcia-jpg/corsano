@@ -707,6 +707,12 @@ if d_opt and cmp12:
         t_ += (f"<p><b>TEA y renta.</b> VPN del óptimo {n0(to12['NPV11'] / MM)} → {n0(to12['NPV12'] / MM)} MM COP; MIRR {pct(to12['MIRR11'])} → {pct(to12['MIRR12'])}; "
                f"P(VPN > 0) {pct(to12['P11'], 0)} → {pct(to12['P12'], 0)}. Por sus ingresos la empresa es {E(to12.get('size') or '—')}. Con la ley vigente la renta es del 35 % desde el arranque en 2030; "
                f"si se aprobara la prórroga del PL 435 de 2025, el VPN sería {n0((to12['NPV12_prorroga'] or float('nan')) / MM)} MM COP. La ubicación en ZOMAC no exime del impuesto al consumo, que es departamental.</p>")
+    par12 = RJ("pareto.json")
+    if par12 and len(par12.get("points", [])) >= 3:
+        P_ = par12["points"]; p0, p1 = P_[0], P_[1]
+        t_ += (f"<p><b>Margen frente a GWP.</b> El frente de Pareto (ε-restricción) va de {n0(p0['margin'])} MM COP/año con {n0(p0['gwp'] / 1000)} t CO2e/año "
+               f"a {n0(P_[-1]['margin'])} con {n0(P_[-1]['gwp'] / 1000)} t (no operar). Bajar a {n0(p1['gwp'] / 1000)} t cuesta "
+               f"{n0(p0['margin'] - p1['margin'])} MM COP/año, unos {n0((p0['margin'] - p1['margin']) * 1e6 / max(p0['gwp'] - p1['gwp'], 1))} COP por kg de CO2e evitado.</p>")
     a12 = (acv12 or {}).get("Óptimo v12")
     if a12:
         t_ += (f"<p><b>ACV.</b> GWP de proceso {n0(a12['gwp_total'] / 1000)} t CO2e/año; las botellas de vidrio aportan {n0(a12['gwp'].get('Botellas de vidrio', 0) / 1000)} t "

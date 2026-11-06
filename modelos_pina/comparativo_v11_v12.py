@@ -100,7 +100,7 @@ def figure(out):
             a.plot([i - 1.31, i - 0.69], [prev, prev], color=INK2, lw=0.8)
         prev = v
     a.set_xticks(range(len(seq))); a.set_xticklabels([l for l, _ in seq], rotation=25, ha="right", fontsize=7.6)
-    a.set_ylabel("Margen anual del MILP (MM COP/año)"); a.set_title("De la v11 a la v12: impuesto, embotellado y demanda de vino con el diseño v11 fijo", fontsize=9)
+    a.set_ylim(top=max(v for _, v in seq) * 1.12); a.set_ylabel("Margen anual del MILP (MM COP/año)"); a.set_title("De la v11 a la v12: impuesto, embotellado y demanda de vino con el diseño v11 fijo", fontsize=9)
     b = ax[0, 1]; E = out["e9"]
     x = np.arange(len(E))
     b.bar(x - 0.2, [e["vinagre_m3"] for e in E], 0.4, color=C[3], label="vinagre al 5 % (m³/año)")
