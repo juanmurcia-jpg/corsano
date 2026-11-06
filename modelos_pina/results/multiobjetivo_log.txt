@@ -10,3 +10,5 @@ extremo ambiental -1090 0
     arranque en caliente: aceptado 239
 ε 223 → margen 400 GWP 223 no no
     arranque en caliente: aceptado -839
+ε 112 → margen -839 GWP 112 no no
+fig fig43_pareto.png

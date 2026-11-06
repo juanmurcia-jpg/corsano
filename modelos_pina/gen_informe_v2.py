@@ -606,7 +606,7 @@ if d_opt and cmp11:
                + (f"El precio de equilibrio del vinagre es {n0(be11)} COP/L. " if be11 else "")
                + (f"En el tornado, el precio del vinagre mueve el VPN entre {n0(min(tvin['NPV_worst'], tvin['NPV_best']) / MM)} y {n0(max(tvin['NPV_worst'], tvin['NPV_best']) / MM)} MM COP, " if tvin else "")
                + (f"y el de la panela solo entre {n0(min(tpan['NPV_worst'], tpan['NPV_best']) / MM)} y {n0(max(tpan['NPV_worst'], tpan['NPV_best']) / MM)}. " if tpan else "")
-               + (f"En el programa estocástico (oferta 0,7, 1,0 y 1,3 veces) el EVPI es {n0(dim['E4|WS']['obj'] - dim['E4|RP']['obj'])} MM COP/año: con la demanda de vinagre como límite, el mismo diseño es el mejor en los tres escenarios de oferta. " if 'E4|WS' in dim and 'E4|RP' in dim else "")
+               + (f"En el programa estocástico (oferta 0,7, 1,0 y 1,3 veces) el EVPI es {n0(max(dim['E4|WS']['obj'] - dim['E4|RP']['obj'], 0.0))} MM COP/año: con la demanda de vinagre como límite, el mismo diseño es el mejor en los tres escenarios de oferta. " if 'E4|WS' in dim and 'E4|RP' in dim else "")
                + "</p>")
     if a11:
         ef = a11.get("efluente", {})
