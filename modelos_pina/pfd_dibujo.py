@@ -186,7 +186,7 @@ def build():
     r = d["E1|Óptimo económico"]; s = r["sizes"]; f = bd.flows_v7()
     pr = r["scen"][0]["products"]
     sd.text(60, 72, "Diagrama de flujo del proceso", 58, INK, font="Caveat", weight=700)
-    sd.text(62, 112, "Diseño óptimo de la versión 10 · Chocó 2022. Equipos con su tamaño de catálogo; corrientes numeradas con sus caudales en la tabla "
+    sd.text(62, 112, "Diseño óptimo de la versión 11 · Chocó 2022. Equipos con su tamaño de catálogo; corrientes numeradas con sus caudales en la tabla "
                      "(t/año). Línea continua: proceso; terracota discontinua: calor; azul discontinua: frío.", 21, "#5e5a53")
     # --- frente
     pipe([(40, 330), (108, 330)], INK, num=1, at=0.45)
@@ -305,10 +305,12 @@ def build():
         (19, "Calor de la caldera", pr.get("calor_corona_GJ", 0), "GJ/año al secador y al macerador"),
     ]
     if s.get("Extractora hojas", "no") != "no":
-        rows += [(20, "Hojas acopiadas", f.get("hojas", 0), "acopio en finca (v10)"),
+        rows += [(20, "Hojas acopiadas", f.get("hojas", 0), "acopio en finca"),
                  (21, "Jugo de hojas", f.get("lj", 0), f"{dm.JF_H:.2f} t/t; a F-201 con el jugo de cáscara"),
                  (22, "Pulpa y pérdidas de hojas", f.get("l_campo", 0) + f.get("l_cald", 0), "devueltas al campo")]
-    rh = 52
+    if f.get("az", 0) > 0.1:   # v11: panela añadida a la bodega de jugos
+        rows.append((len(rows) + 1, "Panela añadida", f["az"], "a F-201; hasta 150 g/L de jugo"))
+    rh = 52 if len(rows) <= 22 else 48
     th = 60 + rh * len(rows)
     sd.rrect(tx, ty, tw, th, PAL["neutro"][1], 2.0)
     sd.hachure(tx + 3, ty + 3, tw - 6, 54, PAL["neutro"][1], gap=8, sw=1.2, op=0.35, fill=PAL["neutro"][0], fill_op=0.8)

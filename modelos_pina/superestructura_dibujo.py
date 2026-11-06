@@ -257,8 +257,8 @@ def build(d):
     fmt = lambda v: f"{v:,.0f}".replace(",", " ")
 
     text(60, 72, "Superestructura de la biorrefinería de piña", 58, INK, font="Caveat", weight=700)
-    text(62, 112, "Cada ∨ es una disyunción (Grossmann cap. 10): el MILP elige una alternativa y su tamaño. En color, el diseño óptimo de la versión 10 "
-                  "(Chocó 2022); en gris, las alternativas descartadas. Nuevo en la v10: hojas de la planta, etanol, biogás y productos del hub.", 21, "#5e5a53")
+    text(62, 112, "Cada ∨ es una disyunción (Grossmann cap. 10): el MILP elige una alternativa y su tamaño. En color, el diseño óptimo de la versión 11 "
+                  "(Chocó 2022); en gris, las alternativas descartadas. Nuevo en la v11: panela añadida a los jugos y tope de demanda de vinagre.", 21, "#5e5a53")
 
     # fruta y frente
     pineapple(170, 790, 1.0)
@@ -320,7 +320,7 @@ def build(d):
     arrow(right(bD)[0] + 2, right(bD)[1], PX + 10, 850, PAL["cascara"][1], 2.6, 0.06)
 
     hub_on = (pr.get("citrico_kg", 0) + pr.get("xantana_kg", 0)) > 0
-    bJ, cJ = card(945, 1010, 290, "Jugo de cáscara", [f"fermentar {s['Bodega cáscara']}", "venta al hub (150 COP/kg)", "ácido cítrico · xantana (v10)"], "vinagre",
+    bJ, cJ = card(945, 1010, 290, "Jugo de cáscara", [f"fermentar {s['Bodega cáscara']}" + (" + panela" if pr.get("azucar_kg", 0) > 1 else ""), "venta al hub (150 COP/kg)", "ácido cítrico · xantana"], "vinagre",
                   chosen=tuple(i for i, on in enumerate((s["Bodega cáscara"] != "no", pr.get("jugo_cascara_t", 0) > pr.get("jugo_cascara_vinagre_t", 0) + 1, hub_on)) if on) or (1,))
     arrow(bK[0] + 125, bK[1] + bK[3] + 2, left(bJ)[0] - 4, left(bJ)[1], PAL["vinagre"][1], 2.4, 0.15, label=f"jugo ({jf * 100:.0f} %)", lab_size=19, lab_dy=28)
     enz = s.get("Enzima cáscara", "no")

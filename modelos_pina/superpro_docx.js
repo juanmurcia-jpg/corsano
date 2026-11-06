@@ -1,5 +1,5 @@
 // Paquete de verificación en SuperPro como .docx, a partir de superpro/*.csv
-// Uso: NODE_PATH=$(npm root -g) node superpro_docx.js superpro superpro/Paquete_SuperPro_v10.docx
+// Uso: NODE_PATH=$(npm root -g) node superpro_docx.js superpro superpro/Paquete_SuperPro_v11.docx
 const fs = require("fs");
 const path = require("path");
 const {
@@ -105,12 +105,12 @@ const verRows = ver.slice(1).map(([ind, model, , , tol]) => {
 const PORTRAIT = { size: { width: 11906, height: 16838 }, margin: { top: 1300, bottom: 1300, left: 1300, right: 1300 } };
 const LANDSCAPE = { size: { width: 11906, height: 16838, orientation: PageOrientation.LANDSCAPE }, margin: { top: 1100, bottom: 1100, left: 1100, right: 1100 } };
 const footer = new Footer({ children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [
-  new TextRun({ text: "Paquete de verificación en SuperPro · diseño óptimo v10 · página ", font: FONT, size: 16, color: MUTED }),
+  new TextRun({ text: "Paquete de verificación en SuperPro · diseño óptimo v11 · página ", font: FONT, size: 16, color: MUTED }),
   new TextRun({ children: [PageNumber.CURRENT], font: FONT, size: 16, color: MUTED })] })] });
 
 const intro = [
   new Paragraph({ spacing: { after: 80 }, children: [new TextRun({ text: "Paquete de verificación en SuperPro Designer", font: FONT, size: 40, bold: true, color: INK })] }),
-  new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: "Diseño óptimo de la versión 10 · Biorrefinería de piña del Bajo Atrato (Chocó)", font: FONT, size: 24, color: MUTED })] }),
+  new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: "Diseño óptimo de la versión 11 · Biorrefinería de piña del Bajo Atrato (Chocó)", font: FONT, size: 24, color: MUTED })] }),
   new Paragraph({ spacing: { after: 280 }, border: { bottom: { style: BorderStyle.SINGLE, size: 8, color: BORDER, space: 6 } },
     children: [new TextRun({ text: "Generado con superpro_paquete.py a partir de results/dimensionamiento.json (caso «E1 | Óptimo económico», oferta Chocó 2022) · noviembre de 2026", font: FONT, size: 18, color: MUTED })] }),
 
@@ -181,7 +181,7 @@ const restSection = [
 
 const doc = new Document({
   creator: "Modelos Corsano para la piña",
-  title: "Paquete de verificación en SuperPro – diseño óptimo v10",
+  title: "Paquete de verificación en SuperPro – diseño óptimo v11",
   styles: {
     default: { document: { run: { font: FONT, size: 21 } } },
     paragraphStyles: [

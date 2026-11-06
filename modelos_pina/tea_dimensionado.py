@@ -178,7 +178,9 @@ def build_case(r, label, with_bromelain):
            dict(name="Acopio de hojas puestas en planta (t)", qty_year=pr.get("hojas_t", 0.0), price=dm.ACOPIO_VC, key="acopio"),
            dict(name="Levadura e inóculo del jugo de hojas (t)", qty_year=pr.get("jugo_hojas_etanol_t", 0.0), price=dm.ETOH_VC),
            dict(name="Levadura, nutrientes y SO2 del jugo de hojas a vinagre (t)", qty_year=pr.get("jugo_hojas_vinagre_t", 0.0), price=dm.PJ_VC),
-           dict(name="Operación del motor a biogás (kWh)", qty_year=pr.get("elec_bio_kWh", 0.0), price=dm.BIO_OM)]
+           dict(name="Operación del motor a biogás (kWh)", qty_year=pr.get("elec_bio_kWh", 0.0), price=dm.BIO_OM),
+           # v11: panela añadida a los jugos antes de fermentar (Ebrahimi 2026; Tanamool et al. 2020)
+           dict(name="Panela añadida a los jugos (kg)", qty_year=pr.get("azucar_kg", 0.0), price=dm.AZ_PRICE, key="panela")]
     for prod, key in (("Ácido cítrico", "citrico_kg"), ("Xantana", "xantana_kg")):
         if pr.get(key, 0.0) > 0:
             raw.append(dict(name=f"Servicios y reactivos de {prod.lower()} (kg)", qty_year=pr[key], price=dm.HUB[prod]["vc"]))
@@ -202,6 +204,9 @@ def build_case(r, label, with_bromelain):
             dict(name="Agua de planta (t)", qty_year=sum(l["water_t"] * f for l, f in zip(lines, scale)), price_key="agua_COP_t")]
     unused = b["crown_t"] - pr.get("corona_caldera_t", 0.0) + (b["core_t"] * (1 - brom_frac) if with_bromelain else b["core_t"]) + pr.get("cascara_compost_t", 0.0)
     waste = [dict(name="Aguas residuales (t)", qty_year=util[2]["qty_year"], price=tb.COMMON["ARD_COP_t"]),
+             # v11: tratamiento del efluente con electrocoagulación y humedal construido (Ebrahimi 2026, sec. 12.5.4)
+             dict(name="Tratamiento de efluentes: electrocoagulación y humedal (m³)", qty_year=util[2]["qty_year"] * DT.val("frac_efluente"),
+                  price=DT.val("costo_ptar_m3")),
              dict(name="Compostaje de fracciones sin uso (t)", qty_year=unused, price=dm.COMPOST * 1000),
              dict(name="Lías y espumas a compostaje (m³)", qty_year=pr.get("lias_compost_m3", 0.0), price=dm.LEES_DISP)]
     byp = [dict(name="harina", qty_year=(pr["harina_t"] + pr.get("harina_lias_t", 0.0)) * 1000, price=tl.M("harina_kg")),
@@ -274,6 +279,11 @@ def run(case, mc_n=1000):
         specs = specs + [("Costo de acopio de hojas", "raw_price_acopio", hi, mo_, lo)]
         dists = dists + [("raw_price_acopio", lo, mo_, hi)]
         R = [rw + [0.0] for rw in R] + [[0.0] * len(R) + [1.0]]
+    if any(r_.get("key") == "panela" and r_["qty_year"] > 0 for r_ in case["raw"]):   # v11
+        lo, mo_, hi = DT.tri("precio_panela_kg")
+        specs = specs + [("Precio de la panela", "raw_price_panela", hi, mo_, lo)]
+        dists = dists + [("raw_price_panela", lo, mo_, hi)]
+        R = [rw + [0.0] for rw in R] + [[0.0] * len(R) + [1.0]]
     if any(u.get("crown_MJ", 0) > 0 for u in case["utilities"]):
         specs = specs + [("Corona que llega a planta (40–100 %)", "crown_avail", 0.4, 0.9, 1.0)]
         dists = dists + [("crown_avail", 0.4, 0.9, 1.0)]
@@ -294,7 +304,9 @@ if __name__ == "__main__":
            ("A · Óptimo sin vinagre", "E1|Óptimo sin vinagre", False),
            ("A · Óptimo sin caldera de corona", "E1|Óptimo sin caldera de corona", False),
            ("A · Óptimo sin SO₂", "E1|Óptimo sin SO₂", False),
-           ("A · Diseño v9 con parámetros v10", "E1|Diseño v9 con parámetros v10", False),
+           ("A · Diseño v10 con parámetros v11", "E1|Diseño v10 con parámetros v11", False),
+           ("A · Óptimo sin azúcar añadido", "E1|Óptimo sin azúcar añadido", False),
+           ("A · Óptimo sin tope de demanda de vinagre", "E1|Óptimo sin tope de demanda de vinagre", False),
            ("A · Óptimo sin opciones v10", "E1|Óptimo sin opciones v10 (sin hojas ni hub)", False),
            ("A · Óptimo sin etanol de hojas", "E1|Óptimo sin etanol de hojas", False),
            ("A · Óptimo sin digestor", "E1|Óptimo sin digestor", False),

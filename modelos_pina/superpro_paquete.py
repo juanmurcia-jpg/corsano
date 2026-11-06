@@ -46,6 +46,9 @@ def build(key="E1|Óptimo económico"):
          "30 °C con frío", f"{dm.ACET_PROD} kg/m³·d; ΔH = −493 kJ/mol; {dm.AERATION_KW_M3} kW/m³"),
         ("Caldera de biomasa", "Boiler / Generic Combustor", "continuo 24/7", sz.get("Caldera de corona", "no"), "", "", f"corona {dm.CROWN_MJ_T:.0f} MJ útiles/t; pulpa de hojas {dm.PULP_MJ_T:.0f}"),
     ]
+    if pr.get("azucar_kg", 0) > 1:   # v11
+        procs.append(("Dosificación de panela a los jugos", "Blending Tank (disolución)", "continuo", "", "", "30 °C",
+                      f"hasta {dm.AZ_MAX * 1000:.0f} g/L de jugo; {dm.A_AZ:.0f} kg de ácido por t de panela"))
     if has("Extractora hojas"):
         procs.append(("Extracción de jugo de hojas", "Screw Press", "continuo (turnos)", sz["Extractora hojas"], "", "", f"jugo {dm.JF_H} t/t; pulpa {dm.PF_H} t/t"))
     if has("Bodega etanol"):
@@ -60,7 +63,7 @@ def build(key="E1|Óptimo económico"):
     streams = [("Fruta de rechazo (entrada)", F), ("Hojas acopiadas (entrada)", pr.get("hojas_t", 0)), ("Mosto clarificado", juice),
                ("Vino producido (m³)", pr["vino_m3"]), ("Vino vendido (m³)", pr["vino_m3"] - pr.get("vino_a_vinagre_m3", 0)),
                ("Vino a vinagre (m³)", pr.get("vino_a_vinagre_m3", 0)), ("Jugo de cáscara a vinagre", pr.get("jugo_cascara_vinagre_t", 0)),
-               ("Jugo de hojas a vinagre", pr.get("jugo_hojas_vinagre_t", 0)), ("Vinagre al 5 % (m³)", pr.get("vinagre_m3", 0)),
+               ("Jugo de hojas a vinagre", pr.get("jugo_hojas_vinagre_t", 0)), ("Panela añadida", pr.get("azucar_kg", 0) / 1000), ("Vinagre al 5 % (m³)", pr.get("vinagre_m3", 0)),
                ("Torta de cáscara al secador", pr.get("torta_t", 0)), ("Harina", pr["harina_t"] + pr.get("harina_lias_t", 0)),
                ("Corona quemada", pr.get("corona_caldera_t", 0)), ("Pulpa de hojas quemada", pr.get("pulpa_hojas_caldera_t", 0)),
                ("Etanol hidratado (L)", pr.get("etanol_L", 0))]

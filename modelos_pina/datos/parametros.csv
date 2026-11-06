@@ -120,3 +120,18 @@ kin_Yxs_xil,cinetica,0.162,,,,,,L,Krishnan et al. 1999 (ejemplo 8.1),
 t_proc_jugo_cascara,cinetica,12.64,12.64,12.64,32.5,,h,L/modelo,"cinetica_jugos.py: Krishnan 1999 calibrado con 12,5 h del jugo de pulpa (Murcia Palacios 2013) + 2,5 h de descarga","v9 suponía 32,5 h"
 t_proc_jugo_hojas,cinetica,14.5,14.5,14.5,27.08,,h,L,"Chen et al. 2020: 12 h a 35 °C con K. marxianus + 2,5 h de descarga",el modelo de Krishnan da 27.1 h
 inoculo_g_L,cinetica,0.5,0.25,0.5,1.0,,g/L,S,≈ 10⁷ células/mL,
+precio_panela_kg,precios,3500,2500,3500,5000,PERT,COP/kg,S,precio mayorista de panela en Colombia,v11: azúcar añadido al jugo antes de fermentar; validar con cotización local
+azucar_fermentable_panela,vinagre,0.85,0.80,0.85,0.90,,g/g,S,sacarosa más azúcares reductores de la panela,v11
+rend_etanol_azucar_anadido,vinagre,0.42,0.36,0.42,0.48,PERT,g/g,S,entre Seguí y Fito (2018: 0.36 en jugo de cáscara) y el 94 % del teórico,v11
+azucar_max_jugo,vinagre,0.15,0.10,0.15,0.20,,t/m³,L,"Tanamool et al. (2020), citado por Ebrahimi (2026, tabla 12.1): 100–200 g/L de sacarosa en jugo de cáscara de piña",v11: tope de azúcar añadido por m³ de jugo
+demanda_vinagre_m3,vinagre,3000,1500,3000,6000,discreta,m³/año,S,sin estudio de mercado del vinagre a granel,v11: tope de ventas de vinagre al 5 %; barrido en E8
+ef_panela,acv,0.6,0.3,0.6,1.0,,kg CO2e/kg,S,orden de magnitud para panela,v11
+y_xantana_pina,hub,0.083,0.083,0.083,0.6,,g/g azúcar,L,"Rashidi et al. (2024), citado por Iakovchenko (2026, tabla 13.1): 5,0 g/L de xantana con residuo líquido de piña de 60 g/L de azúcar; máximo = glucosa pura (SuperPro)",v11: reemplaza y_xantana para el jugo de piña
+frac_efluente,acv,0.9,,,,,fracción del agua de planta,S,,v11
+dqo_efluente_kg_m3,acv,3.0,1.5,3.0,6.0,,kg DQO/m³,S,efluente de lavado y de la línea de vinagre sin medición,v11
+remocion_dqo_ec,acv,0.90,,,,,fracción,L,"Yılmaz et al. (2018), citado por Ebrahimi (2026): electrocoagulación con electrodos de aluminio",v11
+remocion_dqo_humedal,acv,0.70,0.60,0.70,0.85,,fracción,L,"Justin et al. (2009), citado por Ebrahimi (2026): humedal construido híbrido",v11
+kwh_ec_kg_dqo,acv,1.5,,,,,kWh/kg DQO removida,S,,v11
+bo_ch4_dqo,acv,0.25,,,,,kg CH4/kg DQO,L,"IPCC (2006), vol. 5, cap. 6",v11
+mcf_humedal,acv,0.1,,,,,fracción,L,"IPCC (2014), suplemento de humedales: flujo subsuperficial horizontal",v11
+costo_ptar_m3,precios,2500,1500,2500,4000,,COP/m³,S,electrocoagulación y humedal construido,v11

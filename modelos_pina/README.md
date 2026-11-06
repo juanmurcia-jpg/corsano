@@ -23,19 +23,20 @@ Corsano, Montagna, Iribarren y Aguirre, adaptados a la tesis *Biorrefinería de 
 | `anual_continuo.py` | Maravelias (2021), cap. 7.3, 8.2, 9 y 10 | Programa anual en tiempo continuo con estacionalidad mensual: reparto de prensa, cambios de modo, inventarios |
 | `dimensionamiento.py` | Grossmann (2021), cap. 7, 10 y 14; Maravelias (2021); Moresi (1989b); Morata (2022); Quesada Salas (2013); Emde (2017); Bekatorou (2020); Seguí y Fito (2018); Campos et al. (2020) | Dimensionamiento óptimo de equipos acoplado al programa anual, con superestructura del mosto (prensa o decantadora; MF, flotación o centrífuga; MF de lías; HTST, SO₂ o UHPH), lías y retenidos a harina y rutas de vinagre (vino desviado y jugo de cáscara, acetificador Frings), caldera de corona (v8); pretratamiento de la cáscara con cal y bromelaína del jugo de cáscara por precipitación o UF, con rendimientos de cáscara medidos (v9); barrido de precios vino–vinagre; tamaños de catálogo, almacén aséptico, tercer turno; barrido por escala y versión estocástica |
 | `tea_dimensionado.py` | Burk (TEA de asaí y coco) | TEA completo con los tamaños óptimos y la producción del programa anual: referencia vs óptimo, con y sin bromelaína, regla por escala; libros Excel verificados |
-| `figuras.py`, `figuras_v2.py`, `figuras_v3.py`, `figuras_v4.py`, `gen_informe_v2.py` | — | Figuras 1-45 (incl. Gantt anual, de bodega y del diseño óptimo, TEA dimensionado) e informe HTML (v10) |
+| `figuras.py`, `figuras_v2.py`, `figuras_v3.py`, `figuras_v4.py`, `gen_informe_v2.py` | — | Figuras 1-46 (incl. Gantt anual, de bodega y del diseño óptimo, TEA dimensionado) e informe HTML (v11) |
 | `superestructura_dibujo.py`, `balance_dibujo.py`, `balance_energia_dibujo.py`, `pfd_dibujo.py`, `layout_dibujo.py`, `gantt_dibujo.py` | — | Ilustraciones a mano alzada (figs. 33–38): superestructura, balances de masa y de energía, diagrama de flujo del proceso, layout de la planta y diagrama de Gantt |
 | `pulido_v9.py`, `comparativo_v8_v9.py` | Seguí y Fito (2018); Campos et al. (2020) | Pulido de soluciones con tamaños fijos (caldera, cal y enzima) y comparación v8–v9: descomposición del margen, variantes, precio de equilibrio de la bromelaína, Fig. 39 |
 | `datos.py`, `datos/parametros.csv` | Bertran, Tula y Gani (2022); Heinzle et al. (2006) | Registro único de parámetros (valor, rango, distribución, etiqueta [T]/[C]/[L]/[S], fuente); `python datos.py check` compara con las constantes del código |
 | `cinetica_jugos.py` | Krishnan et al. (1999); Murcia Palacios (2013); Seguí y Fito (2018); Chen et al. (2020) | Cinética glucosa–xilosa de los jugos de cáscara y de hojas, calibrada; tiempo de proceso de la bodega de jugos (Fig. 41) |
 | `localizacion.py` | Bertran et al. (2022, sec. 5.1); Liao et al. (2026) | MILP estilizado de localización: planta central o depósitos de extracción para las hojas; costo de acopio (Fig. 42) |
 | `pulido_v10.py`, `comparativo_v9_v10.py` | — | Pulido v10 con tamaños vecinos y comparación v9–v10 (Fig. 45) |
+| `pulido_v11.py`, `comparativo_v10_v11.py` | Ebrahimi (2026); Iakovchenko (2026); Ahamed y Li (2026) | v11: panela añadida a los jugos, tope de demanda de vinagre (E8), xantana con residuo de piña, efluentes; pulido y comparación v10–v11 (Fig. 46). Los resultados y figuras de la v10 quedan en `results/v10/` y `figs/v10/` |
 | `acv.py` | Heinzle et al. (2006); IPCC AR6 | ACV de la cuna a la puerta: GWP100, energía fósil, agua, MP evitado, línea base sin planta, expansión del sistema, asignación económica (Fig. 40) |
 | `social.py` | Heinzle et al. (2006, cap. 4.4) | Empleos, pagos a productores y valor que queda en el territorio |
 | `multiobjetivo.py` | Bertran et al. (2022); Liao et al. (2026) | Frente de Pareto margen–GWP por ε-restricción (Fig. 43) |
 | `puntos_calientes.py` | Bertran et al. (2022), etapa 3 | Puntos calientes por sección y objetivos de mejora (Fig. 44) |
 | `superpro_paquete.py` | Foo (2023), caps. 10–11 | Paquete de verificación en SuperPro Designer (`superpro/`): procedimientos, corrientes, indicadores con tolerancia |
-| `html2blocks.py`, `make_docx.js` | — | Conversión del informe HTML a Word (`Informe_Corsano_Moresi_TEA_pina_v10.docx`) |
+| `html2blocks.py`, `make_docx.js` | — | Conversión del informe HTML a Word (`Informe_Corsano_Moresi_TEA_pina_v11.docx`) |
 | `params.py` | — | Base de diseño con la procedencia de cada parámetro: [T] tesis, [C] Corsano, [L] literatura, [S] supuesto |
 
 ## Reproducir
@@ -56,16 +57,16 @@ python figuras_v2.py
 python estocastico.py && python anual_continuo.py   # ~10 min (SCIP)
 python datos.py check                               # v10: registro de parámetros frente a las constantes del código
 python cinetica_jugos.py && python localizacion.py  # v10: tiempos de la bodega de jugos y costo de acopio de hojas
-python dimensionamiento.py E1 E2 E3 E4 E5 E6 E7    # ~3 h en serie; en paralelo: DIM_OUT=archivo python dimensionamiento.py E2 (y fusionar)
-python pulido_v10.py                                # pulido con tamaños vecinos (acepta grupos: E1 E2 ...)
+python dimensionamiento.py E1 E2 E3 E4 E5 E6 E7 E8 # ~3 h en serie; en paralelo: DIM_OUT=archivo python dimensionamiento.py E2 (y fusionar)
+python pulido_v11.py                                # pulido con tamaños vecinos (acepta grupos: E1 E2 ...)
 python tea_dimensionado.py                          # TEA con tamaños óptimos + libros Excel
 python acv.py && python social.py && python puntos_calientes.py && python superpro_paquete.py
 python multiobjetivo.py                             # frente de Pareto margen–GWP (~40 min)
-python comparativo_v9_v10.py decomp && python comparativo_v9_v10.py compare   # descomposición v9 → v10 y Fig. 45
+python comparativo_v10_v11.py decomp && python comparativo_v10_v11.py compare # descomposición v10 → v11 y Fig. 46 (lee results/v10/)
 python figuras_v3.py && python figuras_v4.py
 for f in superestructura balance balance_energia pfd layout gantt; do NODE_PATH=$(npm root -g) python ${f}_dibujo.py; done
 python gen_informe_v2.py
-python html2blocks.py informe.html blocks.json && node make_docx.js blocks.json Informe_Corsano_Moresi_TEA_pina_v10.docx
+python html2blocks.py informe.html blocks.json && node make_docx.js blocks.json Informe_Corsano_Moresi_TEA_pina_v11.docx
 ```
 
 ## Advertencia sobre los parámetros

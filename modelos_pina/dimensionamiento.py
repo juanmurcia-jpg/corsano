@@ -186,7 +186,7 @@ KWH_LEAF = dict(ext=DT.val("elec_extraccion_hojas"), etoh=DT.val("elec_etanol"),
 HUB = {   # ácido cítrico y goma xantana a partir del jugo de cáscara (ejemplos de SuperPro)
     "Ácido cítrico": dict(y=DT.val("y_citrico"), tci=DT.val("tci_citrico_ref"), cap=DT.val("cap_citrico_ref"), vc=DT.val("vc_citrico") * DT.val("TRM"),
                           price=DT.val("precio_citrico")),
-    "Xantana": dict(y=DT.val("y_xantana"), tci=DT.val("tci_xantana_ref"), cap=DT.val("cap_xantana_ref"), vc=DT.val("vc_xantana") * DT.val("TRM"),
+    "Xantana": dict(y=DT.val("y_xantana_pina"), tci=DT.val("tci_xantana_ref"), cap=DT.val("cap_xantana_ref"), vc=DT.val("vc_xantana") * DT.val("TRM"),
                     price=DT.val("precio_xantana")),
 }
 # ---- v10: coeficientes de electricidad (kWh) y de GWP (kg CO2e) por unidad de flujo, para el balance y el ε-restricción
@@ -204,6 +204,13 @@ EF_FRUIT_T = DT.val("dist_fruta_km") * DT.val("ef_transporte")                  
 EF_CHEM = dict(dap=0.2 * DT.val("ef_dap"), so2=0.1 * DT.val("ef_metabisulfito"), yeast=0.2 * DT.val("ef_levadura"),
                lime=1.0 * DT.val("ef_cal"), pect=DT.val("ef_enzima") * _V["consumables"]["pectinasa_kg"] / _B["pulp_t"])
 BLEND = True                                                                # v10: restricción de mezcla del vinagre (solo diluir)
+# ---- v11: azúcar (panela) añadido a los jugos antes de fermentar (Ebrahimi 2026, sec. 12.2.1; Tanamool et al. 2020) y demanda de vinagre
+AZ_PRICE = DT.val("precio_panela_kg")                                       # COP/kg de panela
+A_AZ = 1000 * DT.val("azucar_fermentable_panela") * DT.val("rend_etanol_azucar_anadido") * 60 / 46 * ACET_YIELD   # kg ácido / t de panela
+AZ_MAX = DT.val("azucar_max_jugo")                                          # t de panela por m³ de jugo (100–200 g/L en Tanamool et al. 2020)
+EF_AZ = DT.val("ef_panela")                                                 # kg CO2e / kg de panela [S]
+SUGAR = True                                                                # v11: opción de azúcar añadido
+VIN_DEMAND = DT.val("demanda_vinagre_m3")                                   # v11: m³/año de vinagre al 5 % que absorbe el mercado [S]; None = sin tope
 NO_LEAVES = {"Extractora hojas": ["no"]}
 NO_AD = {"Digestor": ["no"], "Motor biogás": ["no"]}
 NO_ETOH = {"Bodega etanol": ["no"], "Destilación": ["no"]}
@@ -425,6 +432,7 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
         hh, hx, hje, hjv, hjd, hjr, hpb = nv(), nv(), nv(), nv(), nv(), nv(), nv()   # v10: hojas acopiadas y extraídas; jugo a etanol, vinagre,
         et, eb, eu, hbio, hbu = nv(), nv(), nv(), nv(), nv()                       #      digestor o campo; pulpa a caldera; etanol (kg); electricidad
         pjc, pjx = nv(), nv()                                                       #      y calor del biogás; jugo de cáscara a ácido cítrico y xantana
+        az = nv()                                                                   # v11: panela añadida a los jugos que van al vinagre (t)
         Edem, Hdem, G = {}, {}, {}
         compk = {mt: m.addVar(lb=0) for mt in MT}                               # corazón sin procesar a compostaje
         st = list(chi) + ["mosto"]
@@ -471,7 +479,7 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
             m.addCons(wv[mt] <= WINE_PM * bod[mt])
             XE[mt] = opt_flows("Enzima cáscara", mt, True)
             m.addCons(quicksum(XE[mt].values()) <= pj[mt])
-            m.addCons(acid[mt] == A_WINE * wv[mt] + A_PJ * pj[mt] + A_LJ * hjv[mt]
+            m.addCons(acid[mt] == A_WINE * wv[mt] + A_PJ * pj[mt] + A_LJ * hjv[mt] + A_AZ * az[mt]
                       + quicksum(A_PJ * ((1 + ENZ_GAIN) * (1 - ENZ_TECH[OE[k]["tech"]]["sl"]) - 1) * XE[mt][k] for k in XE[mt] if k > 0))
             m.addCons(acid[mt] <= cap_expr("Acetificador", mt, False))
             # v10: mezcla del vinagre. El acetificador solo diluye: el vinagre al 5 % (acid/VIN_ACID m³) no puede tener menos volumen que el
@@ -479,6 +487,8 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
             # restricción el jugo de hojas se vendería como vinagre al 5 % sin concentrarlo.
             if BLEND:
                 m.addCons(wv[mt] + pj[mt] / cp.RHO_JUICE + hjv[mt] / 1.02 <= acid[mt] / VIN_ACID)
+            # v11: la panela solo se añade a los jugos de cáscara y de hojas, con el tope de concentración de Tanamool et al. (2020)
+            m.addCons(az[mt] <= (AZ_MAX if SUGAR else 0.0) * (pj[mt] / cp.RHO_JUICE + hjv[mt] / 1.02))
             # ---- v10: hojas → extractora → jugo (etanol, vinagre, digestor o campo) + pulpa (caldera o campo)
             m.addCons(hh[mt] <= rate_h[mo_] * d[mt])
             m.addCons(hx[mt] <= cap_expr("Extractora hojas", mt, True))
@@ -525,7 +535,8 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
                      + EF_LEAK * CH4_T * hjd[mt] + EF_ACOPIO * hh[mt] + EF_FRUIT_T * fe[mt]
                      + EF_CHEM["dap"] * mfv[mt] + EF_CHEM["yeast"] * (bod[mt] + pj[mt] + hjv[mt] + hje[mt]) + EF_CHEM["pect"] * P["pulpa", mt]
                      + EF_CHEM["so2"] * quicksum(SB[mt][k] for k in SB[mt] if OS[k]["lab"].startswith("SO"))
-                     + EF_CHEM["lime"] * quicksum(Pco[k, mt] for k in range(len(OPT)) if OPT[k]["lab"] != "agua"))
+                     + EF_CHEM["lime"] * quicksum(Pco[k, mt] for k in range(len(OPT)) if OPT[k]["lab"] != "agua")
+                     + EF_AZ * 1000 * az[mt])
             Pk = (P["corazon", mt] + (Pd["corazon", mt] if "corazon" in yded else 0)) if with_bromelain else 0
             bal = {
                 "fruta": rate_in[mo_] * d[mt] - fe[mt] - loss[mt],
@@ -552,6 +563,8 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
             m.addCons(quicksum(eu[mo_, t_] for t_ in range(K)) <= quicksum(Edem[mo_, t_] for t_ in range(K)) + aer)
             for t_ in range(K):
                 G[mo_, t_] = G[mo_, t_] + EF_KWH * aer / K
+        if VIN_DEMAND is not None:   # v11: el mercado absorbe a lo sumo VIN_DEMAND m³/año de vinagre al 5 %
+            m.addCons(quicksum(acid.values()) / VIN_ACID <= VIN_DEMAND)
         gwp_s = quicksum(G.values())
         gwp_total = gwp_total + sc["p"] * gwp_s
         unused = FR["corazon"] * (0 if with_bromelain else 1) + B1["crown_t"]
@@ -574,7 +587,7 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
                            # v10: hojas, etanol + levadura, biogás, pulpa a caldera y productos del hub
                            - ACOPIO_VC * hh[mt] - E_COP * (KWH_LEAF["ext"] * hx[mt] + KWH_LEAF["etoh"] * hje[mt] + KWH_LEAF["ad"] * hjd[mt] + KWH_LEAF["pulp"] * hpb[mt])
                            + (C["vendido"] * (ETOH_PRICE * L_PER_KG * E_LJ + YEAST_PRICE * YEAST_LJ) - ETOH_VC) * hje[mt]
-                           - PJ_VC * hjv[mt]
+                           - PJ_VC * hjv[mt] - AZ_PRICE * 1000 * az[mt]
                            - HEAT_COP * (Q_DEST * et[mt] + Q_AD * hjd[mt]) + HEAT_COP * hbu[mt]
                            + E_COP * eu[mt] + VAL_EXC * (eb[mt] - eu[mt]) - BIO_OM * eb[mt]
                            + quicksum((C["vendido"] * HUB[pr]["price"] - HUB[pr]["vc"]) * PJ_SUGAR * HUB[pr]["y"] * var[mt] - 150.0 * 1000 * var[mt]
@@ -585,7 +598,7 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
                               asp=asp, loss=loss, comp=comp, I=I, contrib=contrib, Hs=Hs, XC=XC, SB=SB, ml=ml, ld=ld,
                               ldry=ldry, rdry=rdry, rd=rd, pj=pj, wv=wv, acid=acid, hb=hb, cr=cr, Pco=Pco, XE=XE,
                               hh=hh, hx=hx, hje=hje, hjv=hjv, hjd=hjd, hjr=hjr, hpb=hpb, et=et, eb=eb, eu=eu, hbio=hbio, hbu=hbu,
-                              pjc=pjc, pjx=pjx, Edem=Edem, Hdem=Hdem, G=G, gwp=gwp_s))
+                              pjc=pjc, pjx=pjx, az=az, Edem=Edem, Hdem=Hdem, G=G, gwp=gwp_s))
     if gwp_max is not None:                                                    # v10: ε-restricción sobre el GWP esperado (kg CO2e/año)
         m.addCons(gwp_total <= gwp_max)
     if objective == "gwp":
@@ -622,7 +635,7 @@ def extract(m, V, with_bromelain):
                              enz=sum(v(x_) for k, x_ in S["XE"][mt].items() if k > 0),
                              hh=v(S["hh"][mt]), hx=v(S["hx"][mt]), hje=v(S["hje"][mt]), hjv=v(S["hjv"][mt]), hjd=v(S["hjd"][mt]), hjr=v(S["hjr"][mt]),
                              hpb=v(S["hpb"][mt]), et=v(S["et"][mt]), eb=v(S["eb"][mt]), eu=v(S["eu"][mt]), hbu=v(S["hbu"][mt]),
-                             pjc=v(S["pjc"][mt]), pjx=v(S["pjx"][mt]), edem=v(S["Edem"][mt]), hdem=v(S["Hdem"][mt]), gwp=v(S["G"][mt]),
+                             pjc=v(S["pjc"][mt]), pjx=v(S["pjx"][mt]), az=v(S["az"][mt]), edem=v(S["Edem"][mt]), hdem=v(S["Hdem"][mt]), gwp=v(S["G"][mt]),
                              loss=v(S["loss"][mt]), comp=v(S["comp"][mt]), I_mosto=v(S["I"]["mosto", V["MT"].index(mt) + 1])))
             T0 += dur
         util = {}
@@ -664,7 +677,8 @@ def extract(m, V, with_bromelain):
                     jugo_cascara_citrico_t=sum(r["pjc"] for r in rows), jugo_cascara_xantana_t=sum(r["pjx"] for r in rows),
                     citrico_kg=sum(r["pjc"] for r in rows) * PJ_SUGAR * HUB["Ácido cítrico"]["y"], xantana_kg=sum(r["pjx"] for r in rows) * PJ_SUGAR * HUB["Xantana"]["y"],
                     elec_demanda_kWh=sum(r["edem"] for r in rows), calor_demanda_MJ=sum(r["hdem"] for r in rows),
-                    calor_glp_MJ=sum(r["hdem"] - r["hb"] - r["hbu"] for r in rows), gwp_kg=sum(r["gwp"] for r in rows))
+                    calor_glp_MJ=sum(r["hdem"] - r["hb"] - r["hbu"] for r in rows), gwp_kg=sum(r["gwp"] for r in rows),
+                    azucar_kg=sum(r["az"] for r in rows) * 1000)
         out["scen"].append(dict(sup=S["sc"]["sup"], p=S["sc"]["p"], supply=S["supply"], contrib=v(S["contrib"]) / 1e6, periods=rows,
                                 util=util, loss=sum(r["loss"] for r in rows), loss_month=[sum(r["loss"] for r in rows if r["month"] == mo_) for mo_ in range(12)],
                                 supply_month=(S["supply"] * pm.SEASON / 12.0).tolist(), changeovers=sum(r["W"] for r in rows), products=prod,
@@ -704,11 +718,11 @@ def brief(r):
 
 
 if __name__ == "__main__":
-    which = sys.argv[1:] or ["E1", "E2", "E3", "E4", "E5", "E6", "E7"]
+    which = sys.argv[1:] or ["E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8"]
     path = os.environ.get("DIM_OUT", f"{RES}/dimensionamiento.json")      # corridas en paralelo, cada una con su archivo
     out = json.load(open(path)) if os.path.exists(path) else {}
     save = lambda: json.dump(out, open(path, "w"), default=float)
-    _H = json.load(open(f"{RES}/dimensionamiento_v9.json")) if os.path.exists(f"{RES}/dimensionamiento_v9.json") else {}
+    _H = json.load(open(f"{RES}/v10/dimensionamiento.json")) if os.path.exists(f"{RES}/v10/dimensionamiento.json") else {}   # v11: arranque desde la v10
     NEW10 = ("Extractora hojas", "Bodega etanol", "Destilación", "Digestor", "Motor biogás", "Ácido cítrico", "Xantana")
     def leaves_hint(f):   # v10: arranque con jugo de hojas al vinagre, mezclado con el vino (a 1×: +1 590 MM COP/año sobre el diseño v9)
         pick = lambda opts, need: next((o for o in opts if o >= need), opts[-1])
@@ -722,17 +736,17 @@ if __name__ == "__main__":
             r0 = _H.get("E1|Óptimo económico", {})
             if not r0.get("sizes"):
                 return None
-        hnt = dict(r0["sizes"], **{u: "no" for u in NEW10}, turno3=r0.get("turno3", 0))
-        if leaves:
-            hnt.update(leaves_hint(f))
+        hnt = dict(r0["sizes"], turno3=r0.get("turno3", 0))      # v11: los diseños v10 ya traen las hojas donde convienen
+        if not leaves:
+            hnt.update({u: "no" for u in NEW10})
         return hnt
     print("Lang eq.", round(LANG, 3), "AF", round(AF, 4), "turno 3 MM COP/año", round(shift_cost() / 1e6, 1),
           {k: round(v_) for k, v_ in margins().items()}, "hojas t/año", round(HOJAS_SUPPLY), "acopio COP/t", ACOPIO_VC, flush=True)
     if "E1" in which:   # óptimo vs referencia TRL-9
-        v9 = _H.get("E1|Óptimo económico")
-        if v9:   # v10: el diseño óptimo de la v9 evaluado con los parámetros de la v10 (descomposición v9 → v10)
-            r = solve(fix=dict(v9["sizes"], **{u: "no" for u in NEW10}, turno3=v9["turno3"]))
-            out["E1|Diseño v9 con parámetros v10"] = r; save(); print("E1 Diseño v9 con parámetros v10", brief(r), flush=True)
+        v10 = _H.get("E1|Óptimo económico")
+        if v10:   # v11: el diseño óptimo de la v10 evaluado con los parámetros de la v11 (descomposición v10 → v11)
+            r = solve(fix=dict(v10["sizes"], turno3=v10["turno3"]))
+            out["E1|Diseño v10 con parámetros v11"] = r; save(); print("E1 Diseño v10 con parámetros v11", brief(r), flush=True)
         for lab, kw, lv in (("Referencia TRL-9 (planta_trl9, 6 200 t)", dict(fix=REFERENCE), False),
                             ("Referencia con prensa única de 3 t/h compartida", dict(fix=dict(REFERENCE, **{"Prensa": "3 t/h", "Prensa cáscara": "no"})), False),
                             ("Óptimo con la topología anterior (prensa, MF de mosto, HTST)", dict(allow=ALLOW_OLD), False),
@@ -742,13 +756,17 @@ if __name__ == "__main__":
                             ("Óptimo sin caldera de corona", dict(allow=NO_BOILER), True),
                             ("Óptimo sin opciones v10 (sin hojas ni hub)", dict(allow=NO_V10), False),
                             ("Óptimo sin etanol de hojas", dict(allow=NO_ETOH), False),
-                            ("Óptimo sin digestor", dict(allow=NO_AD), True)):
+                            ("Óptimo sin digestor", dict(allow=NO_AD), True),
+                            ("Óptimo sin azúcar añadido", dict(_g=dict(SUGAR=False)), True),
+                            ("Óptimo sin tope de demanda de vinagre", dict(_g=dict(VIN_DEMAND=None)), True)):
             h_ = hint(f"E1|{lab}", leaves=lv)
             if h_ and "allow" in kw:   # el arranque debe respetar las restricciones del caso
                 for u, pref in kw["allow"].items():
                     if not any(h_.get(u, "").startswith(p_) for p_ in pref):
                         h_[u] = pref[0] if pref[0] != "MF" else "MF 20 m²"
+            g_ = kw.pop("_g", {}); old_ = {k_: globals()[k_] for k_ in g_}; globals().update(g_)   # v11: casos que cambian una opción global
             r = solve(hint=h_ if "fix" not in kw else None, **kw)
+            globals().update(old_)
             out[f"E1|{lab}"] = r; save(); print("E1", lab, brief(r), flush=True)
     if "E2" in which:   # regla de dimensionamiento: tamaños óptimos según la oferta (0,5× a la base de la tesis)
         for f in (0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 21856 / SUPPLY):
@@ -790,4 +808,13 @@ if __name__ == "__main__":
             HOJAS_SUPPLY, ACOPIO_VC, ETOH_PRICE = ch.get("HS", base["HS"]), ch.get("AV", base["AV"]), ch.get("EP", base["EP"])
             r = solve(time_limit=180, hint=hint("E1|Óptimo económico")); out[f"E7|{lab}"] = r; save(); print("E7", lab, brief(r), flush=True)
         HOJAS_SUPPLY, ACOPIO_VC, ETOH_PRICE = base["HS"], base["AV"], base["EP"]
+    if "E8" in which:   # v11: demanda de vinagre (m³/año) y precio de la panela
+        base = dict(D=VIN_DEMAND, AZ=AZ_PRICE)
+        for lab, ch in (("demanda 1 500 m³/año", dict(D=1500.0)), ("demanda 6 000 m³/año", dict(D=6000.0)),
+                        ("demanda 12 000 m³/año", dict(D=12000.0)), ("panela a 5 000 COP/kg", dict(AZ=5000.0)),
+                        ("demanda 6 000 m³/año sin azúcar", dict(D=6000.0, S=False))):
+            VIN_DEMAND, AZ_PRICE, SUGAR = ch.get("D", base["D"]), ch.get("AZ", base["AZ"]), ch.get("S", True)
+            r = solve(time_limit=180, hint=hint("E1|Óptimo económico")); out[f"E8|{lab}"] = r; save()
+            print("E8", lab, brief(r), {k: round(v_) for k, v_ in r["scen"][0]["products"].items() if k in ("vino_m3", "vino_a_vinagre_m3", "vinagre_m3", "azucar_kg", "hojas_t")}, flush=True)
+        VIN_DEMAND, AZ_PRICE, SUGAR = base["D"], base["AZ"], True
     save()

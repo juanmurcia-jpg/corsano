@@ -1,0 +1,49 @@
+{
+ "hojas_t": 32468.75,
+ "sitio": "B: cabecera con v\u00eda",
+ "depositos": [],
+ "costo_total": 1149393750.0,
+ "costo_t": 35400.0,
+ "alternativas": {
+  "Central en A, sin dep\u00f3sitos": 1524407812.5,
+  "Central en B, sin dep\u00f3sitos": 1149393750.0,
+  "A con dep\u00f3sitos en las 4 zonas": 2899130512.7545104,
+  "B con dep\u00f3sitos en las 4 zonas": 2614119825.2545104
+ },
+ "dist_fruta_km": 34.0,
+ "deposito_anual": 405923268.8136276,
+ "supuestos": {
+  "zonas": {
+   "Zona 1 (ribera norte)": [
+    0.4,
+    15,
+    40
+   ],
+   "Zona 2 (ribera centro)": [
+    0.3,
+    35,
+    20
+   ],
+   "Zona 3 (afluentes)": [
+    0.2,
+    55,
+    30
+   ],
+   "Zona 4 (interior)": [
+    0.1,
+    80,
+    60
+   ]
+  },
+  "fletes": {
+   "rio": 900.0,
+   "via": 600.0
+  },
+  "corte": 15000.0
+ },
+ "sensibilidad": {
+  "0.10": 35400.0,
+  "0.25": 35400.0,
+  "0.50": 35400.0
+ }
+}

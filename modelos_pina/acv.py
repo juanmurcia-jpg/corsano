@@ -24,9 +24,9 @@ import dimensionamiento as dm
 import capacidad as cp
 
 RES = dm.RES
-CASES = [("Referencia TRL-9", "E1|Referencia TRL-9 (planta_trl9, 6 200 t)"), ("Diseño v9", "E1|Diseño v9 con parámetros v10"),
+CASES = [("Referencia TRL-9", "E1|Referencia TRL-9 (planta_trl9, 6 200 t)"), ("Diseño v10", "E1|Diseño v10 con parámetros v11"),
          ("Óptimo sin opciones v10", "E1|Óptimo sin opciones v10 (sin hojas ni hub)"), ("Óptimo sin caldera", "E1|Óptimo sin caldera de corona"),
-         ("Óptimo sin vinagre", "E1|Óptimo sin vinagre"), ("Óptimo v10", "E1|Óptimo económico")]
+         ("Óptimo sin vinagre", "E1|Óptimo sin vinagre"), ("Óptimo sin azúcar", "E1|Óptimo sin azúcar añadido"), ("Óptimo v11", "E1|Óptimo económico")]
 GASOLINA_EF = 2.8 * 0.65          # kg CO2e evitados por L de etanol hidratado (0,65 L de gasolina equivalente) [S]
 
 
@@ -56,11 +56,21 @@ def inventory(r, case=None):
         "Transporte de fruta": dm.EF_FRUIT_T * F,
         "Insumos químicos": (dm.EF_CHEM["dap"] * p.get("mosto_m3", 0.0) + dm.EF_CHEM["so2"] * so2_m3 + dm.EF_CHEM["yeast"] * yeast_base
                              + dm.EF_CHEM["lime"] * lime_t + dm.EF_CHEM["pect"] * pulp_t),
+        "Panela añadida": dm.EF_AZ * p.get("azucar_kg", 0.0),                                  # v11
     }
     fossil = (e_net * 3.6 / D.val("eta_grupo_diesel") + q_glp / D.val("eta_caldera_glp")
               + D.val("diesel_acopio_hojas") * p.get("hojas_t", 0.0)
               + dm.EF_FRUIT_T * F / D.val("ef_diesel") * D.val("pci_diesel"))
     water = next((u["qty_year"] for u in (case or {}).get("utilities", []) if u["name"].startswith("Agua")), None)
+    # v11: efluente tratado con electrocoagulación y humedal construido (Ebrahimi 2026, sec. 12.5.4): electricidad de la
+    # electrocoagulación y CH4 de la DQO que degrada el humedal (IPCC); la DQO que queda se reporta aparte
+    eff = (water or 0.0) * D.val("frac_efluente")
+    dqo = eff * D.val("dqo_efluente_kg_m3")
+    dqo_ec = dqo * D.val("remocion_dqo_ec"); dqo_hum = (dqo - dqo_ec) * D.val("remocion_dqo_humedal")
+    g["Tratamiento de efluentes"] = (dm.EF_KWH * D.val("kwh_ec_kg_dqo") * dqo_ec
+                                     + D.val("bo_ch4_dqo") * D.val("mcf_humedal") * dqo_hum * D.val("gwp_ch4"))
+    fossil += D.val("kwh_ec_kg_dqo") * dqo_ec * 3.6 / D.val("eta_grupo_diesel")
+    effluent = dict(m3=eff, dqo_kg=dqo, dqo_vertida_kg=dqo - dqo_ec - dqo_hum)
     # línea base: fruta que se descompone en campo y hojas acopiadas que se queman o se descomponen
     ms_h = D.val("ms_hojas"); burn = D.val("quema_frac_ms")
     base_fruit = dm.EF_COMP * F
@@ -75,7 +85,7 @@ def inventory(r, case=None):
                 base=dict(fruta=base_fruit, hojas_quema=base_leaf_burn, hojas_descomposicion=base_leaf_decomp), pm_evitado_kg=pm_avoided,
                 credits=credits, net_vs_quema=total - base_fruit - base_leaf_burn, net_vs_descomposicion=total - base_fruit - base_leaf_decomp,
                 net_con_expansion=total - base_fruit - base_leaf_decomp - sum(credits.values()), per_t_fruta=total / F,
-                e_dem_kWh=e_dem, e_bio_kWh=p.get("elec_bio_usada_kWh", 0.0), q_glp_MJ=q_glp)
+                e_dem_kWh=e_dem, e_bio_kWh=p.get("elec_bio_usada_kWh", 0.0), q_glp_MJ=q_glp, efluente=effluent)
 
 
 def allocation(inv, case):
@@ -131,7 +141,7 @@ def figure(out):
     ax[0].set_xticks(x); ax[0].set_xticklabels(labs, rotation=15, ha="right", fontsize=8)
     ax[0].set_ylabel("t CO2e/año"); ax[0].legend(fontsize=7, loc="upper left", ncol=2)
     ax[0].set_title("GWP de proceso por contribución y neto frente a la línea base", fontsize=9)
-    best = out.get("Óptimo v10") or out[labs[-1]]
+    best = out.get("Óptimo v11") or out[labs[-1]]
     al = {k: v for k, v in best["asignacion"].items() if v["kgCO2e_por_unidad"]}
     names = {"vino (L)": "vino (kg CO2e/L)", "vinagre": "vinagre (kg CO2e/L)", "harina": "harina (kg CO2e/kg)", "etanol": "etanol (kg CO2e/L)",
              "levadura": "levadura (kg CO2e/kg)", "jugo": "jugo de cáscara (kg CO2e/kg)", "electricidad_excedente": "excedente eléctrico (kg CO2e/kWh)"}
@@ -141,7 +151,7 @@ def figure(out):
         ax[1].text(al[k]["kgCO2e_por_unidad"] * 1.02, i, f"{al[k]['kgCO2e_por_unidad']:.2f} · {al[k]['fraccion'] * 100:.0f} % del valor", va="center", fontsize=8)
     ax[1].set_yticks(range(len(ks))); ax[1].set_yticklabels([names.get(k, k) for k in ks], fontsize=8); ax[1].invert_yaxis()
     ax[1].set_xlim(0, max(al[k]["kgCO2e_por_unidad"] for k in ks) * 1.6)
-    ax[1].set_title("Huella por producto del óptimo v10 (asignación económica)", fontsize=9)
+    ax[1].set_title("Huella por producto del óptimo v11 (asignación económica)", fontsize=9)
     fig.suptitle("Fig. 40  Análisis de ciclo de vida de la cuna a la puerta (GWP100, IPCC AR6): contribuciones, línea base y huella por producto",
                  fontsize=10, fontweight="bold", x=0.01, ha="left")
     save(fig, "fig40_acv.png")

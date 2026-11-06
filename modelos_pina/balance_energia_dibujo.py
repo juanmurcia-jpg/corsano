@@ -90,7 +90,7 @@ def build():
     e = energy_v7(); E = e["E"]
     S = bd.Sankey()
     sd.text(60, 72, "Balance de energía de la biorrefinería de piña", 58, sd.INK, font="Caveat", weight=700)
-    sd.text(62, 112, f"Diseño óptimo de la versión 10 · Chocó 2022 · {fmt(e['F'])} t/año de fruta. El ancho de cada corriente es "
+    sd.text(62, 112, f"Diseño óptimo de la versión 11 · Chocó 2022 · {fmt(e['F'])} t/año de fruta. El ancho de cada corriente es "
                      "proporcional a la energía (GJ/año); zona no interconectada: la electricidad sale de un grupo electrógeno diésel.", 21, "#5e5a53")
     # nodos: fuentes
     S.node("diesel", 340, 210, "Diésel", "elec", f"{fmt(e['diesel'])} GJ/año", side="left")

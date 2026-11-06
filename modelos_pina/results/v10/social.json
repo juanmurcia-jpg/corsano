@@ -1,0 +1,62 @@
+{
+ "Referencia TRL-9": {
+  "empleos_planta": 11,
+  "empleos_acopio": 0.0,
+  "empleos_total": 11.0,
+  "empleos_por_1000t_fruta": 1.8561931851535645,
+  "pago_fruta": 2370442923.2865562,
+  "pago_acopio_hojas": 0.0,
+  "nomina_local": 615097159.8717251,
+  "compras_locales": 84218014.75913697,
+  "valor_territorio": 3069758097.9174185,
+  "valor_territorio_por_t": 518005.8237658437
+ },
+ "Dise\u00f1o v9": {
+  "empleos_planta": 13,
+  "empleos_acopio": 0.0,
+  "empleos_total": 13.0,
+  "empleos_por_1000t_fruta": 2.1175432130984118,
+  "pago_fruta": 2455675977.630371,
+  "pago_acopio_hojas": 0.0,
+  "nomina_local": 719109005.9418472,
+  "compras_locales": 98631825.6820571,
+  "valor_territorio": 3273416809.2542753,
+  "valor_territorio_por_t": 533200.119082973
+ },
+ "\u00d3ptimo sin opciones v10": {
+  "empleos_planta": 13,
+  "empleos_acopio": 0.0,
+  "empleos_total": 13.0,
+  "empleos_por_1000t_fruta": 2.1175432130984118,
+  "pago_fruta": 2455675977.630371,
+  "pago_acopio_hojas": 0.0,
+  "nomina_local": 719109005.9418472,
+  "compras_locales": 98631825.6820571,
+  "valor_territorio": 3273416809.2542753,
+  "valor_territorio_por_t": 533200.119082973
+ },
+ "\u00d3ptimo sin vinagre": {
+  "empleos_planta": 13,
+  "empleos_acopio": 2.842170943040401e-17,
+  "empleos_total": 13.0,
+  "empleos_por_1000t_fruta": 2.1175432130984118,
+  "pago_fruta": 2455675977.630371,
+  "pago_acopio_hojas": 2.0122570276726037e-09,
+  "nomina_local": 719109005.9418472,
+  "compras_locales": 69171979.70260558,
+  "valor_territorio": 3243956963.274824,
+  "valor_territorio_por_t": 528401.4654743029
+ },
+ "\u00d3ptimo v10": {
+  "empleos_planta": 13,
+  "empleos_acopio": 1.7836818026288868,
+  "empleos_total": 14.783681802628887,
+  "empleos_por_1000t_fruta": 2.408083466597177,
+  "pago_fruta": 2455675977.630371,
+  "pago_acopio_hojas": 126284671.62612519,
+  "nomina_local": 719109005.9418472,
+  "compras_locales": 129093637.45556647,
+  "valor_territorio": 3430163292.65391,
+  "valor_territorio_por_t": 558732.2307829683
+ }
+}

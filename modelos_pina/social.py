@@ -18,9 +18,9 @@ import dimensionamiento as dm
 import tea_burk as tb
 
 RES = dm.RES
-CASES = [("Referencia TRL-9", "E1|Referencia TRL-9 (planta_trl9, 6 200 t)"), ("Diseño v9", "E1|Diseño v9 con parámetros v10"),
+CASES = [("Referencia TRL-9", "E1|Referencia TRL-9 (planta_trl9, 6 200 t)"), ("Diseño v10", "E1|Diseño v10 con parámetros v11"),
          ("Óptimo sin opciones v10", "E1|Óptimo sin opciones v10 (sin hojas ni hub)"), ("Óptimo sin vinagre", "E1|Óptimo sin vinagre"),
-         ("Óptimo v10", "E1|Óptimo económico")]
+         ("Óptimo sin azúcar", "E1|Óptimo sin azúcar añadido"), ("Óptimo v11", "E1|Óptimo económico")]
 
 
 def indicators(r, case):

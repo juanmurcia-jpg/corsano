@@ -334,8 +334,14 @@ if cmpv and d_opt and dim8:
 # ---- v10: sección nueva (registro de parámetros, hojas, cinética, localización, ACV, social, Pareto, puntos calientes, SuperPro)
 import datos as DTm
 RJ = lambda f: R(f) if os.path.exists(os.path.join("results", f)) else None
-cmp10, acvj, socj, parj, pcj, locj, kinj = (RJ(f) for f in ("comparativo_v9_v10.json", "acv.json", "social.json", "pareto.json",
-                                                             "puntos_calientes.json", "localizacion.json", "cinetica_jugos.json"))
+# v11: la sección v10 lee su copia de resultados (results/v10/) y sus figuras (figs/v10/), para no mostrar números de la v11
+V10P = lambda f: ("v10/" + f) if os.path.exists(os.path.join("results", "v10", f)) else f
+cmp10, acvj, socj, parj, pcj, locj, kinj = (RJ(V10P(f)) for f in ("comparativo_v9_v10.json", "acv.json", "social.json", "pareto.json",
+                                                                  "puntos_calientes.json", "localizacion.json", "cinetica_jugos.json"))
+dim_cur, d_opt_cur, tdim_cur = dim, d_opt, tdim
+dim = RJ(V10P("dimensionamiento.json")) or dim
+d_opt = dim.get("E1|Óptimo económico", d_opt)
+tdim = RJ(V10P("tea_dimensionado.json")) or tdim
 dim9 = RJ("dimensionamiento_v9.json") or {}
 v10_html = ""
 if d_opt and cmp10:
@@ -388,32 +394,32 @@ if d_opt and cmp10:
 {table(['Etapa nueva', 'Alternativas', 'Base técnica', 'Supuestos'], v10_opt)}
 <div class="prose"><p><b>Cinética acoplada.</b> El tiempo de proceso de la bodega de jugo de cáscara ya no es un supuesto: sale de la cinética de Krishnan et al. (1999) para glucosa y xilosa, calibrada en tiempo con el dato medido del jugo de pulpa (65,3 g/L de etanol en 12,5 h, Murcia Palacios 2013) y en rendimiento con Seguí y Fito (2018). Para el jugo de hojas se usa el tiempo medido por Chen et al. (2020) con <i>K. marxianus</i>, porque el modelo, de una cepa de <i>S. cerevisiae</i>, fermenta la xilosa mucho más despacio.</p></div>
 {table(['Jugo', 'Tiempo al 95 % del modelo (h)', 'Calibrado (h)', 'Tiempo de proceso usado (h)', 'Antes', 'Rendimiento: modelo → medido'], kin_rows) if kin_rows else ''}
-{fig('fig41_cinetica_jugos.png', 'Cinética de jugos', 'Fig. 41. Cinética de Krishnan et al. (1999) para los jugos de cáscara y de hojas y sensibilidad del tiempo de fermentación al azúcar inicial y al inóculo.') if kinj else ''}
+{fig(('v10/' if os.path.exists('figs/v10/fig41_cinetica_jugos.png') else '') + 'fig41_cinetica_jugos.png', 'Cinética de jugos', 'Fig. 41. Cinética de Krishnan et al. (1999) para los jugos de cáscara y de hojas y sensibilidad del tiempo de fermentación al azúcar inicial y al inóculo.') if kinj else ''}
 <div class="prose"><p><b>Localización estilizada.</b> Un MILP pequeño compara una planta central que recibe hojas frescas con depósitos de extracción en las zonas de cultivo que envían solo el jugo (Bertran et al. 2022, sec. 5.1; Liao et al. 2026). Las cuatro zonas, sus áreas y las distancias son marcadores de posición [S] hasta tener la ubicación de las fincas. Con ellos gana la planta central en el sitio con vía: {n0(locj['costo_t']) if locj else '—'} COP por tonelada de hojas puesta en planta, que es el costo de acopio que usa el dimensionamiento. Los depósitos no se pagan: ahorran solo el 24 % del flete (la pulpa se queda en la zona) y cada uno necesita equipo y un operario por turno.</p></div>
 {table(['Configuración', 'Costo de acopio (COP/t de hojas)'], loc_rows, num_cols=(1,)) if loc_rows else ''}
-{fig('fig42_localizacion.png', 'Localización', 'Fig. 42. Localización estilizada: costo de acopio por configuración y zonas supuestas.') if locj else ''}
+{fig(('v10/' if os.path.exists('figs/v10/fig42_localizacion.png') else '') + 'fig42_localizacion.png', 'Localización', 'Fig. 42. Localización estilizada: costo de acopio por configuración y zonas supuestas.') if locj else ''}
 <div class="prose">V10_RESULTADOS</div>
 {table(['Sensibilidad de las hojas (E7)', 'Margen (MM COP/año)', 'Tamaños', 'Hojas acopiadas (t)', 'Vinagre (m³)'], e7, num_cols=(1, 3, 4)) if e7 else ''}
 <h3>Evaluación ambiental: ciclo de vida de la cuna a la puerta</h3>
 <div class="prose"><p>Unidad funcional: un año de operación (y 1 t de fruta procesada). Inventario desde el balance del dimensionamiento con los mismos coeficientes del MILP; GWP100 de IPCC AR6; electricidad del grupo diésel de la zona no interconectada; caldera de biomasa con CH₄ y N₂O de IPCC 2006; compostaje de las fracciones sin uso. Línea base sin planta: la fruta de rechazo se descompone en campo y las hojas acopiadas se queman (Liao et al. 2026) o se descomponen. La expansión del sistema (etanol por gasolina, excedente eléctrico por diésel) se reporta aparte.</p></div>
 {table(['Caso', 'GWP de proceso (t CO2e/año)', 'kg CO2e por t de fruta', 'Neto frente a descomposición (t)', 'Neto frente a quema de hojas (t)', 'Neto con expansión del sistema (t)', 'Energía fósil (TJ/año)', 'Agua (m³/año)'], acv_rows, num_cols=(1, 2, 3, 4, 5, 6, 7)) if acv_rows else ''}
-{fig('fig40_acv.png', 'ACV', 'Fig. 40. GWP de proceso por contribución, neto frente a la línea base y huella por producto del óptimo v10 (asignación económica).') if acvj else ''}
+{fig(('v10/' if os.path.exists('figs/v10/fig40_acv.png') else '') + 'fig40_acv.png', 'ACV', 'Fig. 40. GWP de proceso por contribución, neto frente a la línea base y huella por producto del óptimo v10 (asignación económica).') if acvj else ''}
 <div class="prose">V10_ACV</div>
 <h3>Indicadores sociales</h3>
 {table(['Caso', 'Empleos en planta', 'Empleos en acopio', 'Empleos por 1 000 t de fruta', 'Pago por fruta (MM COP/año)', 'Pago por acopio de hojas', 'Nómina local', 'Valor que queda en el territorio'], soc_rows, num_cols=(1, 2, 3, 4, 5, 6, 7)) if soc_rows else ''}
 <div class="prose">V10_SOCIAL</div>
 <h3>Frente de Pareto margen–GWP</h3>
-{fig('fig43_pareto.png', 'Pareto', 'Fig. 43. Frente de Pareto margen–GWP por ε-restricción sobre el MILP de dimensionamiento.') if parj else ''}
+{fig(('v10/' if os.path.exists('figs/v10/fig43_pareto.png') else '') + 'fig43_pareto.png', 'Pareto', 'Fig. 43. Frente de Pareto margen–GWP por ε-restricción sobre el MILP de dimensionamiento.') if parj else ''}
 {table(['GWP de proceso (t CO2e/año)', 'Margen (MM COP/año)', 'Diseño'], par_rows, num_cols=(0, 1)) if par_rows else ''}
 <div class="prose">V10_PARETO</div>
 <h3>Etapa 3: puntos calientes y objetivos de mejora</h3>
 {table(['Sección', 'Cargo de capital', 'Electricidad', 'Calor', 'GWP', 'Ingresos', 'Punto caliente en'], pc_rows) if pc_rows else ''}
-{fig('fig44_puntos_calientes.png', 'Puntos calientes', 'Fig. 44. Participación de cada sección en el costo de capital, la energía, el GWP y los ingresos del óptimo v10.') if pcj else ''}
+{fig(('v10/' if os.path.exists('figs/v10/fig44_puntos_calientes.png') else '') + 'fig44_puntos_calientes.png', 'Puntos calientes', 'Fig. 44. Participación de cada sección en el costo de capital, la energía, el GWP y los ingresos del óptimo v10.') if pcj else ''}
 <div class="prose">V10_PC</div>
 <h3>Verificación con SuperPro</h3>
 <div class="prose"><p>SuperPro Designer no corre en el entorno de los modelos. <code>superpro_paquete.py</code> deja en <code>superpro/</code> los procedimientos unitarios con su modo, tamaño, ciclo y especificación (<code>procedimientos.csv</code>), las corrientes anuales que el modelo de SuperPro debe reproducir (<code>corrientes.csv</code>), los indicadores a comparar con su tolerancia (<code>verificacion.csv</code>) y las instrucciones de armado (<code>LEEME.md</code>), siguiendo a Foo (2023, caps. 10 y 11). Con los resultados de SuperPro se llena la columna vacía y se corrigen los coeficientes del registro que se salgan de la tolerancia.</p></div>
 <h3>Análisis comparativo entre las versiones 9 y 10</h3>
-{fig('fig45_comparativo_v9_v10.png', 'Comparación v9 y v10', 'Fig. 45. De la v9 a la v10: cascada del margen, margen según la oferta, VPN de los casos comparables y tornado del óptimo v10.')}
+{fig(('v10/' if os.path.exists('figs/v10/fig45_comparativo_v9_v10.png') else '') + 'fig45_comparativo_v9_v10.png', 'Comparación v9 y v10', 'Fig. 45. De la v9 a la v10: cascada del margen, margen según la oferta, VPN de los casos comparables y tornado del óptimo v10.')}
 {table(['Producto del óptimo (por año)', 'v9', 'v10'], prod10_rows, num_cols=(1, 2))}
 {table(['Caso del TEA', 'VPN v9 (MM COP)', 'VPN v10 (MM COP)', 'MIRR v9', 'MIRR v10', 'P(VPN > 0) v9', 'P(VPN > 0) v10'], tea10_rows, num_cols=(1, 2, 3, 4, 5, 6)) if tea10_rows else ''}
 <div class="prose">V10_LECTURA</div>"""
@@ -525,6 +531,94 @@ if d_opt and cmp10:
     lect10 += "</ul>"
     v10_html = (v10_html.replace("V10_RESULTADOS", r_txt).replace("V10_ACV", acv_txt).replace("V10_SOCIAL", soc_txt)
                 .replace("V10_PARETO", par_txt).replace("V10_PC", pc_txt).replace("V10_LECTURA", lect10))
+    v10_html = v10_html  # (fin de la sección v10)
+dim, d_opt, tdim = dim_cur, d_opt_cur, tdim_cur
+# ---- v11: panela añadida, demanda de vinagre, xantana con residuo de piña y efluentes (Ebrahimi 2026; Ahamed y Li 2026; Iakovchenko 2026)
+cmp11 = RJ("comparativo_v10_v11.json")
+acv11, soc11, par11, pc11 = (RJ(f) for f in ("acv.json", "social.json", "pareto.json", "puntos_calientes.json"))
+D10s = RJ("v10/dimensionamiento.json") or {}
+T10s = RJ("v10/tea_dimensionado.json") or {}
+v11_html = ""
+if d_opt and cmp11:
+    reg11 = [r_ for r_ in DTm.registro().values() if r_.get("nota", "").startswith("v11")]
+    par_rows11 = [[E(r_["clave"]), E(r_["valor"]) + " " + E(r_["unidad"]),
+                   (E(r_["minimo"]) + "–" + E(r_["maximo"])) if r_.get("minimo") and r_.get("maximo") else "—", E(r_["etiqueta"]), E(r_["fuente"])] for r_ in reg11]
+    p11 = d_opt["scen"][0]["products"]; s11 = d_opt["sizes"]
+    o10 = D10s.get("E1|Óptimo económico", {}); p10 = o10.get("scen", [{}])[0].get("products", {})
+    g11 = lambda k: dim.get(k, {}).get("obj")
+    dec11 = cmp11.get("decomp", [])
+    e8_rows = [[E(e_["label"]), n0(e_["obj"]), n0(e_["vinagre_m3"]), n0(e_["vino_vendido_m3"]), n0(e_["azucar_t"]), n0(e_["hojas_t"]),
+                E(e_["sizes"].get("Acetificador", "no")), E(e_["sizes"].get("Extractora hojas", "no"))] for e_ in cmp11.get("e8", [])]
+    ex8 = cmp11.get("e8_extra", {})
+    prod11_rows = [[E(x["label"]), n0(x["v10"]), n0(x["v11"])] for x in cmp11.get("prods", [])]
+    tea11_rows = [[E(x["label"]), n0(x["NPV10"] / MM), n0(x["NPV11"] / MM), pct(x["MIRR10"]), pct(x["MIRR11"]), pct(x["P10"], 0), pct(x["P11"], 0)]
+                  for x in cmp11.get("tea", [])]
+    T11 = {x["label"]: x for x in cmp11.get("tea", [])}
+    c11 = (tdim or {}).get("cases", {}).get("A · Óptimo con la superestructura ampliada", {})
+    be11 = c11.get("breakeven_vinegar")
+    tor11 = cmp11.get("tornado11", [])
+    tpan = next((x for x in tor11 if "panela" in x["label"]), None); tvin = next((x for x in tor11 if "vinagre" in x["label"]), None)
+    a11 = (acv11 or {}).get("Óptimo v11"); a10 = (D10s and RJ("v10/acv.json") or {}).get("Óptimo v10")
+    sc11 = (soc11 or {}).get("Óptimo v11"); s10_ = (RJ("v10/social.json") or {}).get("Óptimo v10")
+    v11_html = f"""
+<h3>Versión 11: panela, demanda de vinagre, xantana con residuo de piña y efluentes</h3>
+<div class="prose">
+<p><b>De dónde sale.</b> Tres capítulos de <i>Biological Processes in the Food Industry</i> (Elsevier, 2026). Ebrahimi (cap. 12, vinagre) confirma los datos del acetificador Frings que ya usaba el modelo (94 % del rendimiento teórico, vinagre al 12 % en unas 35 h, ciclos semicontinuos de 24 a 48 h) y trae dos cosas nuevas: el azúcar añadido a los jugos antes de fermentar es práctica común en vinagres de fruta (Tanamool et al. 2020 lo hicieron con jugo de cáscara de piña y 100 a 200 g/L de sacarosa), y el efluente del vinagre se trata con electrocoagulación y humedales construidos. Iakovchenko (cap. 13, xantana) reporta 5,0 g/L de xantana con residuo líquido de piña de 60 g/L de azúcar (Rashidi et al. 2024), unas siete veces menos que el rendimiento con glucosa pura que traía el ejemplo de SuperPro. Ahamed y Li (cap. 10, ácidos orgánicos) es cualitativo y sirve de respaldo a la discusión del hub.</p>
+<p><b>Qué cambia en el modelo.</b> (1) Panela añadida a los jugos de cáscara y de hojas, hasta 150 g/L, con su costo y su huella. (2) Un tope explícito a las ventas de vinagre: en la v10 la restricción de mezcla limitaba el vinagre sin decirlo; con la panela esa restricción deja de atar y hay que nombrar el límite real, que es el mercado. El tope central, {n0(dmod.VIN_DEMAND)} m³/año, es un supuesto [S] hasta tener el estudio de mercado; E8 lo barre. (3) El rendimiento de xantana con jugo de piña. (4) El tratamiento del efluente en el TEA y en el ACV.</p>
+</div>
+{table(['Parámetro nuevo', 'Valor', 'Rango', 'Etiqueta', 'Fuente'], par_rows11) if par_rows11 else ''}
+<div class="prose">V11_RESULTADOS</div>
+{table(['Demanda de vinagre (E8)', 'Margen (MM COP/año)', 'Vinagre (m³)', 'Vino vendido (m³)', 'Panela (t)', 'Hojas (t)', 'Acetificador', 'Extractora'], e8_rows, num_cols=(1, 2, 3, 4, 5)) if e8_rows else ''}
+{fig('fig46_comparativo_v10_v11.png', 'Comparación v10 y v11', 'Fig. 46. De la v10 a la v11: cascada del margen con el diseño v10 fijo y reoptimización, barrido de la demanda de vinagre (E8), productos del óptimo y VPN de los casos comparables.') if os.path.exists('figs/fig46_comparativo_v10_v11.png') else ''}
+{table(['Producto o insumo del óptimo (por año)', 'v10', 'v11'], prod11_rows, num_cols=(1, 2))}
+{table(['Caso del TEA', 'VPN v10 (MM COP)', 'VPN v11 (MM COP)', 'MIRR v10', 'MIRR v11', 'P(VPN > 0) v10', 'P(VPN > 0) v11'], tea11_rows, num_cols=(1, 2, 3, 4, 5, 6)) if tea11_rows else ''}
+<div class="prose">V11_LECTURA</div>"""
+    # textos
+    t_ = ""
+    if len(dec11) >= 4:
+        t_ += (f"<p><b>Con el diseño de la v10 fijo.</b> El margen pasa de {n0(dec11[0]['obj'])} a {n0(dec11[1]['obj'])} MM COP/año con el rendimiento de xantana con residuo de piña "
+               f"(la xantana no se elegía), a {n0(dec11[2]['obj'])} con el tope de {n0(dmod.VIN_DEMAND)} m³/año de vinagre "
+               f"({n0(dec11[1]['vinagre_m3'])} → {n0(dec11[2]['vinagre_m3'])} m³), y a {n0(dec11[3]['obj'])} con la panela, que deja vender "
+               f"{n0(dec11[3]['vino_vendido_m3'])} m³/año de vino (antes {n0(dec11[2]['vino_vendido_m3'])}) con {n0(dec11[3]['azucar_kg'] / 1000)} t/año de panela.</p>")
+    nos = g11("E1|Óptimo sin azúcar añadido"); notope = g11("E1|Óptimo sin tope de demanda de vinagre")
+    t_ += (f"<p><b>El óptimo v11.</b> {n0(d_opt['obj'])} MM COP/año (v10: {n0(o10.get('obj', float('nan')))}) con acetificador de {E(s11.get('Acetificador'))}, "
+           f"bodega de jugos de {E(s11.get('Bodega cáscara'))} y extractora de hojas de {E(s11.get('Extractora hojas'))}. Vende {n0(p11['vino_m3'] - p11.get('vino_a_vinagre_m3', 0))} m³/año de vino "
+           f"y {n0(p11.get('vinagre_m3', 0))} m³/año de vinagre hecho con {n0(p11.get('jugo_cascara_vinagre_t', 0))} t de jugo de cáscara, {n0(p11.get('jugo_hojas_vinagre_t', 0))} t de jugo de hojas "
+           f"y {n0(p11.get('azucar_kg', 0) / 1000)} t de panela; acopia {n0(p11.get('hojas_t', 0))} t de hojas. "
+           + (f"Sin panela, con el mismo tope, el margen es {n0(nos)}; " if nos else "")
+           + (f"sin tope de demanda, {n0(notope)}. " if notope else "")
+           + "La caída frente a la v10 no es un empeoramiento del proceso: es el costo de reconocer que el mercado del vinagre tiene un límite, que la v10 suponía sin decirlo.</p>")
+    if e8_rows:
+        t_ += ("<p><b>La demanda de vinagre decide el diseño.</b> En el barrido E8 el margen crece con la demanda mientras el vinagre la llena; "
+               "por encima, el límite pasa al acetificador y a los jugos disponibles. Con poca demanda el vino se vende y el vinagre sale de los jugos con panela; "
+               "con mucha, el vino vuelve al vinagre. "
+               + (f"Con 6 000 m³/año sin panela el margen es {n0(ex8.get('demanda 6 000 m³/año sin azúcar', {}).get('obj', float('nan')))}, "
+                  f"y con la panela a 5 000 COP/kg, {n0(ex8.get('panela a 5 000 COP/kg', {}).get('obj', float('nan')))}. " if ex8 else "")
+               + "Mientras no haya un estudio de mercado, la tesis debe presentar el diseño como una familia de diseños indexada por la demanda de vinagre, no como un único óptimo.</p>")
+    to11 = T11.get("Óptimo")
+    if to11:
+        t_ += (f"<p><b>TEA.</b> VPN del óptimo {n0(to11['NPV10'] / MM)} → {n0(to11['NPV11'] / MM)} MM COP; MIRR {pct(to11['MIRR10'])} → {pct(to11['MIRR11'])}; "
+               f"P(VPN > 0) {pct(to11['P10'], 0)} → {pct(to11['P11'], 0)}. El TEA v11 incluye además el tratamiento del efluente ({n0(DTm.val('costo_ptar_m3'))} COP/m³ [S]). "
+               + (f"El precio de equilibrio del vinagre es {n0(be11)} COP/L. " if be11 else "")
+               + (f"En el tornado, el precio de la panela mueve el VPN entre {n0(min(tpan['NPV_worst'], tpan['NPV_best']) / MM)} y {n0(max(tpan['NPV_worst'], tpan['NPV_best']) / MM)} MM COP. " if tpan else "")
+               + "</p>")
+    if a11:
+        ef = a11.get("efluente", {})
+        t_ += (f"<p><b>ACV.</b> GWP de proceso {n0(a11['gwp_total'] / 1000)} t CO2e/año"
+               + (f" (v10: {n0(a10['gwp_total'] / 1000)})" if a10 else "")
+               + f"; la panela aporta {n0(a11['gwp'].get('Panela añadida', 0) / 1000)} t y el tratamiento del efluente {n0(a11['gwp'].get('Tratamiento de efluentes', 0) / 1000)} t. "
+               f"El efluente ({n0(ef.get('m3', 0))} m³/año, {n0(ef.get('dqo_kg', 0) / 1000)} t de DQO [S]) sale con {n0(ef.get('dqo_vertida_kg', 0) / 1000)} t/año de DQO tras la electrocoagulación y el humedal. "
+               f"Neto frente a dejar fruta y hojas en el campo: {n0(-a11['net_vs_descomposicion'] / 1000)} t CO2e/año evitadas.</p>")
+    if sc11:
+        t_ += (f"<p><b>Social.</b> {n0(sc11['empleos_planta'])} empleos en planta y {n0(sc11['empleos_acopio'])} en el acopio; valor que queda en el territorio {n0(sc11['valor_territorio'] / MM)} MM COP/año"
+               + (f" (v10: {n0(s10_['valor_territorio'] / MM)})" if s10_ else "") + ". La panela es una compra local: el registro supone que el 30 % de los insumos distintos de la fruta se compra en la región [S].</p>")
+    lect11 = ("<ul class='tight'>"
+              "<li><b>El límite real del vinagre es el mercado.</b> La v10 vendía 5,7 millones de litros al año porque la mezcla ataba el volumen al vino; la panela suelta esa atadura y deja ver que hace falta un dato de demanda. El estudio de mercado del vinagre a granel es la tarea más importante para la tesis.</li>"
+              "<li><b>La panela devuelve el vino al mercado.</b> Con demanda limitada, el vinagre sale de los jugos de cáscara y de hojas con panela, y el vino se vende.</li>"
+              "<li><b>La xantana queda descartada con más razón.</b> Con el rendimiento medido en residuo de piña (0,083 g/g), su ingreso por tonelada de jugo es siete veces menor que el supuesto anterior.</li>"
+              "<li><b>El efluente entra al balance.</b> El tratamiento con electrocoagulación y humedal suma un costo y una huella pequeños; la DQO del efluente es un supuesto [S] que hay que medir.</li>"
+              "<li><b>Lo que la v11 no hizo.</b> La acetificación termotolerante (menos frío) y el vinagre de doble fuerza (menos flete por el río) quedan como alternativas de la etapa 3 para la versión siguiente.</li></ul>")
+    v11_html = v11_html.replace("V11_RESULTADOS", t_).replace("V11_LECTURA", lect11)
 super_rows = [
     ["Extracción de pulpa", "Prensa de banda (compartida con cáscara y corazón, o solo pulpa) · decantadora centrífuga", "Cap. 4: la decantadora es continua, rinde más del 80 % y entrega mosto de 150–400 NTU; consume más energía y mantenimiento", "Decantadora: +4,5 kWh/t de pulpa"],
     ["Clarificación del mosto", "MF cerámica · flotación · centrífuga de discos", "Cap. 8: la MF tangencial «no está adaptada a la clarificación de mostos» por su bajo caudal; la turbidez objetivo es 100–200 NTU. Quesada Salas (2013), jugo pulposo de piña en planta piloto: 2 850–3 570 NTU y 10,5 % de sólidos insolubles; MFT sostenida a 40–50 L/m²·h con FRV 3,7 (73 % de jugo clarificado)", "MF: 45 L/m²·h, 27 % de retenido, membranas 15 %/año · flotación: 2 900 COP/m³, 18 % de espumas · centrífuga: 2 800 COP/m³, 12 % de lodos (escalados con los sólidos de la piña)"],
@@ -552,7 +646,7 @@ html_out = f"""<title>Modelos Corsano para la piña</title>
 {style}
 <main>
 <header class="top">
-  <p class="kicker">Tesis doctoral · Biorrefinería de piña · Bajo Atrato (Chocó) · versión 10</p>
+  <p class="kicker">Tesis doctoral · Biorrefinería de piña · Bajo Atrato (Chocó) · versión 11</p>
   <h1>Moresi, capacidad, diseño TRL-9 y TEA por línea de producción</h1>
   <p class="lede">Esta versión pone en el centro las referencias de Moresi (1989a, b), dimensiona la materia prima y la planta con tecnologías TRL-9, monta un TEA por línea con la metodología Burk de sus TEA de asaí y coco, y decide qué procesar con la producción actual mediante un MILP de síntesis (Grossmann) y un programa semanal con red estado-tarea (Maravelias). Los modelos Corsano de la versión 1 siguen al final.</p>
   <div class="meta"><span>Moresi replicado contra su Tabla 3</span><span>EVA 2022 (UPRA)</span><span>11 libros TEA verificados con LibreOffice</span><span>SCIP 10</span></div>
@@ -792,6 +886,7 @@ html_out = f"""<title>Modelos Corsano para la piña</title>
 <div class="prose"><p>{(('El balance de energía mostró que la corona, que el óptimo de la versión 7 mandaba a compost, podía cubrir casi todo el calor del secado. Se agregó a la superestructura una caldera de biomasa con corona (100–500 kWt, con picadora y secador de corona) que reemplaza GLP. El óptimo elige ' + ('una caldera de ' + d_opt['sizes'].get('Caldera de corona', 'no') + ', quema ' + n0(d_opt['scen'][0]['products'].get('corona_caldera_t', 0)) + ' t/año de corona y entrega ' + n0(d_opt['scen'][0]['products'].get('calor_corona_GJ', 0)) + ' GJ/año de calor' if d_opt['sizes'].get('Caldera de corona', 'no') != 'no' else 'no instalarla') + '. Frente al mismo modelo sin caldera, el margen sube de ' + n0(d_nob['obj']) + ' a ' + n0(d_opt['obj']) + ' MM COP/año con ' + n0(d_opt['FCI'] - d_nob['FCI']) + ' MM COP más de equipos. ') if d_opt and d_nob else '')}{('El MILP terminó por tiempo con una brecha de ' + pct(d_opt['gap'] or 0, 1) + ': con la caldera, la relajación lineal se debilita y SCIP no alcanza a cerrar la cota. Para que parta de una solución buena, cada corrida se inicia con la solución de la versión anterior, que es factible; la solución reportada es al menos tan buena como esa. Después, cada caso se pulió evaluando con tamaños fijos los diseños vecinos (cada tamaño de caldera y los de los casos hermanos; <code>pulido_v8.py</code> y, en la versión 9, <code>pulido_v9.py</code>), lo que corrigió soluciones inconsistentes, como un caso libre peor que uno restringido. La optimalidad no está demostrada: las brechas que se reportan se miden contra la cota de la corrida libre.') if d_opt and (d_opt.get('gap') or 0) > 0.01 else ''}</p></div>
 {v9_html}
 {v10_html}
+{v11_html}
 <h3>Regla de dimensionamiento según la oferta</h3>
 <div class="prose"><p>Se resolvió el mismo modelo desde la mitad de la oferta actual hasta la base de la tesis (21 856 t/año), con libertad total de tamaños, almacén y turnos:</p></div>
 {table(['Oferta (t/año)', 'Tamaños óptimos', 'FCI (MM COP)', 'Margen (MM COP/año)', 'FCI por t/año (miles COP)', 'Fruta procesada', 'Cuellos (≥ 95 %)'], dim_e2, num_cols=(0, 2, 3, 4, 5)) if dim_e2 else ''}
@@ -878,6 +973,7 @@ html_out = f"""<title>Modelos Corsano para la piña</title>
 <li><b>§4.x, dimensionamiento.</b> Agregar el dimensionamiento simultáneo con el programa anual y la superestructura de tecnologías del mosto. {('Con la oferta actual y vino + harina, el frente de ' + d_opt['sizes']['Frente'] + ', las dos prensas dedicadas de 1 t/h, ' + d_opt['sizes']['Clarificación'].lower() + ', microfiltración de lías de ' + d_opt['sizes']['MF lías'] + ' y un secador de ' + d_opt['sizes']['Secador'] + ' procesan el ' + pct(absorbed(d_opt['scen'][0])) + ' de la fruta con menos inversión que el diseño por flujo medio. El almacén aséptico de mosto y la decantadora no se justifican.') if d_opt else ''}</li>
 <li><b>§4.4 y Cap. 8, cáscara (versión 9).</b> Usar los rendimientos medidos de Campos et al. (2020) (57,8 % de jugo; torta con 17 % de materia seca, que retiene el 41 % de los sólidos) y de Seguí y Fito (2018) (0,36 g de etanol/g de azúcar en el jugo de cáscara), y estabilizar el jugo de cáscara antes de fermentarlo. Con esos datos la harina cae un tercio y el VPN del óptimo baja {(n0(cmpv['tea'][2]['NPV8'] / MM) + ' → ' + n0(cmpv['tea'][2]['NPV9'] / MM) + ' MM COP') if cmpv and len(cmpv.get('tea', [])) > 2 else ''}; la materia seca de la torta y el precio de la harina pasan a ser los datos más urgentes. Presentar la bromelaína del jugo de cáscara (precipitación sin solventes) como una etapa que se agrega desde unas 12 000 t/año, no como una línea aparte, y descartar el prensado con cal mientras la harina valga más que el jugo.</li>
 <li><b>Capítulo de metodología (versión 10).</b> Organizar el método en las tres etapas de Bertran, Tula y Gani (2022): síntesis con la superestructura y el MILP (incluidas las hojas de la planta como segunda materia prima), diseño y verificación (balances, cinética calibrada, SuperPro, TEA de Burk), e innovación desde los puntos calientes. Agregar la evaluación de sostenibilidad de Heinzle et al. (2006): ACV de la cuna a la puerta con línea base sin planta, indicadores sociales y frente de Pareto margen–GWP. Declarar el registro de parámetros con su etiqueta de procedencia como parte del método.{(' Con los supuestos centrales, el óptimo v10 acopia ' + n0(d_opt['scen'][0]['products'].get('hojas_t', 0)) + ' t/año de hojas, produce ' + n0(d_opt['scen'][0]['products'].get('vinagre_m3', 0)) + ' m³/año de vinagre y da ' + n0(d_opt['obj']) + ' MM COP/año de margen; el mercado del vinagre es la condición que hay que validar.') if d_opt else ''}</li>
+<li><b>§4.3 y Cap. 8, vinagre (versión 11).</b> Tratar la demanda de vinagre como un dato de entrada con escenarios, no como una consecuencia del diseño, y presentar el diseño como una familia indexada por esa demanda. Incluir la panela añadida a los jugos antes de fermentar (Ebrahimi 2026; Tanamool et al. 2020), que permite vender el vino y hacer el vinagre con los jugos de cáscara y de hojas, y el tratamiento del efluente del vinagre (electrocoagulación y humedal construido) en el TEA y el ACV. Usar para la xantana el rendimiento medido con residuo de piña (Iakovchenko 2026), no el de glucosa pura.{(' Con la demanda central de ' + n0(dmod.VIN_DEMAND) + ' m³/año, el óptimo da ' + n0(d_opt['obj']) + ' MM COP/año.') if d_opt else ''}</li>
 <li><b>Cap. 6 y 9, selección de líneas.</b> Incorporar el MILP con tamaños discretos y el STN semanal como evidencia de qué procesar con la oferta actual y de dónde están los cuellos de botella.</li>
 </ol>
 </section>

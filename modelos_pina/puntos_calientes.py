@@ -90,7 +90,7 @@ def figure(out):
             ax.text(xi, max(out[s][k] for k, _ in keys) * 100 + 3, "punto caliente", ha="center", fontsize=7.5, color=C[7])
     ax.set_xticks(x); ax.set_xticklabels(secs, fontsize=8, rotation=10); ax.set_ylabel("% del total de la planta"); ax.legend(fontsize=8, ncol=5)
     ax.set_title("Una sección es punto caliente si pesa en costo, energía o GWP más de 10 puntos por encima de lo que aporta en ingresos", fontsize=9)
-    fig.suptitle("Fig. 44  Puntos calientes del diseño óptimo v10 (etapa 3: de los puntos calientes a los objetivos de mejora)",
+    fig.suptitle("Fig. 44  Puntos calientes del diseño óptimo v11 (etapa 3: de los puntos calientes a los objetivos de mejora)",
                  fontsize=10, fontweight="bold", x=0.01, ha="left")
     save(fig, "fig44_puntos_calientes.png")
 
