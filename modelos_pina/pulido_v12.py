@@ -29,6 +29,8 @@ path = os.environ.get("DIM_OUT", f"{RES}/dimensionamiento.json")
 d = json.load(open(path))
 BOILERS = ["no", "100 kWt", "200 kWt", "300 kWt"]
 D10 = json.load(open(f"{RES}/v11/dimensionamiento.json")) if os.path.exists(f"{RES}/v11/dimensionamiento.json") else {}   # v12: diseños de la v11
+CRUCE = bool(os.environ.get("CRUCE"))   # v12: pasada de cruce tras pulir los grupos en paralelo
+CROSS = ("E1|Óptimo económico", "E1|Óptimo sin caldera de corona", "E1|Óptimo sin digestor", "E1|Óptimo sin SO₂", "E2|0.750", "E4|RP")
 NEW10 = ("Extractora hojas", "Bodega etanol", "Destilación", "Digestor", "Motor biogás", "Ácido cítrico", "Xantana")
 PRETREAT = ["agua", "cal 0,1 %"]
 ENZ = ["no", "Precipitación 0.5 t/h", "Precipitación 1 t/h"]
@@ -81,7 +83,12 @@ def polish(key, kw, extra_keys=(), light=()):
     # v12: el propio diseño se re-evalúa primero, con la regla de llenado de la bodega (las corridas libres no la tenían)
     cands = [(dict(r0["sizes"]), r0["turno3"])] if r0.get("sizes") else []
     cands += [(dict(d[k2]["sizes"]), d[k2]["turno3"]) for k2 in light if d.get(k2, {}).get("sizes")]
-    for k2 in (key,) + tuple(extra_keys):
+    if CRUCE:   # segunda pasada: solo los diseños de los casos hermanos y los mejores de E1, sin tamaños vecinos
+        cands += [(dict(d[k2]["sizes"]), d[k2]["turno3"]) for k2 in tuple(extra_keys) + CROSS if d.get(k2, {}).get("sizes")]
+        extra_keys, key_nb = (), False
+    else:
+        key_nb = True
+    for k2 in ((key,) if key_nb else ()) + tuple(extra_keys):
         r2 = d.get(k2)
         if not r2 or not r2.get("sizes"):
             continue
@@ -95,7 +102,7 @@ def polish(key, kw, extra_keys=(), light=()):
         for u in VARY:
             for lab in neighbors(u, base.get(u, "no")):
                 cands.append((dict(base, **{u: lab}), r2["turno3"]))
-    if key in D10 and D10[key].get("sizes"):   # v12: el diseño de la v11 para el mismo caso también es candidato
+    if key in D10 and D10[key].get("sizes") and not CRUCE:   # v12: el diseño de la v11 para el mismo caso también es candidato
         z = D10[key]
         cands.append((dict(z["sizes"]), z["turno3"]))
         for b in ("500 botellas/h", "1000 botellas/h"):
