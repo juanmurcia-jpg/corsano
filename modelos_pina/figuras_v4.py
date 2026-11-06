@@ -6,7 +6,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from figuras import C, INK, INK2, GRID, SURF, save, J
 
-MES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
+import fig_en
+MES = fig_en.months()
 CUM = np.cumsum([0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31])
 ORDER = ["Frente", "Prensa", "Decantadora", "Prensa cáscara", "Prensa corazón", "Clarificación", "MF lías", "Estabilización", "Bodega", "Secador", "Aspersión", "Enzima cáscara", "Bodega cáscara", "Acetificador", "Caldera de corona", "Extractora hojas"]
 

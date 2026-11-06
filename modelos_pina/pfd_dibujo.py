@@ -11,7 +11,8 @@ import balance_dibujo as bd
 import dimensionamiento as dm
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-FIGS = os.path.join(HERE, "figs")
+import fig_en
+FIGS = fig_en.figdir(os.path.join(HERE, "figs"))
 sd.W, sd.H = 2960, 1780
 PAL = sd.PAL
 INK, GREY = sd.INK, sd.GREY

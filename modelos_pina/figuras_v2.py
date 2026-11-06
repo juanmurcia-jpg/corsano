@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 from figuras import C, SEQ, INK, INK2, GRID, SURF, save, J
 import params as p
+import fig_en
 import moresi as mo
 import planificacion_milp as pm
 
@@ -176,7 +177,7 @@ def fig20_milp():
         mth = np.arange(12)
         ax[2].bar(mth, so["supply_monthly"], color=SEQ[1], label="Oferta estacional", width=0.8)
         ax[2].bar(mth, so["fruit_monthly"], color=C[0], width=0.5, label="Fruta procesada")
-        ax[2].set_xticks(mth); ax[2].set_xticklabels(list("EFMAMJJASOND"))
+        ax[2].set_xticks(mth); ax[2].set_xticklabels(fig_en.month_initials())
         ax[2].set_ylabel("t/mes"); ax[2].legend(fontsize=7.5); ax[2].set_title("Plan mensual óptimo, Chocó 2022 (V + H)")
     fig.suptitle("Fig. 20  MILP de síntesis y planificación (Grossmann): qué líneas construir según oferta, precio y régimen de abastecimiento",
                  fontsize=10, fontweight="bold", x=0.01, ha="left")
@@ -197,14 +198,14 @@ def fig21_stn():
     for dd in range(7):
         ax[0].axvspan(dd * 24 + 22, dd * 24 + 30, color=GRID, alpha=0.5, lw=0)
     ax[0].set_yticks(range(len(units))); ax[0].set_yticklabels(units); ax[0].invert_yaxis(); ax[0].set_xlim(0, 144)
-    ax[0].set_xticks(range(0, 145, 24)); ax[0].set_xticklabels(["lun", "mar", "mié", "jue", "vie", "sáb", "dom"])
+    ax[0].set_xticks(range(0, 145, 24)); ax[0].set_xticklabels(fig_en.days())
     ax[0].legend(handles=[Patch(color=col[t], label=t) for t in tasks], fontsize=7.2, ncol=6, loc="upper center", bbox_to_anchor=(0.5, -0.08))
     ax[0].grid(axis="y", visible=False)
     ax[0].set_title(f"Semana pico ({r['fruit_week']:.0f} t de fruta): una prensa compartida de 2 t/h basta (ocupación {r['util']['Prensa']*100:.0f} %)")
     inv = r["inventory"]; t = np.arange(len(inv["mosto"]))
     for q, k in enumerate(("mosto", "torta", "pulpa", "cascara")):
         ax[1].plot(t, inv[k], color=C[q], label=k)
-    ax[1].set_xlim(0, 144); ax[1].set_xticks(range(0, 145, 24)); ax[1].set_xticklabels(["lun", "mar", "mié", "jue", "vie", "sáb", "dom"])
+    ax[1].set_xlim(0, 144); ax[1].set_xticks(range(0, 145, 24)); ax[1].set_xticklabels(fig_en.days())
     ax[1].set_ylabel("Inventario (t o m³)"); ax[1].legend(fontsize=7.5, ncol=4); ax[1].set_title("Inventarios intermedios (ec. 7.6, con límites χ_k)")
     fig.suptitle("Fig. 21  Programación semanal con la red estado-tarea en tiempo discreto (Maravelias, ecs. 7.4–7.6)",
                  fontsize=10, fontweight="bold", x=0.01, ha="left")

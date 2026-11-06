@@ -38,6 +38,7 @@ Corsano, Montagna, Iribarren y Aguirre, adaptados a la tesis *Biorrefinería de 
 | `puntos_calientes.py` | Bertran et al. (2022), etapa 3 | Puntos calientes por sección y objetivos de mejora (Fig. 44) |
 | `superpro_paquete.py` | Foo (2023), caps. 10–11 | Paquete de verificación en SuperPro Designer (`superpro/`): procedimientos, corrientes, indicadores con tolerancia |
 | `html2blocks.py`, `make_docx.js` | — | Conversión del informe HTML a Word (`Informe_Corsano_Moresi_TEA_pina_v12.docx`) |
+| `fig_en.py`, `fig_en_dict.json` | — | Versión en inglés de las figuras: con `FIG_LANG=en`, `figuras.save()` y el dibujo a mano alzada traducen cada texto con el diccionario y guardan en `figs/en/`; meses y días por contexto (`fig_en.months()`, `fig_en.days()`); las cadenas sin entrada quedan en `figs/en/_missing.txt` |
 | `params.py` | — | Base de diseño con la procedencia de cada parámetro: [T] tesis, [C] Corsano, [L] literatura, [S] supuesto |
 
 ## Reproducir
@@ -68,6 +69,7 @@ python comparativo_v11_v12.py decomp && python comparativo_v11_v12.py compare # 
 python figuras_v3.py && python figuras_v4.py
 for f in superestructura balance balance_energia pfd layout gantt; do NODE_PATH=$(npm root -g) python ${f}_dibujo.py; done
 python gen_informe_v2.py
+FIG_LANG=en python figuras.py   # y los demás scripts de figuras: versión en inglés en figs/en/ (ver fig_en.py)
 python html2blocks.py informe.html blocks.json && node make_docx.js blocks.json Informe_Corsano_Moresi_TEA_pina_v12.docx
 ```
 

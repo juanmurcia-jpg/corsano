@@ -16,14 +16,15 @@ import balance_dibujo as bd  # noqa: F401  (añade colores vapor/aire/compost a 
 import dimensionamiento as dm
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-FIGS = os.path.join(HERE, "figs")
+import fig_en
+FIGS = fig_en.figdir(os.path.join(HERE, "figs"))
 sd.W, sd.H = 2980, 2140
 PAL = sd.PAL
 PAL.setdefault("elec", ("#efe2ae", "#a68a33"))
 INK = sd.INK
 GREY = "#5e5a53"
-MES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
-DIAS = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"]
+MES = fig_en.months()
+DIAS = fig_en.days()
 fmt = lambda v, n=0: f"{v:,.{n}f}".replace(",", " ").replace(".", ",") if n else f"{v:,.0f}".replace(",", " ")
 
 LX, LW = 470, 2140                     # inicio y ancho del eje de tiempo

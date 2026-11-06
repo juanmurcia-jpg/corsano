@@ -10,7 +10,8 @@ import base64, json, math, os, random
 import dimensionamiento as dm_mod
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-FIGS = os.path.join(HERE, "figs")
+import fig_en
+FIGS = fig_en.figdir(os.path.join(HERE, "figs"))
 rng = random.Random(20261105)
 
 W, H = 2580, 2190
@@ -118,6 +119,7 @@ def arrow(x1, y1, x2, y2, color=INK, sw=2.4, curve=0.12, dash=None, head=15, op=
 
 
 def text(x, y, s, size=22, color=INK, anchor="start", font="Kalam", weight=400, italic=False, op=1.0):
+    s = fig_en.tr(s)
     st = ' font-style="italic"' if italic else ""
     s = s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
     add(f'<text x="{x:.1f}" y="{y:.1f}" font-family="{font}" font-size="{size}" font-weight="{weight}" fill="{color}" '
@@ -411,7 +413,7 @@ def build(d):
 def fonts_css():
     css = []
     for fam, wt, fn in (("Kalam", 400, "Kalam-400.woff2"), ("Kalam", 700, "Kalam-700.woff2"), ("Caveat", 700, "Caveat-700.woff2")):
-        b64 = base64.b64encode(open(os.path.join(FIGS, "fonts", fn), "rb").read()).decode()
+        b64 = base64.b64encode(open(os.path.join(HERE, "figs", "fonts", fn), "rb").read()).decode()
         css.append(f"@font-face{{font-family:'{fam}';font-weight:{wt};src:url(data:font/woff2;base64,{b64}) format('woff2');}}")
     return "".join(css)
 

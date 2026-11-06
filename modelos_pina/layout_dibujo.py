@@ -14,7 +14,8 @@ import planta_trl9 as pt
 import dimensionamiento as dm
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-FIGS = os.path.join(HERE, "figs")
+import fig_en
+FIGS = fig_en.figdir(os.path.join(HERE, "figs"))
 sd.W, sd.H = 3030, 1500
 PAL = sd.PAL
 PAL.setdefault("elec", ("#efe2ae", "#a68a33"))

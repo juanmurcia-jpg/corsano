@@ -12,7 +12,8 @@ import capacidad as cp
 import dimensionamiento as dm
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-FIGS = os.path.join(HERE, "figs")
+import fig_en
+FIGS = fig_en.figdir(os.path.join(HERE, "figs"))
 sd.W, sd.H = 2840, 1960
 K = 0.042                                  # px por t/año
 RHO_J, RHO_W, RHO_V = cp.RHO_JUICE, 0.99, 1.01

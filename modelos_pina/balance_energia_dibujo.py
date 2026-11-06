@@ -19,7 +19,8 @@ import dimensionamiento as dm
 import params as p
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-FIGS = os.path.join(HERE, "figs")
+import fig_en
+FIGS = fig_en.figdir(os.path.join(HERE, "figs"))
 sd.W, sd.H = 2840, 1760
 bd.K = 0.075                                  # px por GJ/año
 PAL = sd.PAL

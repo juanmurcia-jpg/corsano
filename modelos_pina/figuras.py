@@ -9,7 +9,8 @@ import params as p
 import kinetics as kn
 
 R = os.path.join(os.path.dirname(__file__), "results")
-F = os.path.join(os.path.dirname(__file__), "figs")
+import fig_en
+F = fig_en.figdir(os.path.join(os.path.dirname(__file__), "figs"))
 os.makedirs(F, exist_ok=True)
 
 # paleta de referencia (skill dataviz, modo claro) -------------------------------------------
@@ -26,6 +27,7 @@ plt.rcParams.update({
 
 
 def save(fig, name):
+    fig_en.translate_fig(fig)
     fig.tight_layout()
     fig.savefig(os.path.join(F, name), dpi=200)
     plt.close(fig)

@@ -12,7 +12,8 @@ import capacidad as cp
 import params as p
 
 MM = 1e6
-MES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
+import fig_en
+MES = fig_en.months()
 
 
 def fig23_estocastico():
