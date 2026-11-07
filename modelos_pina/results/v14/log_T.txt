@@ -1,3 +1,5 @@
     arranque en caliente: aceptado 3152
 T Central en A, sin depósitos 46950 óptimo 3152 hojas 3746 | ese diseño con el costo real 3196
     arranque en caliente: aceptado 3196
+T Central en B, sin depósitos 35400 óptimo 3196 hojas 3746 | ese diseño con el costo real 3196
+    arranque en caliente: aceptado 2994
