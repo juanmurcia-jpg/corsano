@@ -1,0 +1,1 @@
+STN semana del mes pico: timelimit gap 4.143% t 240 s | pérdidas {'fruta': 0.0, 'hojas': 0.0, 'mosto': 0.0, 'jj': 0.0, 'vc': 0.0} | ácido 3150/3150 | embotellado 17.9/17.9 | lotes {'F1': 1, 'F2': 1, 'J1': 3, 'J2': 4} | util {'Embotelladora': 0.67, 'Extractora': 0.57, 'F1': 0.1, 'F2': 0.1, 'Flotación': 0.64, 'Frente': 0.86, 'J1': 0.35, 'J2': 0.44, 'Prensa': 0.68}
