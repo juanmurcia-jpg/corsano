@@ -5,3 +5,5 @@ T Central en B, sin depósitos 35400 óptimo 3196 hojas 3746 | ese diseño con e
     arranque en caliente: aceptado 2994
 T A con depósitos en las 4 zonas 89290 óptimo 2994 hojas 3746 | ese diseño con el costo real 3196
     arranque en caliente: aceptado 3027
+T B con depósitos en las 4 zonas 80512 óptimo 3027 hojas 3746 | ese diseño con el costo real 3196
+    arranque en caliente: aceptado 3063
