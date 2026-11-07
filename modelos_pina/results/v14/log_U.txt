@@ -2,3 +2,5 @@ banda: f 0.63–1.55; caso A cáscara 10.0–10.6 h
     arranque en caliente: aceptado 3011
 rapido {'T_PROC': 10.4, 'T_PEEL': 8.9, 'T_LEAF': 10.1} reopt 3011 2×10 m³ 2×10 m³ | central fijo 3011
     arranque en caliente: aceptado 3249
+lento {'T_PROC': 21.9, 'T_PEEL': 18.2, 'T_LEAF': 21.1} reopt 3249 2×10 m³ 2×10 m³ | central fijo 3249
+    arranque en caliente: aceptado 3250
