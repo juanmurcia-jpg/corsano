@@ -144,12 +144,13 @@ def week_loads(r, month=None):
     return L, R
 
 
-def stn(L, R, caps, T_pulp, T_juice, open_hours, time_limit=240, label="", weeks=1):
+def stn(L, R, caps, T_pulp, T_juice, open_hours, time_limit=240, label="", weeks=1, replicate=True):
     """weeks > 1: horizonte cíclico de varias semanas iguales (los lotes de 8–10 m³ pueden cruzar de una semana a otra)."""
     from pyscipopt import Model, quicksum
     HZ = 168 * weeks
     L = dict(L, **{k: L[k] * weeks for k in ("fruta", "hojas", "acido", "botellado", "mosto")})
-    open_hours = {h + 168 * w for h in open_hours for w in range(weeks)}
+    if replicate:
+        open_hours = {h + 168 * w for h in open_hours for w in range(weeks)}
     VF = dm.VF
     VJ = VF * 1.04                                   # t de jugo por fermentador de 10 m³
     tp, tj = int(math.ceil(T_pulp - 1e-6)), int(math.ceil(T_juice - 1e-6))
@@ -359,6 +360,13 @@ def run_D1b():
         res["festivo_largo"] = stn(L, R, caps, dm.T_PROC, max(dm.T_PEEL, dm.T_LEAF), hours(days=range(1, 6)), time_limit=1500,
                                    label="semana con lunes festivo (1 500 s)")
         json.dump(res, open(os.path.join(OUT, "D1b_festivo.json"), "w"), indent=1, default=float)
+    if which == "festivo2":
+        # semana con lunes festivo seguida de una semana normal (ciclo de dos semanas): la fruta del festivo puede esperar en el patio
+        L, R = week_loads(OPT)
+        oh = hours(days=range(1, 6)) | {h + 168 for h in hours()}
+        res["festivo_2sem"] = stn(L, R, caps, dm.T_PROC, max(dm.T_PEEL, dm.T_LEAF), oh, time_limit=1500,
+                                  label="festivo y semana normal (dos semanas)", weeks=2, replicate=False)
+        json.dump(res, open(os.path.join(OUT, "D1b_festivo2.json"), "w"), indent=1, default=float)
 
 
 if __name__ == "__main__":

@@ -69,6 +69,18 @@
      "falta_acido": 0.0,
      "falta_botellas": 4.612630982350638,
      "gap": 39438.300792437614
+    },
+    "abril_2sem": {
+     "perdidas": 1.775786806490487e-14,
+     "falta_acido": 0.0,
+     "falta_botellas": 0.0,
+     "gap": 0.057500895805154086
+    },
+    "festivo_largo": {
+     "perdidas": 9.124675610521281,
+     "falta_acido": 239.39704273416828,
+     "falta_botellas": 1.4907005848669161,
+     "gap": 6.66126498077511
     }
    },
    "nota": "la semana pico y la cin\u00e9tica lenta caben sin p\u00e9rdidas"

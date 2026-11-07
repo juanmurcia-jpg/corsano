@@ -81,9 +81,9 @@ def fig50():
 
 def stn_res():
     D = L("D1")
-    for f in ("D1b_abril", "D1b_festivo"):
+    for f in ("D1b_abril", "D1b_festivo", "D1b_festivo2"):
         d = L(f)
-        for k in ("abril_2sem", "festivo_largo"):
+        for k in ("abril_2sem", "festivo_largo", "festivo_2sem"):
             if k in d:
                 D[k] = d[k]
     return D

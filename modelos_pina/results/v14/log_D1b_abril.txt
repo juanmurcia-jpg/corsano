@@ -1,0 +1,1 @@
+STN abril, dos semanas: timelimit gap 5.750% t 1500 s | pérdidas {'fruta': 0.0, 'hojas': -0.0, 'mosto': -0.0, 'jj': 0.0, 'vc': 0.0} | ácido 6300/6300 | embotellado 28.6/28.6 | lotes {'F1': 2, 'F2': 1, 'J1': 7, 'J2': 7} | util {'Embotelladora': 0.53, 'Extractora': 0.57, 'F1': 0.1, 'F2': 0.05, 'Flotación': 0.51, 'Frente': 0.69, 'J1': 0.4, 'J2': 0.4, 'Prensa': 0.55}
