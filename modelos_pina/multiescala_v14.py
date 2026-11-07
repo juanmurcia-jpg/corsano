@@ -144,9 +144,12 @@ def week_loads(r, month=None):
     return L, R
 
 
-def stn(L, R, caps, T_pulp, T_juice, open_hours, time_limit=240, label=""):
+def stn(L, R, caps, T_pulp, T_juice, open_hours, time_limit=240, label="", weeks=1):
+    """weeks > 1: horizonte cíclico de varias semanas iguales (los lotes de 8–10 m³ pueden cruzar de una semana a otra)."""
     from pyscipopt import Model, quicksum
-    HZ = 168
+    HZ = 168 * weeks
+    L = dict(L, **{k: L[k] * weeks for k in ("fruta", "hojas", "acido", "botellado", "mosto")})
+    open_hours = {h + 168 * w for h in open_hours for w in range(weeks)}
     VF = dm.VF
     VJ = VF * 1.04                                   # t de jugo por fermentador de 10 m³
     tp, tj = int(math.ceil(T_pulp - 1e-6)), int(math.ceil(T_juice - 1e-6))
@@ -167,13 +170,13 @@ def stn(L, R, caps, T_pulp, T_juice, open_hours, time_limit=240, label=""):
     for j in range(nJ):
         T[f"Llenar J{j + 1}"] = dict(u=[f"J{j + 1}"], tau=1, c={"jj": 1.0}, p={f"cJ{j + 1}": 1.0}, sh=False, cap=VJ)
         T[f"Fermentar J{j + 1}"] = dict(u=[f"J{j + 1}"], tau=tj, c={f"cJ{j + 1}": 1.0}, p={"vc": 1.0}, sh=False, cap=VJ, lo=0.8 * VJ)
-    chi = dict(fruta=L["fruta"] / 6 * 3, pulpa=1.5, cascara=3.0, jugo=2.0, mosto=caps["Almacén de mosto"], vino=160.0, botellado=1e9,
-               hojas=L["hojas"] / 6 * 2, jj=1.0, vc=10.0, torta=12.0)
+    chi = dict(fruta=L["fruta"] / 6 / weeks * 3, pulpa=1.5, cascara=3.0, jugo=2.0, mosto=caps["Almacén de mosto"], vino=160.0, botellado=1e9,
+               hojas=L["hojas"] / 6 / weeks * 2, jj=1.0, vc=10.0, torta=12.0)
     for j in range(nP):
         chi[f"cF{j + 1}"] = VF
     for j in range(nJ):
         chi[f"cJ{j + 1}"] = VJ
-    deliv = {n for n in range(HZ) if n % 24 == 6 and n // 24 < 6}
+    deliv = {n for n in range(HZ) if n % 24 == 6 and (n % 168) // 24 < 6}
     m = Model("STN_v14"); m.hideOutput()
     X, B = {}, {}
     for i, d in T.items():
@@ -206,7 +209,7 @@ def stn(L, R, caps, T_pulp, T_juice, open_hours, time_limit=240, label=""):
             prod = quicksum(d["p"][k] * B[i, j, (n - d["tau"] + 1) % HZ] for i, d in T.items() if k in d["p"] for j in d["u"]
                             if (i, j, (n - d["tau"] + 1) % HZ) in B)
             cons = quicksum(d["c"][k] * B[i, j, n] for i, d in T.items() if k in d["c"] for j in d["u"] if (i, j, n) in B)
-            sup = (L["fruta"] / 6 if k == "fruta" and n in deliv else 0.0) + (L["hojas"] / 6 if k == "hojas" and n in deliv else 0.0)
+            sup = (L["fruta"] / len(deliv) if k == "fruta" and n in deliv else 0.0) + (L["hojas"] / len(deliv) if k == "hojas" and n in deliv else 0.0)
             extra = 0.0
             if k == "vc":
                 extra = -acet[n] / R["acido"]
@@ -238,7 +241,7 @@ def stn(L, R, caps, T_pulp, T_juice, open_hours, time_limit=240, label=""):
     avail = {j: (len(open_hours) if any(T[i]["sh"] for i in T if j in T[i]["u"]) else HZ) for j in units}
     dumps = {k: sum(v(dump[k, n]) for n in range(HZ)) for k in ("fruta", "hojas", "mosto", "jj", "vc")}
     out = dict(label=label, status=m.getStatus(), gap=m.getGap(), t=time.time() - t0, nbin=len(X), loads=L, ratios=R,
-               T_pulp=T_pulp, T_juice=T_juice, tau=dict(pulpa=tp, jugos=tj), open_h=len(open_hours),
+               T_pulp=T_pulp, T_juice=T_juice, weeks=weeks, tau=dict(pulpa=tp, jugos=tj), open_h=len(open_hours),
                schedule=sched, util={j: busy[j] / avail[j] for j in units}, dumps=dumps,
                acid=sum(v(a) for a in acet.values()), acid_target=L["acido"], short_acid=v(s_acid), bottled=v(bott), short_bott=v(s_bott),
                acet=[v(acet[n]) for n in range(HZ)], dry=[v(dry[n]) for n in range(HZ)],
@@ -341,6 +344,26 @@ def run_T():
     print("T doble costo", round(r2.get("obj", float("nan"))), flush=True)
 
 
+def run_D1b():
+    """Repeticiones con más tiempo: abril con horizonte de dos semanas (14,6 m³ de mosto por semana no se parten en lotes
+    de 8–10 m³ dentro de una sola semana cíclica) y la semana con lunes festivo."""
+    which = sys.argv[2] if len(sys.argv) > 2 else "ambas"
+    res = json.load(open(os.path.join(OUT, "D1.json")))
+    caps = opt_caps(OPT)
+    if which in ("abril", "ambas"):
+        L4, R4 = week_loads(OPT, month=3)
+        res["abril_2sem"] = stn(L4, R4, caps, dm.T_PROC, max(dm.T_PEEL, dm.T_LEAF), hours(), time_limit=1500, label="abril, dos semanas", weeks=2)
+        json.dump(res, open(os.path.join(OUT, "D1b_abril.json"), "w"), indent=1, default=float)
+    if which in ("festivo", "ambas"):
+        L, R = week_loads(OPT)
+        res["festivo_largo"] = stn(L, R, caps, dm.T_PROC, max(dm.T_PEEL, dm.T_LEAF), hours(days=range(1, 6)), time_limit=1500,
+                                   label="semana con lunes festivo (1 500 s)")
+        json.dump(res, open(os.path.join(OUT, "D1b_festivo.json"), "w"), indent=1, default=float)
+
+
 if __name__ == "__main__":
-    for g in sys.argv[1:] or ["U", "D1", "D2", "T"]:
-        dict(U=run_U, D1=run_D1, D2=run_D2, T=run_T)[g]()
+    if sys.argv[1:2] == ["D1b"]:
+        run_D1b()
+    else:
+        for g in sys.argv[1:] or ["U", "D1", "D2", "T"]:
+            dict(U=run_U, D1=run_D1, D2=run_D2, T=run_T)[g]()
