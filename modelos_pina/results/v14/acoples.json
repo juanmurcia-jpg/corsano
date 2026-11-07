@@ -1,0 +1,89 @@
+{
+ "rows": [
+  {
+   "acople": "Fracciones dentro de la planta (pulpa \u2192 c\u00e1scara \u2192 hojas)",
+   "prueba": "H1 (v13)",
+   "regret": 0.42551871984788836,
+   "base": "margen",
+   "nota": "dise\u00f1o secuencial por fracciones frente al simult\u00e1neo"
+  },
+  {
+   "acople": "Planta \u2194 estacionalidad de la cosecha",
+   "prueba": "H1 (v13)",
+   "regret": 0.0,
+   "regret_rango": [
+    0.12156511811355952,
+    0.04384746983757093
+   ],
+   "base": "margen",
+   "nota": "0 a la escala actual (la demanda limita, no la capacidad); 4\u201312 % a 2\u20133,6 veces la oferta"
+  },
+  {
+   "acople": "Cin\u00e9tica \u2194 tren de fermentaci\u00f3n (modelo 1)",
+   "prueba": "D2",
+   "regret": 0.038176422765595186,
+   "regret_rango": [
+    0.038176422765595186,
+    0.12499572266808807
+   ],
+   "base": "costo anual del tren",
+   "nota": "al flujo del \u00f3ptimo (375 m\u00b3/a\u00f1o); con la base original: 7.1% y 9.0%"
+  },
+  {
+   "acople": "Cin\u00e9tica \u2192 planta (banda no identificable)",
+   "prueba": "U",
+   "regret": 0.0,
+   "efecto": [
+    -0.05765580304755602,
+    0.017059771676083857
+   ],
+   "base": "margen",
+   "nota": "mismo dise\u00f1o en toda la banda (f = 0.63\u20131.55); el margen se mueve solo por auxiliares dimensionados con la capacidad nominal"
+  },
+  {
+   "acople": "Planta \u2192 semana (STN horaria)",
+   "prueba": "D1",
+   "regret": 0.0,
+   "base": "p\u00e9rdidas en la semana",
+   "semanas": {
+    "base": {
+     "perdidas": 1.49741330446318e-14,
+     "falta_acido": 0.0,
+     "falta_botellas": 1.7763568394002505e-15,
+     "gap": 0.04142527898931483
+    },
+    "festivo": {
+     "perdidas": 9.124675610521281,
+     "falta_acido": 239.39704273416828,
+     "falta_botellas": 1.4907005848669161,
+     "gap": 6.66126498077511
+    },
+    "lento": {
+     "perdidas": 1.0013323503699211e-14,
+     "falta_acido": -5.552891479965183e-12,
+     "falta_botellas": 0.0,
+     "gap": 0.041563487530325384
+    },
+    "abril": {
+     "perdidas": 4.7552896725264455,
+     "falta_acido": 0.0,
+     "falta_botellas": 4.612630982350638,
+     "gap": 39438.300792437614
+    }
+   },
+   "nota": "la semana pico y la cin\u00e9tica lenta caben sin p\u00e9rdidas"
+  },
+  {
+   "acople": "Planta \u2194 territorio (acopio de hojas)",
+   "prueba": "T",
+   "regret": 6.258705978701151e-06,
+   "efecto": [
+    -0.06317377147110437,
+    0.0
+   ],
+   "base": "margen",
+   "nota": "el dise\u00f1o y las 3 746 t de hojas no cambian con el costo de acopio; el sitio y los dep\u00f3sitos valen hasta 6,3 %"
+  }
+ ],
+ "margen_central": 3195.548739841764
+}

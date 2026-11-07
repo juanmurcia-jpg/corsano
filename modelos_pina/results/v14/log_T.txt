@@ -7,3 +7,4 @@ T A con depósitos en las 4 zonas 89290 óptimo 2994 hojas 3746 | ese diseño co
     arranque en caliente: aceptado 3027
 T B con depósitos en las 4 zonas 80512 óptimo 3027 hojas 3746 | ese diseño con el costo real 3196
     arranque en caliente: aceptado 3063
+T doble costo 3063
