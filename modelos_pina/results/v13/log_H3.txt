@@ -1,0 +1,7 @@
+    arranque en caliente: aceptado -1
+H3 extremos: económico 3196 -156 | ambiental -4059 -6387
+H3 ε -1402 2353 -1402
+H3 ε -2648 972 -2648
+    arranque en caliente: aceptado 484
+H3 ε -3895 1077 -4331
+    arranque en caliente: aceptado 0

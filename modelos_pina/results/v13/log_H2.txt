@@ -1,0 +1,12 @@
+    arranque en caliente: aceptado 3174
+H2 óptimo v13 3196 no fósil GJ 3818
+    arranque en caliente: aceptado 2930
+H2 fósil ≤ 0.8 3039 25 kWt
+    arranque en caliente: aceptado 1442
+H2 fósil ≤ 0.6 1673 no
+    arranque en caliente: aceptado 742
+H2 fósil ≤ 0.4 742 no
+    arranque en caliente: aceptado -2426
+H2 fósil ≤ 0.2 30 no
+    arranque en caliente: aceptado -1642
+H2 fósil ≤ 0.0 -1642 no

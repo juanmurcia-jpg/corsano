@@ -1,0 +1,24 @@
+    arranque en caliente: aceptado 147
+H4 1000000 0.0 147
+    arranque en caliente: aceptado 1375
+H4 1000000 750.0 1375
+    arranque en caliente: aceptado 2564
+H4 1000000 1500.0 2564
+    arranque en caliente: aceptado 4942
+H4 1000000 3000.0 4942
+    arranque en caliente: aceptado 5394
+H4 1000000 6000.0 7971
+    arranque en caliente: aceptado 5393
+H4 1000000 12000.0 5393
+    arranque en caliente: aceptado 967
+H4 2000000 0.0 967
+    arranque en caliente: aceptado 2205
+H4 2000000 750.0 2205
+    arranque en caliente: aceptado 3394
+H4 2000000 1500.0 3394
+    arranque en caliente: aceptado 5772
+H4 2000000 3000.0 5772
+    arranque en caliente: aceptado 6173
+H4 2000000 6000.0 6173
+    arranque en caliente: aceptado 6224
+H4 2000000 12000.0 6224

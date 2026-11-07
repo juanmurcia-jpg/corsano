@@ -1,0 +1,6 @@
+    arranque en caliente: aceptado 6224
+    arranque en caliente: aceptado 6224
+H1b 2.0 estacional 32626 promedio: diseño 28867 evaluado 28867
+    arranque en caliente: aceptado 6224
+    arranque en caliente: aceptado 6224
+H1b 3.56 estacional 14083 promedio: diseño 46031 evaluado 44861

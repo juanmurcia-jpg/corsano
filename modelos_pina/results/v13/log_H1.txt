@@ -1,0 +1,10 @@
+    arranque en caliente: aceptado 3196
+H1 promedio: diseño 3196 evaluado 3196
+  etapa pulpa 184 {'Frente': '1 t/h', 'Prensa': '1 t/h', 'Clarificación': 'Flotación 0.5 m³/h', 'Estabilización': 'SO₂', 'Bodega': '2×10 m³', 'Almacén de mosto': '10 m³', 'Embotelladora': '500 botellas/h'}
+  etapa cáscara 1744 {'Pretratamiento cáscara': 'agua', 'Secador': '50 kg agua/h', 'Bodega cáscara': '2×10 m³', 'Acetificador': '6 m³', 'Caldera de corona': '100 kWt'}
+  etapa hojas 1836 {'Extractora hojas': '2 t/h'}
+H1 secuencial: 1836
+  etapa pulpa 184 {'Frente': '1 t/h', 'Prensa': '1 t/h', 'Clarificación': 'Flotación 0.5 m³/h', 'Estabilización': 'SO₂', 'Bodega': '2×10 m³', 'Almacén de mosto': '10 m³', 'Embotelladora': '500 botellas/h'}
+  etapa cáscara 1744 {'Pretratamiento cáscara': 'agua', 'Secador': '50 kg agua/h', 'Bodega cáscara': '2×10 m³', 'Acetificador': '6 m³', 'Caldera de corona': '100 kWt'}
+  etapa hojas 1836 {'Extractora hojas': '2 t/h'}
+H1 secuencial con flujos promedio: 1836

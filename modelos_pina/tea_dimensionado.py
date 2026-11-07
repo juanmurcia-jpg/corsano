@@ -135,6 +135,8 @@ def option_equipment(u, lab):
         return [E("digestor_anaerobio", num(), "Digestor anaerobio CSTR (35 °C) con gasómetro")]
     if u == "Motor biogás":
         return [E("motor_biogas", num(), "Motor-generador a biogás con limpieza de H2S")]
+    if u == "Bomba de calor":   # v13
+        return [dict(name="Bomba de calor (acetificador → secador)", qty=1, size=num(), ref_size=dm.HP_REF_KW, ref_USD=dm.HP_REF_USD, n=dm.HP_N)]
     if u in dm.HUB:
         H_ = dm.HUB[u]; s = num(); ref = H_["cap"] * 1000 / (dm.AC * 8766)
         return [dict(name=f"Planta de {u.lower()} (escalada del ejemplo de SuperPro)", qty=1, size=s, ref_size=ref, ref_USD=H_["tci"] / dm.LANG, n=0.6)]
@@ -215,12 +217,14 @@ def build_case(r, label, with_bromelain):
                  + acid_kg * dm.ACID_HEAT / 3.6 / 4.0 + pr.get("corona_caldera_t", 0.0) * 10.0
                  + dm.KWH_LEAF["ext"] * pr.get("hojas_extraidas_t", 0.0) + dm.KWH_LEAF["etoh"] * pr.get("jugo_hojas_etanol_t", 0.0)
                  + dm.KWH_LEAF["ad"] * pr.get("jugo_hojas_digestor_t", 0.0) + dm.KWH_LEAF["pulp"] * pr.get("pulpa_hojas_caldera_t", 0.0)
-                 - pr.get("elec_bio_usada_kWh", 0.0))                                                       # v10: hojas y biogás
+                 - pr.get("elec_bio_usada_kWh", 0.0)                                                         # v10: hojas y biogás
+                 + pr.get("calor_bomba_MJ", 0.0) * (1 / dm.HP_COP - (1 - 1 / dm.HP_COP) / 4.0) / 3.6)      # v13: bomba de calor − chiller ahorrado
     heat_past = 0.0 if stab.startswith("HTST") else v["flows"]["juice_m3"] * dm.HTST_VC / dm.H_COP   # MJ de pasteurización que no se gastan
     heat_past -= pr.get("lias_secador_t", 0.0) * dm.LEES_DRY_EQ * h["heat_MJ"] / (h["flows"]["peel_t"] * dm.CAKE)   # secado de lías y retenidos
     heat_past += pr.get("calor_corona_GJ", 0.0) * 1000                                                          # calor de la caldera (corona y pulpa de hojas)
     heat_past -= dm.Q_DEST * pr.get("etanol_kg", 0.0) + dm.Q_AD * pr.get("jugo_hojas_digestor_t", 0.0)          # v10: destilación y digestor
     heat_past += pr.get("calor_bio_usado_MJ", 0.0)                                                              # v10: calor del motor a biogás
+    heat_past += pr.get("calor_bomba_MJ", 0.0)                                                                  # v13: calor de la bomba de calor
     util = [dict(name="Electricidad", qty_year=sum(l["elec_kWh"] * 1.3 * f for l, f in zip(lines, scale)) + kwh_extra, price_key="elec_COP_kWh"),
             dict(name="Calor de proceso (MJ)", qty_year=sum(l["heat_MJ"] * f for l, f in zip(lines, scale)) - heat_past, price_key="calor_COP_MJ",
                  crown_MJ=pr.get("calor_corona_GJ", 0.0) * 1000),

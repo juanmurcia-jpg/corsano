@@ -51,6 +51,8 @@ def inventory(r, case=None):
         "Calor con GLP": dm.EF_GLP_UTIL * q_glp,
         "Caldera de biomasa (CH4, N2O)": dm.EF_BIO_FUEL * q_bio,
         "Compostaje de fracciones sin uso": dm.EF_COMP * comp_t,
+        "Pulpa y jugo de hojas devueltos al campo": dm.EF_FIELD_PULP * p.get("pulpa_hojas_campo_t", 0.0)
+                                                     + dm.EF_FIELD_JUICE * p.get("jugo_hojas_campo_t", 0.0),     # v13
         "Fugas de biogás": dm.EF_LEAK * p.get("ch4_kg", 0.0),
         "Acopio de hojas (diésel)": dm.EF_ACOPIO * p.get("hojas_t", 0.0),
         "Transporte de fruta": dm.EF_FRUIT_T * F,

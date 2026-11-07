@@ -1,0 +1,15 @@
+H3b pool 184
+    arranque en caliente: aceptado 3196
+    arranque en caliente: aceptado 0
+H3b extremos: económico 3196 323 | ambiental -4084 -2580
+H3b ε -161 2525 -288 100 kWt no
+H3b ε -645 1077 -873 300 kWt no
+H3b ε -1129 125 -1129 300 kWt no
+H3b ε -1612 -3517 -1612 100 kWt no
+H3b ε -2096 -3806 -2096 100 kWt no
+    arranque en caliente: aceptado 0
+H3b MCDA w 0.25 -4084 -2580
+    arranque en caliente: aceptado 1
+H3b MCDA w 0.5 2330 -502
+    arranque en caliente: aceptado 1
+H3b MCDA w 0.75 3106 -5

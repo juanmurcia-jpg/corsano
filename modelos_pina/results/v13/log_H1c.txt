@@ -1,0 +1,6 @@
+    arranque en caliente: aceptado 28867
+    arranque en caliente: aceptado 32626
+H1c 2.000 estacional 32862 promedio evaluado 28867
+    arranque en caliente: aceptado 44860
+    arranque en caliente: aceptado 14083
+H1c 3.556 estacional 46918 promedio evaluado 44861

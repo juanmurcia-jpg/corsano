@@ -219,6 +219,25 @@ EF_BOT = DT.val("ef_botella")                                               # kg
 # de V_F tarda V_F·AC·d/bod en llenarse; si eso supera TAU_FILL, el mosto se acumula en el almacén aséptico y el
 # fermentador se llena desde él con la bomba (reserva de V_F en el almacén durante ese periodo). Disyunción por periodo.
 TAU_FILL = DT.val("tau_llenado_max")                                        # h [S]; None = sin restricción
+# ---- v13: bomba de calor que lleva el calor del acetificador (≈ 30 °C) al secador, al macerador y al digestor, y huella neta
+# (respuesta al revisor; la integración de calor por intervalos sigue a OUTDOOR, Kenkel et al. 2022). Una bomba de COP c entrega
+# Q de calor, toma Q·(1 − 1/c) del acetificador (que deja de enfriar el chiller, COP 4) y gasta Q/c de electricidad.
+HP_ON = True
+HP_COP = DT.val("cop_bomba_calor")
+HP_REF_KW, HP_N = 100.0, 0.7
+HP_REF_USD = DT.val("costo_bomba_calor_kWt") * HP_REF_KW                    # USD de compra a 100 kWt [S]
+ETA_GEN, ETA_GLP = DT.val("eta_grupo_diesel"), DT.val("eta_caldera_glp")
+EF_BASE = EF_COMP                                                           # línea base: fruta recibida y hojas acopiadas se descomponen en campo (acv.py)
+# v13: lo que vuelve al campo se descompone allí. Se escala por materia seca respecto de la hoja fresca de la línea base (la
+# pulpa de hojas lleva 0,18 × 0,516 = 0,093 t MS por t de hoja de 0,138 t MS). Antes de la v13 no se contaba: el crédito por
+# las hojas acopiadas incluía la pulpa devuelta al campo.
+MS_H = DT.val("ms_hojas")
+EF_FIELD_PULP = EF_COMP * MS_P / MS_H                                       # kg CO2e / t de pulpa de hojas devuelta al campo
+EF_FIELD_JUICE = EF_COMP * max(MS_H - PF_H * MS_P, 0.0) / JF_H / MS_H      # kg CO2e / t de jugo de hojas devuelto al campo
+
+
+def hp_cost(q):
+    return tb.equipment_cost(dict(qty=1, size=q, ref_size=HP_REF_KW, ref_USD=HP_REF_USD, n=HP_N))[0]
 
 
 def wine_bottle(pvp=None, margin=None, pack=None):
@@ -322,6 +341,8 @@ def options(with_bromelain=False):
     # v12: línea de embotellado (botellas/h); capacidad en m³ de vino por hora con personal
     O["Embotelladora"] = [dict(lab="no", cap=0.0, cost=0.0)] + [
         dict(lab=f"{b:g} botellas/h", cap=b * BOTTLE_L / 1000, cost=buy("embotelladora", b)) for b in (500, 1000, 2000, 4000)]
+    if HP_ON:   # v13
+        O["Bomba de calor"] = [dict(lab="no", cap=0.0, cost=0.0)] + [dict(lab=f"{q:g} kWt", cap=q * 3.6, cost=hp_cost(q)) for q in (25, 50, 100, 200)]
     if with_bromelain:
         O["Aspersión"] = [dict(lab="no", cap=0.0, cost=0.0)] + [
             dict(lab=f"{s:g} kg agua/h", cap=s / 1000 / 0.12,
@@ -383,7 +404,10 @@ def shift_cost(with_bromelain=False):
 
 # ----------------------------------------------------------------------------- modelo
 def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=True, mg=None, store_max=None, allow=None,
-          gwp_max=None, objective="margin"):
+          gwp_max=None, objective="margin", flat=False, fossil_max=None, gwp_net=False, mcda=None):
+    """v13: flat = flujos promedio (sin estacionalidad, como un diseño en estado estacionario); fossil_max = tope de energía
+    fósil primaria (MJ/año: diésel del grupo + GLP); gwp_net = la huella del ε y del objetivo «gwp» se mide contra la línea
+    base sin planta; mcda = dict(w, m=(mejor, peor), g=(mejor, peor)): compromiso ponderado margen–huella normalizado."""
     """scen: lista de dict(sup=factor de oferta, p=probabilidad). Devuelve (modelo, variables)."""
     O = options(with_bromelain)
     mg = mg or margins()
@@ -421,8 +445,9 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
     V = dict(y=y, y3=y3, O=O, modes=modes, MT=MT, scen=[])
     for sc in scen:
         supply = SUPPLY * sc["sup"]
-        rate_in = supply * pm.SEASON / 12.0 / HM
-        rate_h = HOJAS_SUPPLY * sc["sup"] * pm.SEASON / 12.0 / HM                 # v10: hojas disponibles (t/h), con el perfil de la cosecha [S]
+        SE = np.ones(12) if flat else pm.SEASON                                 # v13: flujos promedio
+        rate_in = supply * SE / 12.0 / HM
+        rate_h = HOJAS_SUPPLY * sc["sup"] * SE / 12.0 / HM                 # v10: hojas disponibles (t/h), con el perfil de la cosecha [S]
         chi = dict(chi_fix, fruta=3 * 24 * max(rate_in), hojas=3 * 24 * max(rate_h))
         d = {mt: m.addVar(lb=0, ub=HM[mt[0]]) for mt in MT}
         w = {mt: m.addVar(lb=0, ub=HM[mt[0]]) for mt in MT}                    # w = y3·d
@@ -466,6 +491,7 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
         hh, hx, hje, hjv, hjd, hjr, hpb = nv(), nv(), nv(), nv(), nv(), nv(), nv()   # v10: hojas acopiadas y extraídas; jugo a etanol, vinagre,
         et, eb, eu, hbio, hbu = nv(), nv(), nv(), nv(), nv()                       #      digestor o campo; pulpa a caldera; etanol (kg); electricidad
         pjc, pjx = nv(), nv()                                                       #      y calor del biogás; jugo de cáscara a ácido cítrico y xantana
+        hpq = nv()                                                                  # v13: calor entregado por la bomba de calor (MJ)
         az = nv()                                                                   # v11: panela añadida a los jugos que van al vinagre (t)
         Edem, Hdem, G = {}, {}, {}
         compk = {mt: m.addVar(lb=0) for mt in MT}                               # corazón sin procesar a compostaje
@@ -553,7 +579,14 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
             m.addCons(cr[mt] <= B1["crown_t"] * fe[mt])
             Hdem[mt] = (Q_CAKE * (sec[mt] + LEES_DRY_EQ * (ldry[mt] + rdry[mt])) + Q_MAC * (P["pulpa", mt] + (Pd["pulpa", mt] if "pulpa" in yded else 0))
                         + Q_DEST * et[mt] + Q_AD * hjd[mt])
-            m.addCons(hb[mt] + hbu[mt] <= Hdem[mt])
+            # v13: bomba de calor. Fuente: calor de la acetificación; sumidero: secado, maceración y digestor (≤ 80 °C), no la destilación
+            if "Bomba de calor" in O:
+                m.addCons(hpq[mt] <= cap_expr("Bomba de calor", mt, False))
+                m.addCons(hpq[mt] * (1 - 1 / HP_COP) <= ACID_HEAT * acid[mt])
+                m.addCons(hpq[mt] <= Hdem[mt] - Q_DEST * et[mt])
+            else:
+                m.addCons(hpq[mt] == 0)
+            m.addCons(hb[mt] + hbu[mt] + hpq[mt] <= Hdem[mt])
             for j in yded:
                 m.addCons(Pd[j, mt] <= cap_expr(ded[j], mt, True))
             if with_bromelain:
@@ -571,10 +604,12 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
                         + quicksum(KWH_CLAR[OC[k]["lab"].split()[0]] * XC[mt][k] for k in XC[mt]) + KWH["lees_mf"] * ml[mt]
                         + quicksum((100.0 if OS[k]["lab"].startswith("UHPH") else 0.0) * SB[mt][k] for k in SB[mt])
                         + (KWH["dec"] * Pd["pulpa", mt] if "pulpa" in yded else 0) + ACID_HEAT / 3.6 / 4.0 * acid[mt] + KWH["crown"] * cr[mt]
-                        + KWH_LEAF["ext"] * hx[mt] + KWH_LEAF["etoh"] * hje[mt] + KWH_LEAF["ad"] * hjd[mt] + KWH_LEAF["pulp"] * hpb[mt])
-            G[mt] = (EF_KWH * (Edem[mt] - eu[mt]) + EF_GLP_UTIL * (Hdem[mt] - hb[mt] - hbu[mt]) + EF_BIO_FUEL * hb[mt]
+                        + KWH_LEAF["ext"] * hx[mt] + KWH_LEAF["etoh"] * hje[mt] + KWH_LEAF["ad"] * hjd[mt] + KWH_LEAF["pulp"] * hpb[mt]
+                        + hpq[mt] / (HP_COP * 3.6) - hpq[mt] * (1 - 1 / HP_COP) / (3.6 * 4.0))      # v13: bomba de calor y chiller que se ahorra
+            G[mt] = (EF_KWH * (Edem[mt] - eu[mt]) + EF_GLP_UTIL * (Hdem[mt] - hb[mt] - hbu[mt] - hpq[mt]) + EF_BIO_FUEL * hb[mt]
                      + EF_COMP * ((FR["corazon"] * (0 if with_bromelain else 1) + B1["crown_t"]) * fe[mt] - cr[mt] + comp[mt] + compk[mt] + ld[mt] + rd[mt])
                      + EF_LEAK * CH4_T * hjd[mt] + EF_ACOPIO * hh[mt] + EF_FRUIT_T * fe[mt]
+                     + EF_FIELD_PULP * (PF_H * hx[mt] - hpb[mt]) + EF_FIELD_JUICE * hjr[mt]         # v13: pulpa y jugo de hojas devueltos al campo
                      + EF_CHEM["dap"] * mfv[mt] + EF_CHEM["yeast"] * (bod[mt] + pj[mt] + hjv[mt] + hje[mt]) + EF_CHEM["pect"] * P["pulpa", mt]
                      + EF_CHEM["so2"] * quicksum(SB[mt][k] for k in SB[mt] if OS[k]["lab"].startswith("SO"))
                      + EF_CHEM["lime"] * quicksum(Pco[k, mt] for k in range(len(OPT)) if OPT[k]["lab"] != "agua")
@@ -600,10 +635,12 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
             m.addCons(quicksum(loss.values()) <= loss_max * supply)
         # v10: la electricidad del biogás solo reemplaza diésel hasta la demanda del mes (aireación del acetificador incluida)
         OA = O["Acetificador"]
+        aer_tot = 0.0
         for mo_ in range(12):
             aer = quicksum(AERATION_KW_M3 * (float(OA[k]["lab"].split()[0]) if OA[k]["lab"] != "no" else 0.0) * AC * HM[mo_] * y["Acetificador", k]
                            for k in range(len(OA)))
             m.addCons(quicksum(eu[mo_, t_] for t_ in range(K)) <= quicksum(Edem[mo_, t_] for t_ in range(K)) + aer)
+            aer_tot = aer_tot + aer
             for t_ in range(K):
                 G[mo_, t_] = G[mo_, t_] + EF_KWH * aer / K
         if VIN_DEMAND is not None:   # v11: el mercado absorbe a lo sumo VIN_DEMAND m³/año de vinagre al 5 %
@@ -611,7 +648,13 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
         if WINE_DEMAND_M3 is not None:   # v12: el mercado absorbe a lo sumo WINE_DEMAND_M3 m³/año de vino embotellado
             m.addCons(quicksum(WINE_PM * bod[mt] - wv[mt] for mt in MT) <= WINE_DEMAND_M3)
         gwp_s = quicksum(G.values())
-        gwp_total = gwp_total + sc["p"] * gwp_s
+        # v13: energía fósil primaria (MJ) y huella neta frente a la línea base sin planta (fruta y hojas que se descomponen en campo)
+        fossil_s = (quicksum(Edem.values()) + aer_tot - quicksum(eu.values())) * 3.6 / ETA_GEN \
+                   + quicksum(Hdem[mt] - hb[mt] - hbu[mt] - hpq[mt] for mt in MT) / ETA_GLP
+        if fossil_max is not None:
+            m.addCons(fossil_s <= fossil_max)
+        gwp_net_s = gwp_s - EF_BASE * quicksum(fe[mt] + hh[mt] for mt in MT)
+        gwp_total = gwp_total + sc["p"] * (gwp_net_s if gwp_net else gwp_s)
         unused = FR["corazon"] * (0 if with_bromelain else 1) + B1["crown_t"]
         Pcas = lambda mt: P["cascara", mt] + (Pd["cascara", mt] if "cascara" in yded else 0)
         pjtot = lambda mt: quicksum(PJ_FRAC[OPT[k]["lab"]] * Pco[k, mt] for k in range(len(OPT)))
@@ -633,6 +676,7 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
                            - ACOPIO_VC * hh[mt] - E_COP * (KWH_LEAF["ext"] * hx[mt] + KWH_LEAF["etoh"] * hje[mt] + KWH_LEAF["ad"] * hjd[mt] + KWH_LEAF["pulp"] * hpb[mt])
                            + (C["vendido"] * (ETOH_PRICE * L_PER_KG * E_LJ + YEAST_PRICE * YEAST_LJ) - ETOH_VC) * hje[mt]
                            - PJ_VC * hjv[mt] - AZ_PRICE * 1000 * az[mt]
+                           + HEAT_COP * hpq[mt] - E_COP * (hpq[mt] / (HP_COP * 3.6) - hpq[mt] * (1 - 1 / HP_COP) / (3.6 * 4.0))   # v13
                            - HEAT_COP * (Q_DEST * et[mt] + Q_AD * hjd[mt]) + HEAT_COP * hbu[mt]
                            + E_COP * eu[mt] + VAL_EXC * (eb[mt] - eu[mt]) - BIO_OM * eb[mt]
                            + quicksum((C["vendido"] * HUB[pr]["price"] - HUB[pr]["vc"]) * PJ_SUGAR * HUB[pr]["y"] * var[mt] - 150.0 * 1000 * var[mt]
@@ -643,11 +687,15 @@ def build(scen, K=2, with_bromelain=False, fix=None, loss_max=None, allow_shift=
                               asp=asp, loss=loss, comp=comp, I=I, contrib=contrib, Hs=Hs, XC=XC, SB=SB, ml=ml, ld=ld,
                               ldry=ldry, rdry=rdry, rd=rd, pj=pj, wv=wv, acid=acid, hb=hb, cr=cr, Pco=Pco, XE=XE,
                               hh=hh, hx=hx, hje=hje, hjv=hjv, hjd=hjd, hjr=hjr, hpb=hpb, et=et, eb=eb, eu=eu, hbio=hbio, hbu=hbu,
-                              pjc=pjc, pjx=pjx, az=az, Edem=Edem, Hdem=Hdem, G=G, gwp=gwp_s))
+                              pjc=pjc, pjx=pjx, az=az, Edem=Edem, Hdem=Hdem, G=G, gwp=gwp_s,
+                              hpq=hpq, fossil=fossil_s, gwp_net=gwp_net_s))
     if gwp_max is not None:                                                    # v10: ε-restricción sobre el GWP esperado (kg CO2e/año)
         m.addCons(gwp_total <= gwp_max)
     if objective == "gwp":
         m.setObjective(gwp_total / 1e6 - 1e-6 * (second - capex_ann) / 1e6, "minimize")
+    elif mcda is not None:   # v13: compromiso = mínima distancia L1 ponderada al punto ideal (Kenkel et al. 2022), objetivos normalizados
+        (mb, mw), (gb, gw), w = mcda["m"], mcda["g"], mcda["w"]
+        m.setObjective(w * ((second - capex_ann) / 1e6 - mw) / (mb - mw) + (1 - w) * (gw - gwp_total) / (gw - gb), "maximize")
     else:
         m.setObjective((second - capex_ann) / 1e6, "maximize")
     V["capex_ann"] = capex_ann; V["gwp_total"] = gwp_total
@@ -680,7 +728,7 @@ def extract(m, V, with_bromelain):
                              enz=sum(v(x_) for k, x_ in S["XE"][mt].items() if k > 0),
                              hh=v(S["hh"][mt]), hx=v(S["hx"][mt]), hje=v(S["hje"][mt]), hjv=v(S["hjv"][mt]), hjd=v(S["hjd"][mt]), hjr=v(S["hjr"][mt]),
                              hpb=v(S["hpb"][mt]), et=v(S["et"][mt]), eb=v(S["eb"][mt]), eu=v(S["eu"][mt]), hbu=v(S["hbu"][mt]),
-                             pjc=v(S["pjc"][mt]), pjx=v(S["pjx"][mt]), az=v(S["az"][mt]), edem=v(S["Edem"][mt]), hdem=v(S["Hdem"][mt]), gwp=v(S["G"][mt]),
+                             pjc=v(S["pjc"][mt]), pjx=v(S["pjx"][mt]), az=v(S["az"][mt]), hpq=v(S["hpq"][mt]), edem=v(S["Edem"][mt]), hdem=v(S["Hdem"][mt]), gwp=v(S["G"][mt]),
                              loss=v(S["loss"][mt]), comp=v(S["comp"][mt]), I_mosto=v(S["I"]["mosto", V["MT"].index(mt) + 1]),
                              llenado_directo=(round(v(S["wf"][mt])) if mt in S.get("wf", {}) else None)))
             T0 += dur
@@ -728,7 +776,8 @@ def extract(m, V, with_bromelain):
                     jugo_cascara_citrico_t=sum(r["pjc"] for r in rows), jugo_cascara_xantana_t=sum(r["pjx"] for r in rows),
                     citrico_kg=sum(r["pjc"] for r in rows) * PJ_SUGAR * HUB["Ácido cítrico"]["y"], xantana_kg=sum(r["pjx"] for r in rows) * PJ_SUGAR * HUB["Xantana"]["y"],
                     elec_demanda_kWh=sum(r["edem"] for r in rows), calor_demanda_MJ=sum(r["hdem"] for r in rows),
-                    calor_glp_MJ=sum(r["hdem"] - r["hb"] - r["hbu"] for r in rows), gwp_kg=sum(r["gwp"] for r in rows),
+                    calor_glp_MJ=sum(r["hdem"] - r["hb"] - r["hbu"] - r["hpq"] for r in rows), gwp_kg=sum(r["gwp"] for r in rows),
+                    calor_bomba_MJ=sum(r["hpq"] for r in rows), fosil_MJ=v(S["fossil"]), gwp_neto_kg=v(S["gwp_net"]),
                     azucar_kg=sum(r["az"] for r in rows) * 1000,
                     botellas=sum(WINE_PM * r["bod"] - r["wv"] for r in rows) * 1000 / BOTTLE_L)
         out["scen"].append(dict(sup=S["sc"]["sup"], p=S["sc"]["p"], supply=S["supply"], contrib=v(S["contrib"]) / 1e6, periods=rows,
