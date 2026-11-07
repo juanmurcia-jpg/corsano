@@ -1,0 +1,2 @@
+banda: f 0.63–1.55; caso A cáscara 10.0–10.6 h
+    arranque en caliente: aceptado 3011

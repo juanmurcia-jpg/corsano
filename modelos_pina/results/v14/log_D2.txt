@@ -1,0 +1,7 @@
+D2 12.5 jerarquico True 21284 Prop sin propagación | Ferm (1,)
+D2 12.5 intermedio True 20951 Prop (1, 1) | Ferm (1,)
+D2 12.5 simultaneo True 20471 Prop sin propagación | Ferm (1, 1)
+D2 3.0 jerarquico True 25351 Prop sin propagación | Ferm (6,)
+D2 3.0 intermedio True 24848 Prop sin propagación | Ferm (6,)
+D2 3.0 simultaneo True 22183 Prop sin propagación | Ferm (2, 2)
+D2 ahorro simultáneo: {'12.5': 0.038176422765595186, '3.0': 0.12499572266808807} base tesis {'12.5': 0.07061728385345477, '3.0': 0.0903525137600695}
