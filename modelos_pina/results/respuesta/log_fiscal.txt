@@ -3,3 +3,5 @@ Current (Law 1816/2016; 2026 rate) reopt 3196 500000 {'NPV': 5397.063446445971, 
     arranque en caliente: aceptado 1599
 Specific component tripled reopt 1902 0 None | central 1599 {'NPV': -868.5480257946176, 'MIRR': np.float64(0.09371323560885236), 'FCI': np.float64(16404.50572935201)}
     arranque en caliente: aceptado 1442
+Decree 1474/2025 rates with 5 % VAT reopt 1902 0 None | central 1442 None
+    arranque en caliente: aceptado 1442
