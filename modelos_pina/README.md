@@ -39,6 +39,7 @@ Corsano, Montagna, Iribarren y Aguirre, adaptados a la tesis *Biorrefinería de 
 | `superpro_paquete.py` | Foo (2023), caps. 10–11 | Paquete de verificación en SuperPro Designer (`superpro/`): procedimientos, corrientes, indicadores con tolerancia |
 | `html2blocks.py`, `make_docx.js` | — | Conversión del informe HTML a Word (`Informe_Corsano_Moresi_TEA_pina_v12.docx`) |
 | `revisor_v13.py`, `revisor_v13_post.py` | Kenkel (2022, OUTDOOR); Kenkel et al. (2022); Arpagaus et al. (2018) | v13, respuesta al revisor: líneas base con la misma superestructura (flujos promedio y secuencial por fracciones, H1), malla de demanda botellas × vinagre con pulido cruzado (H4), bomba de calor del acetificador al secador y barrido de energía fósil (H2), frente margen–huella neta con la pulpa de hojas devuelta al campo y diseños de compromiso por distancia ponderada al ideal (H3); resultados en `results/v13/`, Figs. 48–49 |
+| `multiescala_v14.py`, `multiescala_v14_post.py` | Grossmann y Westerberg (2000); Maravelias (2021); Corsano et al. (2004, 2006a); Krishnan et al. (1999) | v14, análisis multiescala: banda cinética no identificable llevada al MILP (U), STN cíclica horaria de la semana pico con los tamaños del óptimo (D1; abril y festivo en dos semanas), modelo 1 al flujo del óptimo (D2) y configuraciones de acopio (T); tabla del valor de cada acople y Figs. 50–51; resultados en `results/v14/` |
 | `fig_en.py`, `fig_en_dict.json` | — | Versión en inglés de las figuras: con `FIG_LANG=en`, `figuras.save()` y el dibujo a mano alzada traducen cada texto con el diccionario y guardan en `figs/en/`; meses y días por contexto (`fig_en.months()`, `fig_en.days()`); las cadenas sin entrada quedan en `figs/en/_missing.txt` |
 | `params.py` | — | Base de diseño con la procedencia de cada parámetro: [T] tesis, [C] Corsano, [L] literatura, [S] supuesto |
 
@@ -72,6 +73,8 @@ for f in superestructura balance balance_energia pfd layout gantt; do NODE_PATH=
 python gen_informe_v2.py
 for g in H1 H1b H1c H4a H4b H2 H2p; do python revisor_v13.py $g; done   # v13 (en paralelo por grupo); luego H4q 0/1/2 y H3b
 python revisor_v13_post.py                         # TEA de los diseños v13 y Figs. 48–49
+for g in U T D2 D1; do python multiescala_v14.py $g; done   # v14 (en paralelo); luego D1b abril y D1b festivo2
+python multiescala_v14_post.py                     # tabla de acoples y Figs. 50–51
 FIG_LANG=en python figuras.py   # y los demás scripts de figuras: versión en inglés en figs/en/ (ver fig_en.py)
 python html2blocks.py informe.html blocks.json && node make_docx.js blocks.json Informe_Corsano_Moresi_TEA_pina_v12.docx
 ```
