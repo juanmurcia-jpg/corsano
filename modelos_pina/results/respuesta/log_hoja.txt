@@ -1,3 +1,5 @@
     arranque en caliente: aceptado 3196
 central (source mass balance) 21.8 reopt 3196 145.6 3000 {'NPV': 5397.063446445971, 'MIRR': np.float64(0.13484982616085817), 'FCI': np.float64(16404.50572935201)}
     arranque en caliente: aceptado 3164
+90 % of theoretical on carbohydrate 20.67 reopt 3164 154.6 3000 {'NPV': 5273.4387255769325, 'MIRR': np.float64(0.13411755710293205), 'FCI': np.float64(16404.50572935201)}
+    arranque en caliente: aceptado 2965
