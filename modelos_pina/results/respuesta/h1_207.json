@@ -1,0 +1,99 @@
+{
+ "stages": [
+  {
+   "stage": "pulpa",
+   "obj": 184.12128505990307,
+   "sizes": {
+    "Frente": "1 t/h",
+    "Prensa": "1 t/h",
+    "Decantadora": "no",
+    "Clarificaci\u00f3n": "Flotaci\u00f3n 0.5 m\u00b3/h",
+    "MF l\u00edas": "no",
+    "Estabilizaci\u00f3n": "SO\u2082",
+    "Bodega": "2\u00d710 m\u00b3",
+    "Almac\u00e9n de mosto": "10 m\u00b3",
+    "Embotelladora": "500 botellas/h"
+   }
+  },
+  {
+   "stage": "c\u00e1scara",
+   "obj": 1744.292834567672,
+   "sizes": {
+    "Prensa c\u00e1scara": "no",
+    "Pretratamiento c\u00e1scara": "agua",
+    "Enzima c\u00e1scara": "no",
+    "Secador": "50 kg agua/h",
+    "Bodega c\u00e1scara": "2\u00d710 m\u00b3",
+    "Acetificador": "6 m\u00b3",
+    "Caldera de corona": "100 kWt",
+    "\u00c1cido c\u00edtrico": "no",
+    "Xantana": "no"
+   }
+  },
+  {
+   "stage": "hojas",
+   "obj": 1816.126792711915,
+   "sizes": {
+    "Extractora hojas": "2 t/h",
+    "Bodega etanol": "no",
+    "Destilaci\u00f3n": "no",
+    "Digestor": "no",
+    "Motor biog\u00e1s": "no"
+   }
+  }
+ ],
+ "eval": {
+  "status": "gaplimit",
+  "gap": 9.958730072777891e-05,
+  "obj": 1815.9467252230959,
+  "bound": 1816.127570455726,
+  "margin": 1815.9467252230975,
+  "FCI": 12199.041601364905,
+  "sizes": {
+   "Frente": "1 t/h",
+   "Prensa": "1 t/h",
+   "Decantadora": "no",
+   "Prensa c\u00e1scara": "no",
+   "Clarificaci\u00f3n": "Flotaci\u00f3n 0.5 m\u00b3/h",
+   "MF l\u00edas": "no",
+   "Estabilizaci\u00f3n": "SO\u2082",
+   "Bodega": "2\u00d710 m\u00b3",
+   "Secador": "50 kg agua/h",
+   "Bodega c\u00e1scara": "2\u00d710 m\u00b3",
+   "Acetificador": "6 m\u00b3",
+   "Caldera de corona": "100 kWt",
+   "Pretratamiento c\u00e1scara": "agua",
+   "Enzima c\u00e1scara": "no",
+   "Extractora hojas": "2 t/h",
+   "Bodega etanol": "no",
+   "Destilaci\u00f3n": "no",
+   "Digestor": "no",
+   "Motor biog\u00e1s": "no",
+   "\u00c1cido c\u00edtrico": "no",
+   "Xantana": "no",
+   "Almac\u00e9n de mosto": "10 m\u00b3",
+   "Embotelladora": "500 botellas/h"
+  },
+  "turno3": 0,
+  "products": {
+   "fruta_t": 2438.6541020473273,
+   "hojas_t": 1651.679170603862,
+   "vino_m3": 716.4100873479679,
+   "botellas": 500000.0,
+   "vinagre_m3": 1971.0,
+   "acido_kg": 98550.0,
+   "azucar_kg": 45572.20743938341,
+   "jugo_hojas_vinagre_t": 1255.2761696589348,
+   "jugo_cascara_vinagre_t": 422.86262129500653,
+   "vino_a_vinagre_m3": 341.4100873479679,
+   "harina_t": 58.82440136488494,
+   "gwp_kg": 754199.5598399404,
+   "gwp_neto_kg": -22554.728636520416
+  }
+ },
+ "tea": {
+  "NPV": 26.862582080411435,
+  "MIRR": 0.10020290170735802,
+  "FCI": 15485.206823650598
+ }
+}

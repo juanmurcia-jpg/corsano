@@ -1,1 +1,2 @@
     arranque en caliente: aceptado 3081
+N207 3081 0.491963217383448 -0.0 {'NPV': 4873.196808886816, 'MIRR': np.float64(0.13046224123820793), 'FCI': np.float64(17174.239911813624)} {'Frente': '1 t/h', 'Prensa': '1 t/h', 'Clarificación': 'Flotación 0.5 m³/h', 'Estabilización': 'SO₂', 'Bodega': '2×10 m³', 'Secador': '50 kg agua/h', 'Bodega cáscara': '2×10 m³', 'Acetificador': '10 m³', 'Caldera de corona': '100 kWt', 'Pretratamiento cáscara': 'agua', 'Extractora hojas': '2 t/h', 'Almacén de mosto': '10 m³', 'Embotelladora': '500 botellas/h'}

@@ -1,1 +1,4 @@
     arranque en caliente: aceptado 3164
+NEST 1.3 3164.08 0.03663507876770016 3280.001016230374 True
+    arranque en caliente: aceptado 3164
+NEST 0.7 3164.1 0.0044342937697179185 3178.1350992426255 True

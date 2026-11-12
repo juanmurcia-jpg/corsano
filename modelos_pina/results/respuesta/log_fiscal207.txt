@@ -1,1 +1,10 @@
     arranque en caliente: aceptado 3164
+F207 Current (Law 1816/2016; 2026 rate) mejor 3164 500000 cota 3618 {'NPV': 5273.4387255769325, 'MIRR': np.float64(0.13411755710293205), 'FCI': np.float64(16404.50572935201)} | central 3164 1276 {'NPV': 5273.4387255769325, 'MIRR': np.float64(0.13411755710293205), 'FCI': np.float64(16404.50572935201)}
+    arranque en caliente: aceptado 1567
+F207 Specific component tripled mejor 1868 0 cota 3312 None | central 1567 1276 {'NPV': -992.5537516510882, 'MIRR': np.float64(0.09279653615739347), 'FCI': np.float64(16404.50572935201)}
+    arranque en caliente: aceptado 1408
+F207 Decree 1474/2025 rates with 5 % VAT mejor 1868 0 cota 1868 None | central 1408 0 None
+    arranque en caliente: aceptado 1408
+F207 Decree 1474/2025 rates with 19 % VAT mejor 1868 0 cota 1868 None | central 1408 0 None
+    arranque en caliente: aceptado 1408
+F207 2026 fiscal-rescue bill (750; 35 %; 19 % VAT) mejor 1868 0 cota 1868 None | central 1408 0 None

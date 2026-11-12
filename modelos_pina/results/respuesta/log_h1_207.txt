@@ -1,0 +1,4 @@
+  etapa pulpa 184 {'Frente': '1 t/h', 'Prensa': '1 t/h', 'Clarificación': 'Flotación 0.5 m³/h', 'Estabilización': 'SO₂', 'Bodega': '2×10 m³', 'Almacén de mosto': '10 m³', 'Embotelladora': '500 botellas/h'}
+  etapa cáscara 1744 {'Pretratamiento cáscara': 'agua', 'Secador': '50 kg agua/h', 'Bodega cáscara': '2×10 m³', 'Acetificador': '6 m³', 'Caldera de corona': '100 kWt'}
+  etapa hojas 1816 {'Extractora hojas': '2 t/h'}
+H1_207 1816 {'NPV': 26.862582080411435, 'MIRR': np.float64(0.10020290170735802), 'FCI': np.float64(15485.206823650598)}
