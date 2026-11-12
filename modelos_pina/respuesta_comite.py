@@ -291,5 +291,23 @@ def run_h3():
         print("H3 ε", round(p["eps"] / 1000), "incumbente", round(res[-1]["incumbent"]), "cota", res[-1]["bound"] and round(res[-1]["bound"]), flush=True)
 
 
+
+
+
+def run_h3full(idx):
+    """Re-resuelve un punto ε del frente H3 y guarda el diseño completo (para los puntos que mejoran el incumbente publicado)."""
+    dm.HP_ON = True
+    p = V13("H3b")["frente"][idx]
+    r = dm.solve(gwp_max=float(p["eps"]), gwp_net=True, time_limit=900, hint=dict(p["sizes"], turno3=p["turno3"]))
+    out = dict(eps=p["eps"], published=dict(margin=p["margin"], gwp_neto=p["products"]["gwp_neto_kg"] / 1000, sizes=p["sizes"]),
+               new=short(r), new_tea=tea(r, "h3"))
+    save(f"h3full_{idx}", out)
+    print("H3full", idx, round(p["eps"] / 1000), "publicado", round(p["margin"]), "nuevo", round(r.get("obj", float("nan"))),
+          r.get("scen") and round(r["scen"][0]["products"]["gwp_neto_kg"] / 1000), flush=True)
+
+
 if __name__ == "__main__":
-    dict(tablas=run_tablas, fiscal=run_fiscal, hoja=run_hoja, ws=run_ws, h3=run_h3)[sys.argv[1]]()
+    if sys.argv[1] == "h3full":
+        run_h3full(int(sys.argv[2]))
+    else:
+        dict(tablas=run_tablas, fiscal=run_fiscal, hoja=run_hoja, ws=run_ws, h3=run_h3)[sys.argv[1]]()
