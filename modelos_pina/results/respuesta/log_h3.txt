@@ -5,3 +5,5 @@ H3 ε -645 incumbente 1849 cota 4572
     arranque en caliente: aceptado 125
 H3 ε -1129 incumbente 125 cota 4485
     arranque en caliente: aceptado -3517
+H3 ε -1612 incumbente -3517 cota None
+    arranque en caliente: aceptado -3806

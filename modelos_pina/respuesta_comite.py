@@ -306,8 +306,61 @@ def run_h3full(idx):
           r.get("scen") and round(r["scen"][0]["products"]["gwp_neto_kg"] / 1000), flush=True)
 
 
+def h4_designs():
+    best = {}
+    for g in ("H4a", "H4b", "H4p", "H4q0", "H4q1", "H4q2"):
+        try:
+            h = V13(g)
+        except FileNotFoundError:
+            continue
+        for k, v in h.items():
+            if k.startswith("_") or not isinstance(v, dict) or "obj" not in v or not v.get("sizes"):
+                continue
+            if k not in best or v["obj"] > best[k]["obj"]:
+                best[k] = v
+    return best
+
+
+def run_c207(part, E=None):
+    """Mapa H4 re-resuelto con el etanol del jugo de hoja corregido (filas con vinagre ≥ 1 500 m³, donde se usa el jugo de hoja).
+    part: índice de botellas (0–4) o 'vin11' (planta solo de vinagre a 11,1 kg/t)."""
+    dm.HP_ON = False
+    T = json.load(open(os.path.join(OUT, "tablas.json")))["stoich"]["E_scen"]
+    E = E or T["90 % of theoretical on carbohydrate"]
+    best = h4_designs(); BOT = [100000, 250000, 500000, 1000000, 2000000]
+    if part == "vin11":
+        keys = ["100000|3000"]; E = T["0.42 g/g on free sugars"]; tag = "c111_vin"
+    elif part == "vin135":
+        keys = ["100000|3000"]; E = T["theoretical on free sugars"]; tag = "c135_vin"
+    else:
+        b = BOT[int(part)]; keys = [f"{b}|{v}" for v in (1500, 3000, 6000, 12000)]; tag = f"c207_{part}"
+    dm.E_LJ, dm.A_LJ = E, E * 60 / 46 * dm.ACET_YIELD
+    base_w, base_v = dm.WINE_DEMAND_M3, dm.VIN_DEMAND
+    res = {}
+    for k in keys:
+        b, v = (int(x) for x in k.split("|"))
+        dm.WINE_DEMAND_M3, dm.VIN_DEMAND = b * dm.BOTTLE_L / 1000, v
+        h = best[k]
+        r = dm.solve(time_limit=360, hint=dict(h["sizes"], turno3=h["turno3"]))
+        f = dm.solve(fix=dict(h["sizes"], turno3=h["turno3"]), time_limit=150, gap=0.002)
+        bestr = max([x for x in (r, f) if x.get("scen")], key=lambda x: x["obj"])
+        out = dict(E_LJ=E, margin_old=h["obj"], free=short(r), fixed_old_design=short(f), best=short(bestr), tea=tea(bestr, "c207"))
+        if k == "500000|3000" and part != "vin11":
+            import acv
+            inv = acv.inventory(bestr)
+            out["acv"] = {kk: (vv if not isinstance(vv, dict) else {a: float(c) for a, c in vv.items()}) for kk, vv in inv.items()
+                          if isinstance(vv, (int, float, dict))}
+            out["full_products"] = bestr["scen"][0]["products"]
+        res[k] = out; save(tag, res)
+        print("C207", k, round(E, 2), "antes", round(h["obj"]), "libre", round(r.get("obj", float("nan"))), "diseño anterior", round(f.get("obj", float("nan"))),
+              "cota", res[k]["free"].get("bound") and round(res[k]["free"]["bound"]), res[k]["tea"], flush=True)
+    dm.WINE_DEMAND_M3, dm.VIN_DEMAND = base_w, base_v
+
+
 if __name__ == "__main__":
     if sys.argv[1] == "h3full":
         run_h3full(int(sys.argv[2]))
+    elif sys.argv[1] == "c207":
+        run_c207(sys.argv[2])
     else:
         dict(tablas=run_tablas, fiscal=run_fiscal, hoja=run_hoja, ws=run_ws, h3=run_h3)[sys.argv[1]]()
