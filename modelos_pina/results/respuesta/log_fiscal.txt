@@ -5,3 +5,5 @@ Specific component tripled reopt 1902 0 None | central 1599 {'NPV': -868.5480257
     arranque en caliente: aceptado 1442
 Decree 1474/2025 rates with 5 % VAT reopt 1902 0 None | central 1442 None
     arranque en caliente: aceptado 1442
+Decree 1474/2025 rates with 19 % VAT reopt 1902 0 None | central 1442 None
+    arranque en caliente: aceptado 1442
