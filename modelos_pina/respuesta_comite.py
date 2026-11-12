@@ -397,11 +397,119 @@ def run_gwp207():
         print("G207", lab, round(r["obj"]), round(r["scen"][0]["products"]["gwp_kg"] / 1000, 1), round(r["scen"][0]["products"]["gwp_neto_kg"] / 1000, 1), res[lab]["tea"], flush=True)
 
 
+# ============================================================================ ronda 2 del árbitro: procedencia y TEA sin fruta
+def tea_any(r, label):
+    """TEA también para diseños que no procesan fruta: planta_trl9.design se llama con 1 kg/año para dimensionar las líneas
+    de vino y harina (en cero), lo que evita la división por cero. Con fruta reproduce el TEA original (verificado: 5 273)."""
+    import planta_trl9 as pt, tea_dimensionado as td, tea_burk as tb
+    _d = pt.design
+    pt.design = lambda F, *a, **k: _d(max(F, 1e-3), *a, **k)
+    try:
+        c = td.build_case(r, label, False); e = tb.evaluate(c)
+        return dict(NPV=e["NPV"] / 1e6, MIRR=float(e["MIRR"]), FCI=e["FCI"] / 1e6, revenue=e["revenue"] / 1e6, var=e["var"] / 1e6, fixed=e["fixed"] / 1e6)
+    finally:
+        pt.design = _d
+
+
+def E_of(key):
+    T = json.load(open(os.path.join(OUT, "tablas.json")))["stoich"]["E_scen"]
+    return dict(T, **{"closure-compatible lower bound": closure_E()})[key]
+
+
+def closure_E():
+    """Etanol compatible con la levadura que reporta la misma fuente: 16,1 kg MS/t de levadura con Yx/s = 0,5 g/g consumen ≈ 32 kg de
+    azúcar; el resto del carbohidrato (44,9 g/kg) da a lo sumo 0,511 g/g de etanol."""
+    carb = json.load(open(os.path.join(OUT, "tablas.json")))["stoich"]["carb_gkg"]
+    return 0.511 * (carb - DT.val("levadura_jugo_hojas") / 0.5)
+
+
+def run_novino():
+    """TEA de las plantas sin fruta (solo vinagre) y corridas en el extremo compatible con el cierre de la fuente."""
+    dm.HP_ON = False
+    out = {}
+    cases = [("100000|1500", "90 % of theoretical on carbohydrate", "c207_0.json"), ("100000|3000", "90 % of theoretical on carbohydrate", "c207_0.json"),
+             ("100000|6000", "90 % of theoretical on carbohydrate", "c207_0.json"), ("100000|12000", "90 % of theoretical on carbohydrate", "c207_0.json"),
+             ("100000|3000", "theoretical on free sugars", "c135_vin.json"), ("100000|3000", "0.42 g/g on free sugars", "c111_vin.json")]
+    for k, ek, f in cases:
+        set_leaf(E_of(ek)); b, v = (int(x) for x in k.split("|")); dm.WINE_DEMAND_M3, dm.VIN_DEMAND = b * dm.BOTTLE_L / 1000, v
+        d = json.load(open(os.path.join(OUT, f)))[k]["best"]
+        r = dm.solve(fix=dict(d["sizes"], turno3=d["turno3"]), time_limit=150, gap=0.002)
+        out[f"{k}|{ek}"] = dict(E=E_of(ek), margin=r["obj"], tea=tea_any(r, "novino"))
+        save("novino", out); print("NOVINO", k, ek, round(r["obj"]), out[f"{k}|{ek}"]["tea"], flush=True)
+    Ec = closure_E(); set_leaf(Ec)
+    best = h4_designs()
+    for k in ("500000|3000", "100000|3000"):
+        b, v = (int(x) for x in k.split("|")); dm.WINE_DEMAND_M3, dm.VIN_DEMAND = b * dm.BOTTLE_L / 1000, v
+        h = best[k]
+        r = dm.solve(time_limit=420, hint=dict(h["sizes"], turno3=h["turno3"]))
+        f = dm.solve(fix=dict(h["sizes"], turno3=h["turno3"]), time_limit=150, gap=0.002)
+        bb = max([x for x in (r, f) if x.get("scen")], key=lambda x: x["obj"])
+        out[f"{k}|closure"] = dict(E=Ec, margin=bb["obj"], free_bound=dual(r["obj"], r["gap"]) if r.get("scen") else None, best=short(bb), tea=tea_any(bb, "cl"))
+        save("novino", out); print("CLOSURE", k, round(Ec, 2), round(bb["obj"]), out[f"{k}|closure"]["free_bound"], out[f"{k}|closure"]["tea"],
+                                   round(bb["scen"][0]["products"]["azucar_kg"] / 1000, 1), round(bb["scen"][0]["products"]["vinagre_m3"]), flush=True)
+    dm.WINE_DEMAND_M3, dm.VIN_DEMAND = DT.val("demanda_vino_botellas") * dm.BOTTLE_L / 1000, DT.val("demanda_vinagre_m3")
+
+
+# ---- funciones de las corridas de la ronda 1 hechas con guiones auxiliares (mismo código; para reproducirlas desde el repositorio)
+def central207():
+    c = json.load(open(os.path.join(OUT, "c207_2.json")))["500000|3000"]["best"]
+    return dict(c["sizes"], turno3=c["turno3"])
+
+
+def run_nest207():
+    dm.HP_ON = False; set_leaf(E_of("90 % of theoretical on carbohydrate")); out = {}
+    for sup in (1.3, 0.7):
+        r = dm.solve(scen=[dict(sup=sup, p=1.0)], time_limit=900, hint=central207())
+        out[str(sup)] = short(r); save("nest207", out)
+
+
+def run_neutral207():
+    dm.HP_ON = True; set_leaf(E_of("90 % of theoretical on carbohydrate"))
+    w = [e for e in V13("H3b")["mcda"] if e.get("w") == 0.75][0]
+    r = dm.solve(gwp_max=0.0, gwp_net=True, time_limit=600, hint=dict(w["sizes"], turno3=w["turno3"]))
+    save("neutral207", dict(short=short(r), terms=gwp_terms(r), tea=tea(r, "n207"), products={k: r["scen"][0]["products"].get(k) for k in
+         ("fruta_t", "hojas_t", "vino_m3", "vino_a_vinagre_m3", "azucar_kg", "calor_glp_MJ", "calor_corona_GJ", "pulpa_hojas_caldera_t",
+          "pulpa_hojas_campo_t", "corona_caldera_t", "gwp_kg", "gwp_neto_kg")}))
+
+
+def run_h1_207():
+    import revisor_v13 as rv
+    dm.HP_ON = False; set_leaf(E_of("90 % of theoretical on carbohydrate"))
+    fb, lb = rv.sequential(flat=False); eb = rv.evaluate(fb)
+    save("h1_207", dict(stages=lb, eval=short(eb), tea=tea(eb, "h1_207")))
+
+
+def run_tea_acv207():
+    import tea_dimensionado as td, tea_burk as tb, acv
+    dm.HP_ON = False; set_leaf(E_of("90 % of theoretical on carbohydrate"))
+    r = dm.solve(fix=central207(), time_limit=150, gap=0.002)
+    case = td.build_case(r, "opt207", False); e = tb.evaluate(case)
+    keys = ("revenue", "revenue_main", "revenue_bp", "var", "raw", "util", "waste", "labor", "sup", "maint", "taxes_loc", "WC", "fixed", "opex", "NPV",
+            "MIRR", "payback", "payback_disc", "FCI")
+    ev = {k: (float(e[k]) / 1e6 if k not in ("MIRR", "payback", "payback_disc") else float(e[k])) for k in keys}
+    o = td.run(case, mc_n=1000)
+    save("tea207", dict(eval=ev, mc={k: float(v) for k, v in o["mc"].items() if not hasattr(v, "__len__")}, breakeven=o.get("breakeven"), tornado=o.get("tornado")))
+    inv = acv.inventory(r, case); inv["asignacion"] = acv.allocation(inv, case)
+    save("acv207", {k: v for k, v in inv.items() if isinstance(v, (int, float, dict))})
+
+
+def run_mono():
+    """Monotonía en el rendimiento del jugo de hoja: los diseños hallados a 20,7 kg/t evaluados a 21,8 kg/t (cota inferior del óptimo a 21,8)."""
+    dm.HP_ON = False; set_leaf(E_of("central (source mass balance)")); out = {}
+    for f, k in (("c207_2.json", "500000|1500"), ("c207_1.json", "250000|1500"), ("c207_4.json", "2000000|6000")):
+        d = json.load(open(os.path.join(OUT, f)))[k]["best"]
+        b, v = (int(x) for x in k.split("|")); dm.WINE_DEMAND_M3, dm.VIN_DEMAND = b * dm.BOTTLE_L / 1000, v
+        r = dm.solve(fix=dict(d["sizes"], turno3=d["turno3"]), time_limit=150, gap=0.002)
+        out[k] = dict(margin_207=d["margin"], margin_218=r["obj"], tea=tea_any(r, "mono"))
+        save("mono", out); print("MONO", k, round(d["margin"]), round(r["obj"]), out[k]["tea"], flush=True)
+
+
 if __name__ == "__main__":
     if sys.argv[1] == "h3full":
         run_h3full(int(sys.argv[2]))
-    elif sys.argv[1] in ("fiscal207", "gwp207"):
-        dict(fiscal207=run_fiscal207, gwp207=run_gwp207)[sys.argv[1]]()
+    elif sys.argv[1] in ("fiscal207", "gwp207", "novino", "nest207", "neutral207", "h1_207", "tea_acv207", "mono"):
+        dict(fiscal207=run_fiscal207, gwp207=run_gwp207, novino=run_novino, nest207=run_nest207, neutral207=run_neutral207,
+             h1_207=run_h1_207, tea_acv207=run_tea_acv207, mono=run_mono)[sys.argv[1]]()
     elif sys.argv[1] == "c207":
         run_c207(sys.argv[2])
     else:
