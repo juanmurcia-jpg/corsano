@@ -5,3 +5,4 @@ central (source mass balance) 21.8 reopt 3196 145.6 3000 {'NPV': 5397.0634464459
     arranque en caliente: aceptado 2965
 theoretical on free sugars 13.53 reopt 2965 211.6 3000 {'NPV': 4491.20224456222, 'MIRR': np.float64(0.12942238387472194), 'FCI': np.float64(16404.50572935201)}
     arranque en caliente: aceptado 2897
+0.42 g/g on free sugars 11.12 reopt 2897 230.8 3000 {'NPV': 4224.989825351573, 'MIRR': np.float64(0.1277993757348308), 'FCI': np.float64(16404.50572935201)}
