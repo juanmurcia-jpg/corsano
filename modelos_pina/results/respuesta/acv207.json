@@ -1,0 +1,60 @@
+{
+ "F": 1276.496945559573,
+ "gwp": {
+  "Electricidad (grupo di\u00e9sel)": 268580.320727454,
+  "Calor con GLP": 57174.7909014887,
+  "Caldera de biomasa (CH4, N2O)": 0.0,
+  "Compostaje de fracciones sin uso": 60601.69249044073,
+  "Pulpa y jugo de hojas devueltos al campo": 478787.9246401837,
+  "Fugas de biog\u00e1s": 0.0,
+  "Acopio de hojas (di\u00e9sel)": 66782.18571908108,
+  "Transporte de fruta": 5208.107537883058,
+  "Insumos qu\u00edmicos": 2365.430483903133,
+  "Panela a\u00f1adida": 92776.36739438177,
+  "Botellas de vidrio": 250000.0,
+  "Tratamiento de efluentes": 10780.68273749236
+ },
+ "gwp_total": 1293057.5026323085,
+ "gwp_milp": 1282213.808499526,
+ "fossil_MJ": 4742799.0895628845,
+ "water_m3": 2935.942974787018,
+ "base": {
+  "fruta": 242406.7699617629,
+  "hojas_quema": 41575.727712908214,
+  "hojas_descomposicion": 711377.4074111257
+ },
+ "pm_evitado_kg": 4756.001877036153,
+ "credits": {
+  "Etanol en lugar de gasolina": 0.0,
+  "Excedente el\u00e9ctrico en lugar de di\u00e9sel": 0.0
+ },
+ "net_vs_quema": 1009075.0049576374,
+ "net_vs_descomposicion": 339273.32525941986,
+ "net_con_expansion": 339273.32525941986,
+ "per_t_fruta": 1012.9734404225118,
+ "e_dem_kWh": 276204.0850397697,
+ "e_bio_kWh": 0.0,
+ "q_glp_MJ": 684486.9333276816,
+ "efluente": {
+  "m3": 2642.3486773083164,
+  "dqo_kg": 7927.046031924949,
+  "dqo_vertida_kg": 237.8113809577485
+ },
+ "asignacion": {
+  "vino (L)": {
+   "cantidad": 500000.0,
+   "kgCO2e_por_unidad": 1.1469601568895709,
+   "fraccion": 0.44350701904388484
+  },
+  "harina": {
+   "cantidad": 40126.1596452912,
+   "kgCO2e_por_unidad": 1.2193620167932253,
+   "fraccion": 0.03783924137298198
+  },
+  "vinagre": {
+   "cantidad": 3000000.0,
+   "kgCO2e_por_unidad": 0.22354970307875796,
+   "fraccion": 0.5186537395831332
+  }
+ }
+}

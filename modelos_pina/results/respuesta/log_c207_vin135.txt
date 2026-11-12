@@ -1,0 +1,2 @@
+    arranque en caliente: aceptado 1654
+C207 100000|3000 13.53 antes 1902 libre 1654 diseño anterior 1654 cota 3252 None

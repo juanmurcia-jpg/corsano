@@ -1,1 +1,8 @@
     arranque en caliente: aceptado -493
+C207 100000|1500 20.67 antes -476 libre -146 diseño anterior -493 cota None None
+    arranque en caliente: aceptado 1868
+C207 100000|3000 20.67 antes 1902 libre 1868 diseño anterior 1868 cota 1872 None
+    arranque en caliente: aceptado 5711
+C207 100000|6000 20.67 antes 5774 libre 5714 diseño anterior 5711 cota 5946 None
+    arranque en caliente: aceptado 12956
+C207 100000|12000 20.67 antes 13082 libre 13072 diseño anterior 12956 cota 13947 None

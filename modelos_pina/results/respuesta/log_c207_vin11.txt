@@ -1,1 +1,2 @@
     arranque en caliente: aceptado 1581
+C207 100000|3000 11.12 antes 1902 libre 1581 diseño anterior 1581 cota 3206 None

@@ -1,0 +1,8 @@
+    arranque en caliente: aceptado 2763
+C207 1000000|1500 20.67 antes 2775 libre 2763 diseño anterior 2763 cota 4381 {'NPV': 3223.674443386057, 'MIRR': np.float64(0.121097231938879), 'FCI': np.float64(16615.416447129795)}
+    arranque en caliente: aceptado 4913
+C207 1000000|3000 20.67 antes 4942 libre 4913 diseño anterior 4913 cota 6715 {'NPV': 11439.665480601096, 'MIRR': np.float64(0.16361721249303307), 'FCI': np.float64(17357.73367566712)}
+    arranque en caliente: aceptado 8805
+C207 1000000|6000 20.67 antes 8858 libre 8805 diseño anterior 8805 cota 10909 {'NPV': 25860.067876048393, 'MIRR': np.float64(0.2044570637627241), 'FCI': np.float64(21801.14803130156)}
+    arranque en caliente: aceptado 15957
+C207 1000000|12000 20.67 antes 16088 libre 15957 diseño anterior 15957 cota 17054 {'NPV': 52763.60828994416, 'MIRR': np.float64(0.23255724736842098), 'FCI': np.float64(33488.43212771895)}

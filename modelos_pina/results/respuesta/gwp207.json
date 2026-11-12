@@ -1,0 +1,142 @@
+{
+ "optimum": {
+  "short": {
+   "status": "gaplimit",
+   "gap": 2.6741573959432486e-05,
+   "obj": 3164.0245302374574,
+   "bound": 3164.109141233442,
+   "margin": 3164.0245302374565,
+   "FCI": 12639.950068745145,
+   "sizes": {
+    "Frente": "1 t/h",
+    "Prensa": "1 t/h",
+    "Decantadora": "no",
+    "Prensa c\u00e1scara": "no",
+    "Clarificaci\u00f3n": "Flotaci\u00f3n 0.5 m\u00b3/h",
+    "MF l\u00edas": "no",
+    "Estabilizaci\u00f3n": "SO\u2082",
+    "Bodega": "2\u00d710 m\u00b3",
+    "Secador": "50 kg agua/h",
+    "Bodega c\u00e1scara": "2\u00d710 m\u00b3",
+    "Acetificador": "10 m\u00b3",
+    "Caldera de corona": "no",
+    "Pretratamiento c\u00e1scara": "agua",
+    "Enzima c\u00e1scara": "no",
+    "Extractora hojas": "2 t/h",
+    "Bodega etanol": "no",
+    "Destilaci\u00f3n": "no",
+    "Digestor": "no",
+    "Motor biog\u00e1s": "no",
+    "\u00c1cido c\u00edtrico": "no",
+    "Xantana": "no",
+    "Almac\u00e9n de mosto": "10 m\u00b3",
+    "Embotelladora": "500 botellas/h",
+    "Bomba de calor": "no"
+   },
+   "turno3": 0,
+   "products": {
+    "fruta_t": 1276.4969455595729,
+    "hojas_t": 3746.0632301797045,
+    "vino_m3": 374.99999999999994,
+    "botellas": 500000.0,
+    "vinagre_m3": 3000.0,
+    "acido_kg": 150000.0,
+    "azucar_kg": 154627.27899063632,
+    "jugo_hojas_vinagre_t": 2847.0080549365753,
+    "jugo_cascara_vinagre_t": 221.3445703600299,
+    "vino_a_vinagre_m3": 0.0,
+    "harina_t": 30.791233821806166,
+    "gwp_kg": 1282213.8084995262,
+    "gwp_neto_kg": 328429.6311266375
+   }
+  },
+  "terms": {
+   "Electricity (diesel genset)": 176.52067220884172,
+   "LPG heat": 57.1747909014887,
+   "Biomass boiler (CH4, N2O)": 0.0,
+   "Composting of unused fractions": 60.60169249044071,
+   "Leaf pulp and juice returned to the field": 478.7879246401837,
+   "Leaf collection (diesel)": 66.78218571908108,
+   "Fruit transport": 5.208107537883057,
+   "Panela": 92.7763673943818,
+   "Glass bottles": 249.99999999999997,
+   "Chemicals and other": 63.86455228689124,
+   "Aeration and other fixed electricity": 30.497515320334287
+  },
+  "tea": {
+   "NPV": 5273.438725576928,
+   "MIRR": 0.13411755710293205,
+   "FCI": 16404.50572935201
+  }
+ },
+ "w075": {
+  "short": {
+   "status": "gaplimit",
+   "gap": 3.2647887391218586e-05,
+   "obj": 3088.8746773126636,
+   "bound": 3088.9755225452946,
+   "margin": 3088.874677312663,
+   "FCI": 13409.68425120676,
+   "sizes": {
+    "Frente": "1 t/h",
+    "Prensa": "1 t/h",
+    "Decantadora": "no",
+    "Prensa c\u00e1scara": "no",
+    "Clarificaci\u00f3n": "Flotaci\u00f3n 0.5 m\u00b3/h",
+    "MF l\u00edas": "no",
+    "Estabilizaci\u00f3n": "SO\u2082",
+    "Bodega": "2\u00d710 m\u00b3",
+    "Secador": "50 kg agua/h",
+    "Bodega c\u00e1scara": "2\u00d710 m\u00b3",
+    "Acetificador": "10 m\u00b3",
+    "Caldera de corona": "100 kWt",
+    "Pretratamiento c\u00e1scara": "agua",
+    "Enzima c\u00e1scara": "no",
+    "Extractora hojas": "2 t/h",
+    "Bodega etanol": "no",
+    "Destilaci\u00f3n": "no",
+    "Digestor": "no",
+    "Motor biog\u00e1s": "no",
+    "\u00c1cido c\u00edtrico": "no",
+    "Xantana": "no",
+    "Almac\u00e9n de mosto": "10 m\u00b3",
+    "Embotelladora": "500 botellas/h",
+    "Bomba de calor": "no"
+   },
+   "turno3": 0,
+   "products": {
+    "fruta_t": 2438.6541020473273,
+    "hojas_t": 3032.705486393335,
+    "vino_m3": 716.4100873479679,
+    "botellas": 499999.99999999994,
+    "vinagre_m3": 3000.0,
+    "acido_kg": 150000.0,
+    "azucar_kg": 102341.3589849487,
+    "jugo_hojas_vinagre_t": 2304.8561696589345,
+    "jugo_cascara_vinagre_t": 422.86262129500653,
+    "vino_a_vinagre_m3": 341.4100873479679,
+    "harina_t": 58.824401364884956,
+    "gwp_kg": 1079224.3164720295,
+    "gwp_neto_kg": 40213.13062714778
+   }
+  },
+  "terms": {
+   "Electricity (diesel genset)": 193.2990066789122,
+   "LPG heat": 8.242696982479709e-15,
+   "Biomass boiler (CH4, N2O)": 15.02503925077886,
+   "Composting of unused fractions": 46.31004139787875,
+   "Leaf pulp and juice returned to the field": 353.59538464457495,
+   "Leaf collection (diesel)": 54.06494460422658,
+   "Fruit transport": 9.949708736353097,
+   "Panela": 61.404815390969205,
+   "Glass bottles": 249.99999999999994,
+   "Chemicals and other": 80.20059531758875,
+   "Aeration and other fixed electricity": 15.374780450747267
+  },
+  "tea": {
+   "NPV": 4904.0478569751795,
+   "MIRR": 0.13064049239055686,
+   "FCI": 17174.239911813624
+  }
+ }
+}

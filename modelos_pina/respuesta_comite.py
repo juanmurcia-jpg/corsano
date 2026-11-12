@@ -357,9 +357,51 @@ def run_c207(part, E=None):
     dm.WINE_DEMAND_M3, dm.VIN_DEMAND = base_w, base_v
 
 
+def set_leaf(E):
+    dm.E_LJ, dm.A_LJ = E, E * 60 / 46 * dm.ACET_YIELD
+
+
+def run_fiscal207():
+    """Regímenes fiscales con el valor central corregido del etanol del jugo de hoja (20,7 kg/t)."""
+    dm.HP_ON = False
+    set_leaf(json.load(open(os.path.join(OUT, "tablas.json")))["stoich"]["E_scen"]["90 % of theoretical on carbohydrate"])
+    c = json.load(open(os.path.join(OUT, "c207_2.json")))["500000|3000"]["best"]
+    cen = dict(c["sizes"], turno3=c["turno3"])
+    vin = json.load(open(os.path.join(OUT, "c207_0.json")))["100000|3000"]["best"]
+    res = {}
+    for lab, (e, av, iva) in fiscal_regimes().items():
+        with_params(dict(impuesto_vino_especifico=e, impuesto_vino_ad_valorem=av, iva_vino=iva))
+        r = dm.solve(time_limit=360, hint=cen)
+        f = dm.solve(fix=cen, time_limit=150, gap=0.002)
+        v = dm.solve(fix=dict(vin["sizes"], turno3=vin["turno3"]), time_limit=150, gap=0.002)
+        cands = [x for x in (r, f, v) if x.get("scen")]
+        best = max(cands, key=lambda x: x["obj"])
+        res[lab] = dict(e=e, a=av, iva=iva, best=short(best), best_tea=tea(best, "f207"), free_bound=dual(r["obj"], r["gap"]) if r.get("scen") else None,
+                        central=short(f), central_tea=tea(f, "f207c"))
+        restore_params(); save("fiscal207", res)
+        print("F207", lab, "mejor", round(best["obj"]), round(best["scen"][0]["products"]["botellas"]), "cota", res[lab]["free_bound"] and round(res[lab]["free_bound"]),
+              res[lab]["best_tea"], "| central", round(f.get("obj", float("nan"))), round(f["scen"][0]["products"]["fruta_t"]), res[lab]["central_tea"], flush=True)
+
+
+def run_gwp207():
+    """GWP neto (contabilidad v13) del óptimo y del compromiso w = 0,75 con el etanol de hoja corregido, diseños fijos."""
+    dm.HP_ON = True
+    set_leaf(json.load(open(os.path.join(OUT, "tablas.json")))["stoich"]["E_scen"]["90 % of theoretical on carbohydrate"])
+    c = json.load(open(os.path.join(OUT, "c207_2.json")))["500000|3000"]["best"]
+    w = [e for e in V13("H3b")["mcda"] if e.get("w") == 0.75][0]
+    res = {}
+    for lab, d in (("optimum", dict(c["sizes"], turno3=c["turno3"], **{"Bomba de calor": "no"})), ("w075", dict(w["sizes"], turno3=w["turno3"]))):
+        r = dm.solve(fix=d, time_limit=150, gap=0.002)
+        res[lab] = dict(short=short(r), terms=gwp_terms(r), tea=tea(r, "g207"))
+        save("gwp207", res)
+        print("G207", lab, round(r["obj"]), round(r["scen"][0]["products"]["gwp_kg"] / 1000, 1), round(r["scen"][0]["products"]["gwp_neto_kg"] / 1000, 1), res[lab]["tea"], flush=True)
+
+
 if __name__ == "__main__":
     if sys.argv[1] == "h3full":
         run_h3full(int(sys.argv[2]))
+    elif sys.argv[1] in ("fiscal207", "gwp207"):
+        dict(fiscal207=run_fiscal207, gwp207=run_gwp207)[sys.argv[1]]()
     elif sys.argv[1] == "c207":
         run_c207(sys.argv[2])
     else:

@@ -1,0 +1,123 @@
+{
+ "eval": {
+  "revenue": 12088.990248175014,
+  "revenue_main": 5361.5520282186935,
+  "revenue_bp": 6727.43821995632,
+  "var": 5097.435604975881,
+  "raw": 4496.619464025115,
+  "util": 579.8774373225275,
+  "waste": 20.93870362823785,
+  "labor": 571.6117027860901,
+  "sup": 342.967021671654,
+  "maint": 820.2252864676005,
+  "taxes_loc": 492.1351718805603,
+  "WC": 610.3645656484821,
+  "fixed": 2226.9391828059047,
+  "opex": 7324.374787781786,
+  "NPV": 5273.4387255769325,
+  "MIRR": 0.13411755710293205,
+  "payback": 4.955839297427554,
+  "payback_disc": 6.5887484564828736,
+  "FCI": 16404.50572935201
+ },
+ "mc": {
+  "P_pos": 0.778,
+  "P5": -4127179663.844581,
+  "P50": 3543168115.0905066,
+  "P95": 11525509536.99325,
+  "CVaR5": -6347416616.311058
+ },
+ "breakeven": 8426.469002268717,
+ "tornado": [
+  {
+   "label": "Precio del vinagre",
+   "key": "bp_price_vinagre",
+   "worst": 1540.0,
+   "base": 2200,
+   "best": 2860.0,
+   "NPV_worst": -2027318904.6945682,
+   "NPV_best": 12557588654.585218,
+   "range": 14584907559.279787
+  },
+  {
+   "label": "Precio del producto",
+   "key": "price",
+   "worst": 7901.234567901232,
+   "base": 11287.477954144619,
+   "best": 14673.721340388005,
+   "NPV_worst": -968117070.8619802,
+   "NPV_best": 11503618328.963104,
+   "range": 12471735399.825085
+  },
+  {
+   "label": "CapEx (\u00b130 %)",
+   "key": "capex_scale",
+   "worst": 1.3,
+   "base": 1.0,
+   "best": 0.7,
+   "NPV_worst": -51603491.84378958,
+   "NPV_best": 10584958718.629875,
+   "range": 10636562210.473665
+  },
+  {
+   "label": "Tasa de descuento",
+   "key": "tasa",
+   "worst": 0.18,
+   "base": 0.1,
+   "best": 0.06,
+   "NPV_worst": 64702925.97527492,
+   "NPV_best": 9235991173.330074,
+   "range": 9171288247.3548
+  },
+  {
+   "label": "Factor de producci\u00f3n",
+   "key": "f_prod",
+   "worst": 0.888888888888889,
+   "base": 1.0,
+   "best": 1.0888888888888888,
+   "NPV_worst": 2283669946.697994,
+   "NPV_best": 7665253748.680075,
+   "range": 5381583801.98208
+  },
+  {
+   "label": "Costo de la materia prima principal",
+   "key": "raw_scale",
+   "worst": 1.5,
+   "base": 1.0,
+   "best": 0.5,
+   "NPV_worst": 4271626075.349905,
+   "NPV_best": 6275251375.803964,
+   "range": 2003625300.4540586
+  },
+  {
+   "label": "Precio de la panela",
+   "key": "raw_price_panela",
+   "worst": 5000.0,
+   "base": 3500.0,
+   "best": 2500.0,
+   "NPV_worst": 4363286347.019357,
+   "NPV_best": 5880206977.948649,
+   "range": 1516920630.9292927
+  },
+  {
+   "label": "Rendimiento del jugo de c\u00e1scara (0,23\u20130,43 g/g)",
+   "key": "bp_qty_vinagre",
+   "worst": 0.975538922819204,
+   "base": 1.0,
+   "best": 1.0131713492511978,
+   "NPV_worst": 4678291797.082551,
+   "NPV_best": 5593902456.304668,
+   "range": 915610659.2221174
+  },
+  {
+   "label": "Costo de acopio de hojas",
+   "key": "raw_price_acopio",
+   "worst": 80000.0,
+   "base": 35400.0,
+   "best": 25000.0,
+   "NPV_worst": 4617827021.476436,
+   "NPV_best": 5426316791.107096,
+   "range": 808489769.63066
+  }
+ ]
+}
