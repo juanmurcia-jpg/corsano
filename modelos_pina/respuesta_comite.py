@@ -467,6 +467,17 @@ def run_be_vin():
     dm.WINE_DEMAND_M3, dm.VIN_DEMAND = DT.val("demanda_vino_botellas") * dm.BOTTLE_L / 1000, DT.val("demanda_vinagre_m3")
 
 
+def run_social_hot207():
+    """§5.6.5 y §5.7 a 20,7 kg/t: indicadores sociales y puntos calientes del diseño central con tamaños fijos."""
+    import social, puntos_calientes as pc, tea_dimensionado as td
+    dm.HP_ON = False; set_leaf(E_of("90 % of theoretical on carbohydrate"))
+    r = dm.solve(fix=central207(), time_limit=300, gap=0.0005)
+    soc = social.indicators(r, td.build_case(r, "Óptimo 20,7", False))
+    hot = pc.analyse(r=r, out_path=os.path.join(OUT, "hot207.json"))
+    save("social207", dict(margin=r["obj"], social=soc))
+    print("SOC207", round(r["obj"]), {k: round(v / 1e6 if v > 1e4 else v, 2) for k, v in soc.items()}, flush=True)
+
+
 # ---- funciones de las corridas de la ronda 1 hechas con guiones auxiliares (mismo código; para reproducirlas desde el repositorio)
 def central207():
     c = json.load(open(os.path.join(OUT, "c207_2.json")))["500000|3000"]["best"]
@@ -524,9 +535,9 @@ def run_mono():
 if __name__ == "__main__":
     if sys.argv[1] == "h3full":
         run_h3full(int(sys.argv[2]))
-    elif sys.argv[1] in ("fiscal207", "gwp207", "novino", "nest207", "neutral207", "h1_207", "tea_acv207", "mono", "be_vin"):
+    elif sys.argv[1] in ("fiscal207", "gwp207", "novino", "nest207", "neutral207", "h1_207", "tea_acv207", "mono", "be_vin", "social_hot207"):
         dict(fiscal207=run_fiscal207, gwp207=run_gwp207, novino=run_novino, nest207=run_nest207, neutral207=run_neutral207,
-             h1_207=run_h1_207, tea_acv207=run_tea_acv207, mono=run_mono, be_vin=run_be_vin)[sys.argv[1]]()
+             h1_207=run_h1_207, tea_acv207=run_tea_acv207, mono=run_mono, be_vin=run_be_vin, social_hot207=run_social_hot207)[sys.argv[1]]()
     elif sys.argv[1] == "c207":
         run_c207(sys.argv[2])
     else:

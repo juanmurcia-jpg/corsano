@@ -23,9 +23,11 @@ SECCIONES = {
 }
 
 
-def analyse(key="E1|Óptimo económico"):
-    d = json.load(open(os.path.join(RES, "dimensionamiento.json")))
-    r = d[key]; s = r["scen"][0]; p = s["products"]; sz = r["sizes"]
+def analyse(key="E1|Óptimo económico", r=None, out_path=None):
+    """r: un resultado de dm.solve ya calculado (si no, se lee `key` de dimensionamiento.json); out_path: dónde guardar."""
+    if r is None:
+        r = json.load(open(os.path.join(RES, "dimensionamiento.json")))[key]
+    s = r["scen"][0]; p = s["products"]; sz = r["sizes"]
     O = dm.options(False)
     cost = lambda u: next((o["cost"] * dm.AF + o.get("fixed", 0.0) for o in O[u] if o["lab"] == sz.get(u, "no")), 0.0) if u in O else 0.0
     F = p["fruta_t"]; rows = s["periods"]
@@ -66,7 +68,7 @@ def analyse(key="E1|Óptimo económico"):
     for sec, v in out.items():
         v.update({f"frac_{k}": v[k] / tot[k] for k in tot})
         v["punto_caliente"] = [k for k in ("capital", "elec_kWh", "calor_MJ", "gwp_kg") if v[f"frac_{k}"] > max(v["frac_ingreso"], 0.0) + 0.10]
-    json.dump(out, open(os.path.join(RES, "puntos_calientes.json"), "w"), indent=1, default=float)
+    json.dump(out, open(out_path or os.path.join(RES, "puntos_calientes.json"), "w"), indent=1, default=float)
     for sec, v in out.items():
         print(f"{sec}: capital {v['frac_capital']:.0%} · elec {v['frac_elec_kWh']:.0%} · calor {v['frac_calor_MJ']:.0%} · GWP {v['frac_gwp_kg']:.0%} · "
               f"ingreso {v['frac_ingreso']:.0%} → {v['punto_caliente']}")

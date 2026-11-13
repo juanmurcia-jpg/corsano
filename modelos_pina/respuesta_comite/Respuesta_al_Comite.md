@@ -480,7 +480,7 @@ En el óptimo, la corrección baja el margen en 32 MM COP/año (1,0 %) sin cambi
 >
 > The plant emits 1,293 t CO₂e/year in process. Against a site where fruit and leaves decompose, it adds 121–558 t over the plausible range of the decomposition factor; if the leaves would otherwise be burned, it adds 853–1,166 t. Burning leaf pulp in a biomass boiler makes it net-zero for 83 MM COP/year, but only at the central factor or above and with credit for the extra fruit it buys.
 >
-> At 21.8 kg/t the plant retains about 2,000 MM COP/year in the territory with about 17 jobs. Supply uncertainty has no value (VSS and EVPI between 0 and 38 MM COP/year); market and fiscal uncertainty dominate.
+> The plant retains 2,021 MM COP/year in the territory with about 17 jobs (local purchases 555 MM COP/year with the extra panela). Supply uncertainty has no value (VSS and EVPI between 0 and 38 MM COP/year); market and fiscal uncertainty dominate.
 >
 > **Objective 5: the Bajo Atrato biorefinery.** The optimal plant processes 1,276 t/year of fruit and 3,746 t/year of leaves into 500,000 bottles of wine, 3,000 m³ of vinegar and 40 t of fibre flour. Its equipment:
 > - a 1 t/h front end, one shared press, flotation and SO₂;

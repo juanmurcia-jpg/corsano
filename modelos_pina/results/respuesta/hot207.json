@@ -1,0 +1,101 @@
+{
+ "Frente y pulpa": {
+  "capital": 334525205.2954316,
+  "elec_kWh": 13275.56823381956,
+  "calor_MJ": 24194.723106136153,
+  "gwp_kg": 16033.204136169226,
+  "ingreso": 0.0,
+  "frac_capital": 0.1045119669100893,
+  "frac_elec_kWh": 0.04798244163111223,
+  "frac_calor_MJ": 0.05464063944404192,
+  "frac_gwp_kg": 0.04079739879970671,
+  "frac_ingreso": 0.0,
+  "punto_caliente": [
+   "capital"
+  ]
+ },
+ "Mosto y bodega de vino": {
+  "capital": 781471905.8070316,
+  "elec_kWh": 8132.611921161019,
+  "calor_MJ": 0.0,
+  "gwp_kg": 7908.136180617452,
+  "ingreso": 2333522707.231039,
+  "frac_capital": 0.24414652369390313,
+  "frac_elec_kWh": 0.029394039482355465,
+  "frac_calor_MJ": 0.0,
+  "frac_gwp_kg": 0.020122701787050605,
+  "frac_ingreso": 0.24785062455697587,
+  "punto_caliente": []
+ },
+ "C\u00e1scara y harina": {
+  "capital": 320798876.65039825,
+  "elec_kWh": 7575.1498639527235,
+  "calor_MJ": 418602.4943553146,
+  "gwp_kg": 61416.78491559691,
+  "ingreso": 481513915.7434944,
+  "frac_capital": 0.10022360363450346,
+  "frac_elec_kWh": 0.027379181048392903,
+  "frac_calor_MJ": 0.9453593605559582,
+  "frac_gwp_kg": 0.15627849841598077,
+  "frac_ingreso": 0.05114307410854953,
+  "punto_caliente": [
+   "calor_MJ",
+   "gwp_kg"
+  ]
+ },
+ "Vinagre": {
+  "capital": 1633133001.088456,
+  "elec_kWh": 180263.0777777778,
+  "calor_MJ": 0.0,
+  "gwp_kg": 175287.46990799363,
+  "ingreso": 6600000000.0,
+  "frac_capital": 0.5102214705130992,
+  "frac_elec_kWh": 0.6515323830495127,
+  "frac_calor_MJ": 0.0,
+  "frac_gwp_kg": 0.4460289255779813,
+  "frac_ingreso": 0.7010063013344746,
+  "punto_caliente": []
+ },
+ "Caldera de biomasa": {
+  "capital": 0.0,
+  "elec_kWh": 0.0,
+  "calor_MJ": 0.0,
+  "gwp_kg": 0.0,
+  "ingreso": 0.0,
+  "frac_capital": 0.0,
+  "frac_elec_kWh": 0.0,
+  "frac_calor_MJ": 0.0,
+  "frac_gwp_kg": 0.0,
+  "frac_ingreso": 0.0,
+  "punto_caliente": []
+ },
+ "Hojas (extracci\u00f3n, etanol, biog\u00e1s)": {
+  "capital": 130902601.89145185,
+  "elec_kWh": 67429.13814323467,
+  "calor_MJ": 0.0,
+  "gwp_kg": 132350.14987963342,
+  "ingreso": 0.0,
+  "frac_capital": 0.040896435248405,
+  "frac_elec_kWh": 0.24371195478862667,
+  "frac_calor_MJ": 0.0,
+  "frac_gwp_kg": 0.3367724754192807,
+  "frac_ingreso": 0.0,
+  "punto_caliente": [
+   "elec_kWh",
+   "gwp_kg"
+  ]
+ },
+ "Hub (c\u00edtrico, xantana)": {
+  "capital": 0.0,
+  "elec_kWh": 0.0,
+  "calor_MJ": 0.0,
+  "gwp_kg": 0.0,
+  "ingreso": 0.0,
+  "frac_capital": 0.0,
+  "frac_elec_kWh": 0.0,
+  "frac_calor_MJ": 0.0,
+  "frac_gwp_kg": 0.0,
+  "frac_ingreso": 0.0,
+  "punto_caliente": []
+ }
+}
