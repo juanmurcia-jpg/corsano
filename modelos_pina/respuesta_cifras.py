@@ -24,6 +24,9 @@ for (bt, vin), r in rows21.items():
     else:
         m, npv, bound, fruit = r["margin"], r["NPV"], r["bound"], r["fruit_t"]
     grid[f"{bt}|{vin}"] = dict(bottles=bt, vinegar=vin, margin=m, NPV=npv, NPV_secant=sec(m), bound=bound, fruit=fruit)
+NV = R("novino.json")
+for v in (1500, 3000, 6000, 12000):                      # TEA de las plantas sin fruta (tea_any)
+    grid[f"100000|{v}"]["NPV"] = NV[f"100000|{v}|90 % of theoretical on carbohydrate"]["tea"]["NPV"]; grid[f"100000|{v}"]["tea_nofruit"] = True
 dev = [abs(g["NPV"] - g["NPV_secant"]) for g in grid.values() if g["NPV"] is not None and abs(g["margin"] - 184) > 1 and abs(g["margin"] - 3196) > 1]
 C["secant"].update(n_tea=sum(1 for g in grid.values() if g["NPV"] is not None), n_dev=len(dev), dev_mean=sum(dev) / len(dev), dev_max=max(dev))
 C["secant"]["band_margin"] = C["secant"]["dev_max"] / s
@@ -35,7 +38,10 @@ C["frontier"] = dict(
     wine_only=interp(500000, g(500000, 0)["NPV"], 1000000, g(1000000, 0)["NPV"]),
     at500k=interp(1500, g(500000, 1500)["NPV"], 3000, g(500000, 3000)["NPV"]),
     at250k=interp(1500, g(250000, 1500)["NPV"], 3000, g(250000, 3000)["NPV"]),
-    vin_only=interp(1500, g(100000, 1500)["margin"] - m0, 3000, g(100000, 3000)["margin"] - m0))
+    vin_only=interp(1500, g(100000, 1500)["NPV"], 3000, g(100000, 3000)["NPV"]))
+C["flip"] = {k: dict(bound=grid[k]["bound"], npv_sec_at_bound=sec(grid[k]["bound"]), deviation_to_flip=-sec(grid[k]["bound"]))
+             for k in ("250000|0", "500000|0", "250000|1500", "500000|1500") if grid[k]["bound"] is not None}
+h3p = R("h3full_1.json"); C["secant"]["h3_dev"] = abs(h3p["new_tea"]["NPV"] - sec(h3p["new"]["margin"]))
 # ---- central y jugo de hoja
 c = c207[(500000, 3000)]
 tea207 = R("tea207.json"); C["central"] = dict(margin=c["best"]["margin"], free_bound=c["free"]["bound"], nest=R("nest207.json"),
@@ -44,6 +50,16 @@ tor = tea207["tornado"][0]
 C["central"]["breakeven_vinegar"] = tor["worst"] + (tor["base"] - tor["worst"]) * (-tor["NPV_worst"]) / (tea207["eval"]["NPV"] * 1e6 - tor["NPV_worst"])
 C["leaf"] = {k: dict(E=v["E_LJ"], A=v["A_LJ"], margin=v["reopt"]["margin"], bound=v["reopt"]["bound"], panela=v["reopt"]["products"]["azucar_kg"] / 1000,
                      NPV=v["reopt_tea"]["NPV"], vinegar=v["reopt"]["products"]["vinagre_m3"]) for k, v in H.items()}
+C["vin_only_tea"] = {"20.7": NV["100000|3000|90 % of theoretical on carbohydrate"]["tea"], "13.5": NV["100000|3000|theoretical on free sugars"]["tea"],
+                     "11.1": NV["100000|3000|0.42 g/g on free sugars"]["tea"], "6.5": NV["100000|3000|closure"]["tea"]}
+C["closure"] = dict(E=NV["500000|3000|closure"]["E"], central=dict(margin=NV["500000|3000|closure"]["margin"], bound=NV["500000|3000|closure"]["free_bound"],
+                    tea=NV["500000|3000|closure"]["tea"], panela=NV["500000|3000|closure"]["best"]["products"]["azucar_kg"] / 1000,
+                    net=NV["500000|3000|closure"]["best"]["products"]["gwp_neto_kg"] / 1000),
+                    vin_only=dict(margin=NV["100000|3000|closure"]["margin"], bound=NV["100000|3000|closure"]["free_bound"]))
+C["mono"] = R("mono.json")
+WS = R("ws.json"); b13 = [e for e in WS["each"] if e["sup"] == 1.3][0]["bound"]; b07 = R("nest207.json")["0.7"]["bound"]
+C["cert"] = dict(bound_218_13=b13, gap_central=(b13 - c207[(500000, 3000)]["best"]["margin"]) / c207[(500000, 3000)]["best"]["margin"],
+                 ws_ub=0.25 * b07 + 0.75 * b13, evpi_ub=0.25 * b07 + 0.75 * b13 - c207[(500000, 3000)]["best"]["margin"])
 C["vin_only"] = {"20.7": c207[(100000, 3000)]["best"]["margin"], "13.5": R("c135_vin.json")["100000|3000"]["best"]["margin"],
                  "11.1": R("c111_vin.json")["100000|3000"]["best"]["margin"]}
 C["vin_only_bound"] = {"20.7": c207[(100000, 3000)]["free"]["bound"], "13.5": R("c135_vin.json")["100000|3000"]["free"]["bound"],
