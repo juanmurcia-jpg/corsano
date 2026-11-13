@@ -193,7 +193,7 @@ En el óptimo, la corrección baja el margen en 32 MM COP/año (1,0 %) sin cambi
 >
 > Over the designs of the demand map, NPV and margin follow approximately
 >
-> NPV ≈ −5,409 + 3.588 (m − 184) MM COP. (5.6.1)
+> NPV ≈ −5,409 + 3.588 (m − 184) MM COP. (5.1)
 >
 > The relation passes through the design without vinegar and the optimum at 21.8 kg/t. Against the full TEA of 26 other designs it deviates by 881 MM COP on average and by 2,706 at most; the largest deviation is at 12,000 m³ of vinegar, an extrapolation. It places the break-even margin at about 1,692 MM COP/year.
 >
@@ -303,7 +303,7 @@ En el óptimo, la corrección baja el margen en 32 MM COP/año (1,0 %) sin cambi
 >
 > The earlier reading of this map, «viable from about 500,000 bottles», took a positive margin for viability. It is withdrawn: that design has an NPV of −5,409 MM COP.
 >
-> **What the dual bounds establish.** The margins are the best solutions found, and their dual bounds limit what any design could earn at that point (Table 5.9.2b). Four points that decide the frontier have dual bounds below the break-even margin of about 1,692 MM COP/year. Turning a bound in margin into a statement about NPV requires Equation 5.6.1, which is empirical, so the strength of each conclusion is measured by the NPV error the relation would have to make for a viable design to exist there:
+> **What the dual bounds establish.** The margins are the best solutions found, and their dual bounds limit what any design could earn at that point (Table 5.9.2b). Four points that decide the frontier have dual bounds below the break-even margin of about 1,692 MM COP/year. Turning a bound in margin into a statement about NPV requires Equation 5.1, which is empirical, so the strength of each conclusion is measured by the NPV error the relation would have to make for a viable design to exist there:
 > - **Not viable, robustly:** 250,000 bottles without vinegar (error needed 8,514) and 500,000 bottles without vinegar (5,064). Both are far beyond the largest error observed, 2,706.
 > - **Not viable as found, but not established:**
 >   - 250,000 bottles with 1,500 m³ (error needed 2,390);
@@ -340,7 +340,7 @@ En el óptimo, la corrección baja el margen en 32 MM COP/año (1,0 %) sin cambi
 | 6,000 | 15,653 | 16,301 | 19,614 | 25,860 | 36,650 |
 | 12,000 | 43,536 | 43,474 | 46,746 | 52,764 | 55,967 |
 
-*Table 5.9.2b. Points that decide the frontier: margin of the design found, dual bound of its free run (MM COP/year), NPV of the design found, and what the bound establishes. Break-even margin about 1,692; «error needed» is the NPV error of Equation 5.6.1 that would allow a viable design at the bound (largest observed error: 2,706).*
+*Table 5.9.2b. Points that decide the frontier: margin of the design found, dual bound of its free run (MM COP/year), NPV of the design found, and what the bound establishes. Break-even margin about 1,692; «error needed» is the NPV error of Equation 5.1 that would allow a viable design at the bound (largest observed error: 2,706).*
 
 | Point (bottles; vinegar m³) | Margin found | Dual bound | NPV (TEA) | Error needed | Status |
 |---|---|---|---|---|---|
@@ -472,7 +472,7 @@ En el óptimo, la corrección baja el margen en 32 MM COP/año (1,0 %) sin cambi
 > - The glucose–xylose kinetics of the juices cut the processing time of the juice winery from 32.5 to 12.6 h.
 > - Fixing kinetics before sizing costs 7.1–9.0 % of the fermentation-train cost at the original design basis and 3.8–12.5 % at the wine flow of the optimum. The band of fermentation times left by the single point does not change the plant design (Section 5.11).
 >
-> **Objective 3** (sentences added at the end). The dual bounds of the free runs are now reported beside every hypothesis test. Two properties of the model, supply as an upper limit and the monotonic effect of the leaf-juice yield, certify the central optimum within 1.5 %. The bounds show, robustly against the largest observed error of Equation 5.6.1, that the designs without vinegar at 250,000 and 500,000 bottles are not viable, but they do not certify the margin–GWP front, whose bounds remain weak.
+> **Objective 3** (sentences added at the end). The dual bounds of the free runs are now reported beside every hypothesis test. Two properties of the model, supply as an upper limit and the monotonic effect of the leaf-juice yield, certify the central optimum within 1.5 %. The bounds show, robustly against the largest observed error of Equation 5.1, that the designs without vinegar at 250,000 and 500,000 bottles are not viable, but they do not certify the margin–GWP front, whose bounds remain weak.
 >
 > **Objective 4: assessment under uncertainty.** The optimum has an NPV of 5,273 MM COP, an MIRR of 13.4 % and P(NPV > 0) = 0.78, with a break-even vinegar price 22 % below the assumed price. Two uncertainties outside the Monte Carlo were quantified:
 > - **The leaf-juice yield.** Across its range it lowers the NPV of the optimum to as little as 3,857 MM COP, without changing the design.
