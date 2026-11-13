@@ -5,7 +5,7 @@
 **Alcance:**
 - las cinco críticas adversariales del informe (§3.1–3.5);
 - el bloque P0 del informe (§5.1);
-- los defectos que el árbitro de esta respuesta añadió en sus rondas (§5).
+- los defectos que el árbitro de esta respuesta añadió en sus tres rondas (§5).
 
 **Base de cálculo.** Todos los números nuevos salen de re-ejecutar los modelos de la tesis en la rama `modelos-corsano-pina`.
 - `modelos_pina/respuesta_comite.py` contiene todas las corridas y se invoca por grupo: `python respuesta_comite.py <grupo>`.
@@ -33,27 +33,30 @@
 Por qué cambia:
 - El par etanol–azúcar del registro comparaba el etanol con los azúcares libres. Sobre el carbohidrato del jugo (44,9 g/kg por diferencia), el dato de la fuente equivale al 95 % del máximo estequiométrico.
 - El balance de la fuente no cierra: etanol y levadura juntos exigen más azúcar del que hay.
-- El valor de diseño se fija en el 90 % del máximo (20,7 kg/t). El extremo inferior del rango, 6,5 kg/t, es el etanol compatible con la levadura que reporta la misma fuente.
-- En ese extremo el óptimo conserva el diseño, con margen de 2 803 MM COP/año, VPN de 3 857 MM COP y 288 t de panela.
+- El valor de diseño se fija en el 90 % del máximo (20,7 kg/t). El extremo inferior del rango, 6,5 kg/t, es el máximo etanol compatible con la levadura que reporta la misma fuente.
+- En ese extremo el mejor diseño hallado conserva el mismo equipo (brecha ≤ 14,5 %), con margen de 2 803 MM COP/año, VPN de 3 857 MM COP y 288 t de panela.
 
 **2. Frontera de viabilidad (H4), juzgada por VPN del TEA.** Para la planta sin fruta se usa un TEA real, no la secante:
 - sin vinagre: desde ≈ 890 000 botellas;
-- con 500 000 botellas: ≈ 1 950 m³ de vinagre;
-- con 250 000 botellas: ≈ 2 600 m³;
-- sin vino: ≈ 2 750 m³. A 3 000 m³, la planta solo de vinagre tiene VPN +1 393 MM COP y TIRM 11,2 %.
+- con 500 000 botellas: a lo sumo ≈ 1 950 m³ de vinagre;
+- con 250 000 botellas: a lo sumo ≈ 2 600 m³;
+- sin vino: a lo sumo ≈ 2 750 m³.
+
+Los tres últimos valores interpolan entre diseños hallados; en los puntos de 1 500 m³ no se puede descartar un diseño mejor, así que la frontera real puede estar más abajo. A 3 000 m³, la planta solo de vinagre tiene VPN +1 393 MM COP y TIRM 11,2 %.
 
 Se retira el titular «viable desde 500 000 botellas», porque ese diseño tiene VPN −5 409 MM COP.
 
 **3. Riesgo fiscal.**
-- Con el componente específico triplicado, o con las tarifas del Decreto 1474/2025, el óptimo abandona el vino. Queda la planta solo de vinagre: 1 868 MM COP/año y VPN +1 393 MM COP.
+- Con el componente específico triplicado, o con las tarifas del Decreto 1474/2025, el mejor diseño hallado abandona el vino (es óptimo certificado con las tarifas del decreto y del proyecto). Queda la planta solo de vinagre: 1 868 MM COP/año y VPN +1 393 MM COP.
 - El diseño actual, si se mantuviera, tendría VPN −993 MM COP.
-- La planta de vinagre es viable mientras el jugo de hoja dé al menos unos 8 kg/t de etanol: su VPN es +553 a 13,5 kg/t, +269 a 11,1 kg/t y −154 a 6,5 kg/t.
+- La planta de vinagre es viable al menos hasta unos 8 kg/t de etanol en el jugo de hoja: su VPN es +553 a 13,5 kg/t y +269 a 11,1 kg/t. Con 6,5 kg/t el mejor diseño hallado tiene VPN −154, pero su cota (1 872) no descarta uno viable.
+- Es una planta delgada: TIRM 11,2 % frente a una tasa de descuento del 10 %; su precio de equilibrio del vinagre es 2 074 COP/L, 5,7 % bajo el supuesto de 2 200.
 - El riesgo fiscal cambia el producto, no la viabilidad del proyecto, salvo en el extremo más bajo del jugo de hoja.
 
 **4. Neutralidad (H3).**
 - El compromiso del borrador (w = 0,75) ya no es neutro con el valor corregido: emite +40 t.
 - El diseño de emisión neta nula usa el mismo equipo y cuesta 83 MM COP/año (a lo sumo 129, certificado). Su VPN es 4 873 MM COP.
-- Ese diseño es neutro solo con un factor de descomposición ≥ 190 kg/t y si se acepta el crédito de 221 t por 1 163 t de fruta adicional. Sin ese crédito emite +221 t.
+- Ese diseño es neutro solo con un factor de descomposición ≥ 190 kg/t y si se acepta el crédito de 221 t por 1 162 t de fruta adicional. Sin ese crédito emite +221 t.
 - Su caldera quema pulpa de hoja (198 t), no coronas (5,7 t).
 - El óptimo económico emite más que el sitio sin planta con cualquier factor: de +121 a +558 t (inventario).
 
@@ -107,12 +110,12 @@ En el óptimo, la corrección baja el margen en 32 MM COP/año (1,0 %) sin cambi
 
 | # | Crítica | Acción tomada | Nuevo dato o ecuación | Dónde se corrige |
 |---|---|---|---|---|
-| 1 | §3.1 / P0-1: H4 en margen, anunciado en VPN | Mapa H4 en VPN con TEA en los 28 diseños que construyen planta. Las filas con vinagre se re-optimizaron con el etanol de hoja corregido. Cotas duales registradas; la no viabilidad se clasifica por la robustez frente al error de la relación margen–VPN. | Frontera: ≈ 890 000 botellas sin vinagre; ≈ 1 950 m³ a 500 000; ≈ 2 600 m³ a 250 000; ≈ 2 750 m³ sin vino. Relación: VPN ≈ −5 409 + 3,588 (m − 184); m* = 1 692; error frente al TEA: media 881, máximo 2 706 MM COP (26 diseños). | Resumen; §5.9.2 (Tablas 5.9.2a–b); §5.10; §6.5 |
+| 1 | §3.1 / P0-1: H4 en margen, anunciado en VPN | Mapa H4 en VPN con TEA en los 28 diseños que construyen planta. Las filas con vinagre se re-optimizaron con el etanol de hoja corregido. Cotas duales registradas; la no viabilidad se clasifica por la robustez frente al error de la relación margen–VPN. | Frontera: ≈ 890 000 botellas sin vinagre; a lo sumo ≈ 1 950 m³ a 500 000, ≈ 2 600 m³ a 250 000 y ≈ 2 750 m³ sin vino. Relación: VPN ≈ −5 409 + 3,588 (m − 184); m* = 1 692; error frente al TEA: media 881, máximo 2 706 MM COP (26 diseños). | Resumen; §5.9.2 (Tablas 5.9.2a–b); §5.10; §6.5 |
 | 2 | §3.2 / P0-2: par etanol–azúcar del jugo de hoja: 0,82 g/g > 0,511 | Prueba estequiométrica y de cierre de todo el registro. Base corregida: carbohidrato por diferencia, 44,9 g/kg. Valor de diseño al 90 % del máximo: 20,7 kg/t. Rango ampliado a 6,5 kg/t, el valor compatible con la levadura que reporta la fuente. Óptimo, mapa H4, ACV, TEA y H1 re-ejecutados. | Central: margen 3 164; panela 154,6 t; VPN 5 273. Extremos: 2 965 / 2 897 / 2 803 MM COP/año; panela +57 / +76 / +133 t sobre el nuevo central (+66 / +85 / +142 sobre el anterior; el comité estimó +64 a +83); VPN 4 491 / 4 225 / 3 857. Mismo diseño. | §2.2.5 y Ap. B; §3.11; §5.1.1–5.1.2; §5.6.1; §6.5; §6.6 |
 | 3 | §3.3 / P0-3: régimen fiscal sin escenario | Nueva §4.1.6 con la cronología verificada. Cinco regímenes evaluados por botella y con MILP + TEA, reoptimizando y con el diseño central fijo. TEA para la planta sin fruta. | Neto por botella a 16 000 COP: 4 667 / 1 306 / 583 / −332 / −537. Desde el específico ×3, el óptimo es la planta solo de vinagre: 1 868 MM COP/año, VPN +1 393. Es óptima certificada con los regímenes del decreto y del proyecto, y la mejor hallada con el específico ×3. Diseño central fijo: 1 567 y VPN −993 (específico ×3); 1 408 sin fruta (decreto y proyecto). | §4.1.6; §5.6.1 (Tabla 5.6.1b); §6.4.2; §6.5 |
 | 4 | §3.4 / P1-9: línea base de un solo factor; neutralidad con crédito de fruta | Sensibilidad 190 ± 100 kg CO₂e/t para el óptimo (inventario) y para el diseño de emisión neta nula (MILP). Desglose término a término. Línea base de quema con igual jerarquía. GWP neto en los extremos del rango del jugo de hoja. | Óptimo: +558 / +339 / +121 t (descomposición); +853 / +1 009 / +1 166 t (quema). Diseño neto nulo: +357 / 0 / −357 t. Desglose de 328 t: técnica −183, fruta −193 (crédito −221), hojas +32, otros +16. Sin crédito de fruta: +221 t. Óptimo con la hoja baja: +363 / +374 / +447 t (MILP). | §5.6.4; §5.9.4; §5.10; §6.5 |
 | 5 | §3.5 / P1-7: brechas no propagadas; WS < RP; cota de M1 importada | Intervalos [solución, cota dual] en H2, H3 y H4. Certificación del óptimo por anidamiento y por monotonía. WS re-resuelto. Punto dominado de H3 corregido. Cota de M1 sustituida por la medida a 375 m³/año (§5.11.3). | Óptimo: [3 164; 3 210] (≤ 1,5 %). WS = 3 195,6 ≥ RP = 3 195,5 (a 21,8); VSS y EVPI ∈ [0; 38] (a 20,7). H2: recorte del 60 %: 2 453 (solución), certificado entre 1 049 y 3 047. H3 (ε = −645 t): 1 077 → 1 849. | §3.10.2; §3.11; §5.6.3; §5.9.2–5.9.4; §5.10 |
-| 6 | P0-4: inconsistencias de edición | Unificadas, cada una con su causa. Tabla canónica añadida (Tabla 5.1.1b). | Capital: 4 026 / 12 640 / 3 314 / 5 225 / 16 405. Caso de 1 500 m³ a 21,8: 1 164 (antes 817 y 926), cota 2 589. «a 60 % cut costs 2,453». Etiqueta de base en cada GWP. 27 libros. 375 m³ producidos, 95 % vendido. Celdas del mapa. Denominador del 33 %. | §2.15 |
+| 6 | P0-4: inconsistencias de edición | Unificadas, cada una con su causa. Tabla canónica añadida (Tabla 5.1.1b). | Capital: 4 026 / 12 640 / 3 314 / 5 225 / 16 405. Caso de 1 500 m³ a 21,8: 1 164 (antes 817 y 926), cota 2 593. «a 60 % cut costs 2,453». Etiqueta de base en cada GWP. 27 libros. 375 m³ producidos, 95 % vendido. Celdas del mapa. Denominador del 33 %. | §2.15 |
 | 7 | P0-5: referencias marcadas | Fuentes fiscales verificadas añadidas. Liao et al. 2022 añadida como fuente del balance de la hoja. Lista explícita de las 26 entradas y 7 citas aún marcadas. | — | §2.16 |
 
 ---
@@ -125,11 +128,11 @@ En el óptimo, la corrección baja el margen en 32 MM COP/año (1,0 %) sin cambi
 
 > With bottled wine taxed under Law 1816 of 2016 and market caps of 500,000 bottles and 3,000 m³ of vinegar per year, the optimal plant processes 1,276 t/year of fruit (20.8 % of the supply) and 3,746 t/year of leaves. It sells wine, vinegar fermented from peel and leaf juices with panela, and fibre flour, for an annual margin of 3,164 MM COP, certified within 1.5 % of the optimum, and a net present value of 5,273 MM COP (MIRR 13.4 %, P(NPV > 0) = 0.78). Designing the same superstructure fraction by fraction gives an NPV of only 27 MM COP.
 >
-> Viability is judged by NPV, not by margin, and it depends on markets. The plant needs about 890,000 bottles a year without vinegar, or about 1,950 m³ of vinegar with 500,000 bottles and about 2,600 m³ with 250,000 bottles. A plant that makes vinegar alone needs about 2,750 m³; at 3,000 m³ its NPV is 1,393 MM COP. That vinegar plant is also the best design found if the wine excise rises to the rates of the emergency decree of December 2025, which the Constitutional Court struck down. Those rates roughly tripled the specific component, and under them wine stops paying.
+> Viability is judged by NPV, not by margin, and it depends on markets. The plant needs about 890,000 bottles a year without vinegar, or no more than about 1,950 m³ of vinegar with 500,000 bottles and about 2,600 m³ with 250,000 bottles. A plant that makes vinegar alone needs no more than about 2,750 m³; at 3,000 m³ its NPV is 1,393 MM COP. That vinegar plant is also the best design found if the wine excise rises to the rates of the emergency decree of December 2025, which the Constitutional Court struck down. Those rates roughly tripled the specific component, and under them wine stops paying.
 >
-> The ethanol yield of leaf juice rests on one source whose mass balance does not close. It is set at 90 % of its stoichiometric maximum, with a range down to the value compatible with the source's yeast yield. Across that range the design does not change, the NPV of the optimum stays between 3,857 and 5,273 MM COP, and the vinegar plant remains viable down to about 8 kg of ethanol per tonne of juice.
+> The ethanol yield of leaf juice rests on one source whose mass balance does not close. It is set at 90 % of its stoichiometric maximum, with a range down to the value compatible with the source's yeast yield. Across that range the design does not change, the NPV of the optimum stays between 3,857 and 5,273 MM COP, and the vinegar plant remains viable at least down to about 8 kg of ethanol per tonne of juice.
 >
-> Against a site where fruit and leaves decompose, the optimum emits 121–558 t CO₂e/year more over the plausible range of the decomposition factor, and 853–1,166 t more if the leaves would otherwise be burned. A design that burns leaf pulp in a biomass boiler reaches net zero for 83 MM COP/year. It does so only for a factor at or above the central value and with credit for the 1,163 t of extra fruit it buys.
+> Against a site where fruit and leaves decompose, the optimum emits 121–558 t CO₂e/year more over the plausible range of the decomposition factor, and 853–1,166 t more if the leaves would otherwise be burned. A design that burns leaf pulp in a biomass boiler reaches net zero for 83 MM COP/year. It does so only for a factor at or above the central value and with credit for the 1,162 t of extra fruit it buys.
 >
 > Linking the plant model to yeast kinetics, the fermentation train, an hourly weekly schedule and leaf collection shows that the value of integration lies inside the plant scale. The sugar hub, gasification, bromelain and ethanol are not selected. For Bajo Atrato the conditions of the project are now three: validating the vinegar market, measuring the leaf-juice fermentation and securing the fiscal treatment of fruit wine. Developing technology is not among them.
 
@@ -164,19 +167,21 @@ En el óptimo, la corrección baja el margen en 32 MM COP/año (1,0 %) sin cambi
 >
 > **The value adopted.** This thesis takes the ethanol figure, which rests on a measured broth concentration, as the design basis, capped at 90 % of the stoichiometric maximum: 20.7 kg/t. The range extends down to 6.5 kg/t, the ethanol compatible with the reported yeast (Table 5.1.2a). The yeast figure is used only by the leaf-ethanol route, which no economic design selects. It is flagged in the registry.
 >
-> **Effect on the optimum.** The design is the same at every value of the range: the same equipment and the same 3,000 m³ of vinegar. Panela makes up the acid the leaf juice no longer supplies, from 155 t/year to as much as 288 t/year. The margin falls from 3,164 to 2,803 MM COP/year and the NPV from 5,273 to 3,857 MM COP at the lower end, losses of 11 % and 27 %. The designs at the lower values are the best found within the time limit, and their dual bounds are given in the table.
+> **Effect on the optimum.** The design is the same at every value of the range: the same equipment and the same 3,000 m³ of vinegar. Panela makes up the acid the leaf juice no longer supplies, from 155 t/year to as much as 288 t/year. The margin falls from 3,164 to 2,803 MM COP/year and the NPV from 5,273 to 3,857 MM COP at the lower end, losses of 11 % and 27 %. The designs at the lower values are the best found within the time limit; the table gives their gaps to the bound of Section 5.1.1, up to 14.5 % at 6.5 kg/t.
 >
-> The leaf-juice yield changes the cost of vinegar, not whether vinegar is made. For a plant that makes only vinegar, it decides viability below about 8 kg/t (Section 5.6.1). A fermentation of Chocó leaf juice with the plant's strain is the measurement that would close this range (Section 6.7).
+> The leaf-juice yield changes the cost of vinegar, not whether vinegar is made. A plant that makes only vinegar is viable at least down to about 8 kg/t; below that its viability is not established (Section 5.6.1). A fermentation of Chocó leaf juice with the plant's strain is the measurement that would close this range (Section 6.7).
 
 *Table 5.1.2a. Optimum against the leaf-juice ethanol yield (500,000 bottles; 3,000 m³ of vinegar).*
 
-| Leaf-juice ethanol (kg/t juice) | Basis | Acid potential (kg/t juice) | Margin (MM COP/year) | Dual bound | Panela (t/year) | NPV (MM COP) | Net GWP (t; MILP) |
+| Leaf-juice ethanol (kg/t juice) | Basis | Acid potential (kg/t juice) | Margin (MM COP/year) | Upper bound (gap) | Panela (t/year) | NPV (MM COP) | Net GWP (t; MILP) |
 |---|---|---|---|---|---|---|---|
-| 21.8 (former value) | source ethanol; 95 % of maximum on carbohydrate | 26.7 | 3,196 | 3,210 | 145.6 | 5,397 | +323 |
-| **20.7 (design value)** | **90 % of maximum on 44.9 g/kg carbohydrate** | **25.3** | **3,164** | **3,210** | **154.6** | **5,273** | **+328** |
-| 13.5 | maximum (0.511 g/g) on free sugars only | 16.6 | 2,965 | 3,439 | 211.6 | 4,491 | +363 |
-| 11.1 | 0.42 g/g on free sugars only | 13.6 | 2,897 | 4,424 | 230.8 | 4,225 | +374 |
-| 6.5 | compatible with the source's yeast yield | 8.0 | 2,803 | 4,396 | 287.7 | 3,857 | +447 |
+| 21.8 (former value) | source ethanol; 95 % of maximum on carbohydrate | 26.7 | 3,196 | 3,210 (0.4 %) | 145.6 | 5,397 | +323 |
+| **20.7 (design value)** | **90 % of maximum on 44.9 g/kg carbohydrate** | **25.3** | **3,164** | **3,210 (1.5 %)** | **154.6** | **5,273** | **+328** |
+| 13.5 | maximum (0.511 g/g) on free sugars only | 16.6 | 2,965 | 3,210 (8.3 %) | 211.6 | 4,491 | +363 |
+| 11.1 | 0.42 g/g on free sugars only | 13.6 | 2,897 | 3,210 (10.8 %) | 230.8 | 4,225 | +374 |
+| 6.5 | compatible with the source's yeast yield | 8.0 | 2,803 | 3,210 (14.5 %) | 287.7 | 3,857 | +447 |
+
+*The upper bound is the dual bound of the run at 1.3 times the supply and 21.8 kg/t, valid at every lower yield by nesting and monotonicity (Section 5.1.1). The bounds of the runs at each yield are weaker (3,439; 4,424; 4,396) and are not used.*
 
 ### 2.4 Section 5.6.1 — Techno-economic assessment (text after the case table rewritten)
 
@@ -192,7 +197,7 @@ En el óptimo, la corrección baja el margen en 32 MM COP/año (1,0 %) sin cambi
 >
 > The relation passes through the design without vinegar and the optimum at 21.8 kg/t. Against the full TEA of 26 other designs it deviates by 881 MM COP on average and by 2,706 at most; the largest deviation is at 12,000 m³ of vinegar, an extrapolation. It places the break-even margin at about 1,692 MM COP/year.
 >
-> The relation is empirical. It is used only to read the dual bounds of the MILP, which are in margin, as statements about NPV (Section 5.9.2), never in place of a TEA. For designs that process no fruit, the TEA dimensions the wine and flour lines for a token 1 kg of fruit, so their cost is zero without dividing by zero. The same procedure reproduces the NPV of the optimum exactly (5,273).
+> The relation is empirical. It is used only to read the dual bounds of the MILP, which are in margin, as statements about NPV (Section 5.9.2), never in place of a TEA. For designs that process no fruit, the TEA sizes the wine and flour lines for a token 1 kg of fruit, which avoids a division by zero: their flows and consumables are zero, and the idle units the MILP selects are still costed, so the NPV of these designs is conservative. For designs with fruit the TEA is unchanged.
 >
 > **Cost structure of the optimum.**
 > - Revenue is 12,089 MM COP/year: 5,362 from wine at the factory price and 6,727 from vinegar and flour.
@@ -212,7 +217,9 @@ En el óptimo, la corrección baja el margen en 32 MM COP/año (1,0 %) sin cambi
 > - under the decree and bill rates this design is certified optimal, because its dual bound equals its margin;
 > - with only the specific component tripled it is the best design found (dual bound 3,312).
 >
-> **The vinegar plant against the leaf-juice yield.** Its viability rests on the leaf-juice yield. Its NPV is 553 MM COP at 13.5 kg/t, 269 at 11.1 kg/t and −154 at the 6.5 kg/t compatible with the source's yeast yield, so it stays viable down to about 8 kg/t.
+> **The vinegar plant against the leaf-juice yield.** Its viability rests on the leaf-juice yield. Its NPV is 553 MM COP at 13.5 kg/t, 269 at 11.1 kg/t and −154 for the best design found at 6.5 kg/t, the value compatible with the source's yeast yield. It is therefore viable at least down to about 8 kg/t. At 6.5 kg/t a viable design is not ruled out: that run stopped far from its own bound, and by monotonicity the vinegar-only optimum there cannot exceed 1,872 MM COP/year, the bound at 20.7 kg/t.
+>
+> The vinegar plant is thin. Its MIRR of 11.2 % is close to the 10 % discount rate, and its break-even vinegar price is 2,074 COP/L, only 5.7 % below the assumed 2,200.
 >
 > **The current design kept.** If the design optimized for the current regime is kept, it does worse:
 > - with the specific component tripled it earns 1,567 MM COP/year and its NPV is −993 MM COP;
@@ -285,13 +292,13 @@ En el óptimo, la corrección baja el margen en 32 MM COP/año (1,0 %) sin cambi
 > - the rows with 1,500 m³ of vinegar or more were re-optimized at the corrected leaf-juice yield;
 > - the rows with 0 and 750 m³ use no leaf juice and are unchanged;
 > - the TEA was run on every design that builds a plant, 28 points (Table 5.9.2a);
-> - the two designs at 100,000 bottles with 0 or 750 m³ build nothing: their margin of −1,090 is the fixed cost of the minimum front end and winery, and the alternative of not building has an NPV of 0.
+> - the two designs at 100,000 bottles with 0 or 750 m³ have as best design the mandatory minimum front end, with a margin of −1,090 MM COP/year; the real alternative, not building, has an NPV of 0.
 >
 > **The frontier.** Interpolating the NPV between grid points:
 > - **Without vinegar,** the plant is viable from about 890,000 bottles a year (NPV −5,409 at 500,000; +1,500 at 1,000,000).
-> - **With 500,000 bottles** it needs about 1,950 m³ of vinegar (NPV −2,239 at 1,500 m³; +5,273 at 3,000 m³).
-> - **With 250,000 bottles** it needs about 2,600 m³ (NPV −5,837 at 1,500 m³; +1,995 at 3,000 m³).
-> - **A plant that makes vinegar alone** needs about 2,750 m³ (NPV −7,128 at 1,500 m³; +1,393 at 3,000 m³).
+> - **With 500,000 bottles** it needs at most about 1,950 m³ of vinegar (NPV −2,239 at 1,500 m³; +5,273 at 3,000 m³).
+> - **With 250,000 bottles** it needs at most about 2,600 m³ (NPV −5,837 at 1,500 m³; +1,995 at 3,000 m³).
+> - **A plant that makes vinegar alone** needs at most about 2,750 m³ (NPV −7,128 at 1,500 m³; +1,393 at 3,000 m³).
 > - **At 1,000,000 bottles and above,** every vinegar level is viable.
 >
 > The earlier reading of this map, «viable from about 500,000 bottles», took a positive margin for viability. It is withdrawn: that design has an NPV of −5,409 MM COP.
@@ -317,8 +324,8 @@ En el óptimo, la corrección baja el margen en 32 MM COP/año (1,0 %) sin cambi
 >
 > **What H4 now says.** Viability depends on the demand for both products far more than on technology or supply. The frontier is more demanding than first reported:
 > - Below about 890,000 bottles the plant cannot rest on wine.
-> - The vinegar cap of 3,000 m³ is about 50 % above the vinegar the plant needs at 500,000 bottles.
-> - A vinegar plant without wine is viable from about 2,750 m³.
+> - The vinegar cap of 3,000 m³ is at least 50 % above the vinegar the plant needs at 500,000 bottles.
+> - A vinegar plant without wine is viable at 3,000 m³ and, by interpolation of the designs found, from no more than about 2,750 m³.
 >
 > Vinegar demand is the market study that decides the project, and the wine market decides how much margin it has (Section 6.4).
 
@@ -385,7 +392,7 @@ En el óptimo, la corrección baja el margen en 32 MM COP/año (1,0 %) sin cambi
 
 | Design | Margin found (MM COP/year) | Dual bound | Net GWP (t CO₂e/year) | NPV (MM COP) | What changes from the optimum |
 |---|---|---|---|---|---|
-| Economic optimum | 3,196 | 3,210 | +323 | 5,397 | — |
+| Economic optimum | 3,196 | 3,789 (with heat pump) | +323 | 5,397 | — |
 | ε = −161 t | 2,525 | 3,548 | −288 | 2,407 | no leaves; 3 t/h front end, centrifuge, 100 kWt boiler |
 | Compromise w = 0.50 | 2,330 | — | −502 | 1,495 | 5,555 t of fruit, 1,951 t of leaves, 100 kWt boiler |
 | ε = −645 t (corrected) | 1,849 | 4,529 | −965 | −1,776 | 30,468 t of leaves, 10 t/h extractor, leaf ethanol, 300 kWt boiler |
@@ -397,13 +404,13 @@ En el óptimo, la corrección baja el margen en 32 MM COP/año (1,0 %) sin cambi
 
 > **What makes a design net-zero (at 20.7 kg/t).** At the corrected leaf-juice yield, the compromise found earlier (w = 0.75) is no longer neutral: with its sizes fixed it earns 3,089 MM COP/year and emits +40 t.
 >
-> A free run with net GWP ≤ 0, started from that design, keeps the same equipment. It earns 3,081 MM COP/year at net zero, with an NPV of 4,873 MM COP. Net zero therefore costs 83 MM COP/year at the solutions found. It costs at most 129 with certainty, because the unconstrained optimum cannot exceed 3,210.
+> A free run with net GWP ≤ 0, started from that design, keeps the same equipment. It earns 3,081 MM COP/year at net zero, with an NPV of 4,873 MM COP. Net zero therefore costs 83 MM COP/year at the solutions found. It costs at most 129 with certainty in the superstructure without heat pump, because there the unconstrained optimum cannot exceed 3,210; the net-zero design uses no heat pump, so it is feasible in that superstructure.
 >
 > Its boiler, the option called «crown boiler» in the catalogue, burns 198 t of leaf pulp and only 5.7 t of crown. The earlier statement that this design buys fruit «partly for its crowns» is withdrawn.
 >
 > Table 5.9.4b decomposes the 328 t that separate it from the economic optimum into four groups:
 > - **Technical reduction, −183 t.** Burning 198 t of leaf pulp instead of returning it to the field saves 141 t, and displacing all LPG heat saves 57 t, against +15 t of combustion emissions.
-> - **Fruit purchase, −193 t.** Buying 1,163 t more fruit earns 221 t of baseline credit. Composting its cores and crowns adds +54 t and transporting it +5 t. Diverting 341 m³ of wine to vinegar saves 31 t of panela.
+> - **Fruit purchase, −193 t.** Buying 1,162 t more fruit earns 221 t of baseline credit. Composting its cores and crowns adds +54 t and transporting it +5 t. Diverting 341 m³ of wine to vinegar saves 31 t of panela.
 > - **Leaf boundary, +32 t.** Collecting 713 t fewer leaves avoids 91 t of field return and 13 t of collection diesel, but loses 135 t of baseline credit.
 > - **Other, +16 t.** Electricity and chemicals.
 >
@@ -448,8 +455,8 @@ En el óptimo, la corrección baja el margen en 32 MM COP/año (1,0 %) sin cambi
 |---|---|---|
 | H1. Simultaneous synthesis, sizing and operation beat sequential design by fractions | Supported, with one qualification | The same superstructure designed by fractions in sequence earns 1,816 against 3,164 MM COP/year, 42.6 % less (NPV 27 against 5,273) (Section 5.9.1). The sequential protocol has no feedback between stages, so the gap measures sequential design without iteration. Seasonal coupling adds nothing at the capped scale and 4.4–12.2 % when capacity binds (at 21.8 kg/t). At train level the hierarchical chain costs 3.8–12.5 % more at the flow of the optimum (7.1–9.0 % at the original basis; Section 5.11). |
 | H2. Energy autonomy has a measurable cost in margin and portfolio | Supported (ε-constraint sweep) | A 20 % cut in fossil energy costs 157 MM COP/year at the solutions found (0–750 certified), with the heat pump. A 60 % cut costs 2,453 (1,049–3,047 certified) and cuts vinegar. Full autonomy means not operating (Section 5.9.3; at 21.8 kg/t). The flexibility index of the original wording is formulated but not run, and the verdict does not rest on it. |
-| H3. The margin–GWP front is non-dominated and non-degenerate, with GWP against a no-plant baseline | Partly supported | A non-degenerate front exists (at 21.8 kg/t). It is the best found, not certified: its dual bounds lie far above the solutions, and one published point was dominated and has been replaced (Table 5.9.4a). The economic optimum emits more than the no-plant site for every decomposition factor from 90 to 290 kg/t (+121 to +558 t on the inventory basis; +110 to +547 t on the MILP basis). Net zero costs 83 MM COP/year (at most 129). It holds only for factors at or above 190 kg/t and with credit for 1,163 t of extra fruit (Section 5.9.4). |
-| H4. With the current supply, viability depends more on the demand and price of the main products than on technology | Supported, with a corrected frontier | Over 30 market pairs the NPV ranges from −10,240 to +55,967 MM COP. The frontier NPV = 0 lies at about 890,000 bottles without vinegar, about 1,950 m³ of vinegar with 500,000 bottles, about 2,600 m³ with 250,000, and about 2,750 m³ without wine. The designs without vinegar at 250,000 and 500,000 bottles are robustly not viable (Section 5.9.2). At high excise rates the best design found is the vinegar-only plant (NPV 1,393; Section 5.6.1). Supply from 0.5 to 3.6 times the central value leaves the capped optimum unchanged (at 21.8 kg/t); EVPI and VSS are between 0 and 38 MM COP/year. |
+| H3. The margin–GWP front is non-dominated and non-degenerate, with GWP against a no-plant baseline | Partly supported | A non-degenerate front exists (at 21.8 kg/t). It is the best found, not certified: its dual bounds lie far above the solutions, and one published point was dominated and has been replaced (Table 5.9.4a). The economic optimum emits more than the no-plant site for every decomposition factor from 90 to 290 kg/t (+121 to +558 t on the inventory basis; +110 to +547 t on the MILP basis). Net zero costs 83 MM COP/year (at most 129). It holds only for factors at or above 190 kg/t and with credit for 1,162 t of extra fruit (Section 5.9.4). |
+| H4. With the current supply, viability depends more on the demand and price of the main products than on technology | Supported, with a corrected frontier | Over 30 market pairs the NPV ranges from −10,240 to +55,967 MM COP. The frontier NPV = 0 lies at about 890,000 bottles without vinegar, and at no more than about 1,950 m³ of vinegar with 500,000 bottles, 2,600 m³ with 250,000 and 2,750 m³ without wine (interpolated from the designs found). The designs without vinegar at 250,000 and 500,000 bottles are robustly not viable (Section 5.9.2). At high excise rates the best design found is the vinegar-only plant (NPV 1,393; Section 5.6.1). Supply from 0.5 to 3.6 times the central value leaves the capped optimum unchanged (at 21.8 kg/t); EVPI and VSS are between 0 and 38 MM COP/year. |
 
 > H1 needs two qualifications. First, at the scale of Chocó its gain comes from synthesis across fractions, not from coupling design with seasonal operation, which matters only when capacity binds. Second, it says nothing about sharing equipment between products: the multiplant–multiproduct comparison (Section 2.8.6) shows that question is close economically and decided by staffing, which in Bajo Atrato has social weight of its own.
 >
@@ -465,11 +472,11 @@ En el óptimo, la corrección baja el margen en 32 MM COP/año (1,0 %) sin cambi
 > - The glucose–xylose kinetics of the juices cut the processing time of the juice winery from 32.5 to 12.6 h.
 > - Fixing kinetics before sizing costs 7.1–9.0 % of the fermentation-train cost at the original design basis and 3.8–12.5 % at the wine flow of the optimum. The band of fermentation times left by the single point does not change the plant design (Section 5.11).
 >
-> **Objective 3** (sentences added at the end). The dual bounds of the free runs are now reported beside every hypothesis test. Two properties of the model, supply as an upper limit and the monotonic effect of the leaf-juice yield, certify the central optimum within 1.5 %. The bounds establish that the designs without vinegar below about 890,000 bottles are not viable, but they do not certify the margin–GWP front, whose bounds remain weak.
+> **Objective 3** (sentences added at the end). The dual bounds of the free runs are now reported beside every hypothesis test. Two properties of the model, supply as an upper limit and the monotonic effect of the leaf-juice yield, certify the central optimum within 1.5 %. The bounds show, robustly against the largest observed error of Equation 5.6.1, that the designs without vinegar at 250,000 and 500,000 bottles are not viable, but they do not certify the margin–GWP front, whose bounds remain weak.
 >
 > **Objective 4: assessment under uncertainty.** The optimum has an NPV of 5,273 MM COP, an MIRR of 13.4 % and P(NPV > 0) = 0.78, with a break-even vinegar price 22 % below the assumed price. Two uncertainties outside the Monte Carlo were quantified:
-> - **The leaf-juice yield.** Across its range it lowers the NPV of the optimum to 3,857 MM COP at most, without changing the design.
-> - **The wine excise.** At three times its current specific rate, or at the rates of the annulled Decree 1474 of 2025, wine stops paying. The best design found is then a vinegar-only plant of 1,868 MM COP/year and NPV 1,393, viable down to a leaf-juice yield of about 8 kg/t. The current design kept unchanged would have an NPV of −993 MM COP.
+> - **The leaf-juice yield.** Across its range it lowers the NPV of the optimum to as little as 3,857 MM COP, without changing the design.
+> - **The wine excise.** At three times its current specific rate, or at the rates of the annulled Decree 1474 of 2025, wine stops paying. The best design found is then a vinegar-only plant of 1,868 MM COP/year and NPV 1,393, viable at least down to a leaf-juice yield of about 8 kg/t, but with a break-even vinegar price only 5.7 % below the assumed price. The current design kept unchanged would have an NPV of −993 MM COP.
 >
 > The plant emits 1,293 t CO₂e/year in process. Against a site where fruit and leaves decompose, it adds 121–558 t over the plausible range of the decomposition factor; if the leaves would otherwise be burned, it adds 853–1,166 t. Burning leaf pulp in a biomass boiler makes it net-zero for 83 MM COP/year, but only at the central factor or above and with credit for the extra fruit it buys.
 >
@@ -485,11 +492,11 @@ En el óptimo, la corrección baja el margen en 32 MM COP/año (1,0 %) sin cambi
 > - **H1** is supported against a sequential design of the same superstructure (NPV 27 against 5,273 MM COP).
 > - **H2** is supported by the autonomy sweep.
 > - **H3** is partly supported: the front is non-degenerate but not certified, and net zero is conditional.
-> - **H4** is supported with a corrected frontier: the plant is viable from about 890,000 bottles without vinegar, with about 1,950 m³ of vinegar at 500,000 bottles, about 2,600 m³ at 250,000, or about 2,750 m³ without wine.
+> - **H4** is supported with a corrected frontier: the plant is viable from about 890,000 bottles without vinegar, or with no more than about 1,950 m³ of vinegar at 500,000 bottles, 2,600 m³ at 250,000, or 2,750 m³ without wine.
 >
 > **Objective 6: rules and policy.** Markets, the excise on fruit wine and one fermentation datum now limit the project, not feedstock or technology. The design rules for a larger wine market are known from the scale sweep: front end first; then presses, centrifugation and the crown boiler; enzyme recovery and a third shift only from three times the supply.
 >
-> The vinegar line carries the project under every fiscal regime tested, as long as the leaf-juice yield is not at the bottom of its range. The order of work is therefore:
+> The vinegar line carries the project under every fiscal regime tested, as long as the leaf-juice yield is not at the bottom of its range. Without wine, however, the margin of safety is small: the vinegar-only plant breaks even at 2,074 COP/L, 5.7 % below the assumed vinegar price. The order of work is therefore:
 > 1. a study of vinegar demand;
 > 2. a fermentation of Chocó leaf juice with the plant's strain;
 > 3. a study of the volume and price of bottled fruit wine.
@@ -500,11 +507,11 @@ En el óptimo, la corrección baja el margen en 32 MM COP/año (1,0 %) sin cambi
 >
 > «Con el vino embotellado y su impuesto al consumo (Ley 1816 de 2016), y con topes de mercado de 500 000 botellas y 3 000 m³ de vinagre al año, el óptimo procesa 1 276 t/año de fruta y 3 746 t/año de hojas. Vende vino, vinagre de jugos de cáscara y de hojas con panela y harina de fibra. Da un margen de 3 164 MM COP/año, certificado dentro del 1,5 % del óptimo, y un VPN de 5 273 MM COP (TIRM 13,4 %; P(VPN > 0) = 0,78). Diseñar la misma superestructura fracción por fracción deja un VPN de solo 27 MM COP.
 >
-> La viabilidad se juzga por el VPN y depende del mercado. Hacen falta unas 890 000 botellas sin vinagre, o unos 1 950 m³ de vinagre con 500 000 botellas y unos 2 600 m³ con 250 000. Una planta solo de vinagre necesita unos 2 750 m³; a 3 000 m³ su VPN es de 1 393 MM COP. Esa planta de vinagre es también el mejor diseño hallado si el impuesto al vino sube a las tarifas del decreto de emergencia de diciembre de 2025, que la Corte declaró inexequible. Esas tarifas aproximadamente triplicaban el componente específico, y con ellas el vino deja de pagar.
+> La viabilidad se juzga por el VPN y depende del mercado. Hacen falta unas 890 000 botellas sin vinagre, o no más de unos 1 950 m³ de vinagre con 500 000 botellas y unos 2 600 m³ con 250 000. Una planta solo de vinagre necesita no más de unos 2 750 m³; a 3 000 m³ su VPN es de 1 393 MM COP. Esa planta de vinagre es también el mejor diseño hallado si el impuesto al vino sube a las tarifas del decreto de emergencia de diciembre de 2025, que la Corte declaró inexequible. Esas tarifas aproximadamente triplicaban el componente específico, y con ellas el vino deja de pagar.
 >
-> El rendimiento en etanol del jugo de hoja se apoya en una sola fuente cuyo balance no cierra. Se fija en el 90 % de su máximo estequiométrico, con un rango que baja hasta el valor compatible con la levadura que reporta la fuente. En todo ese rango el diseño no cambia, el VPN del óptimo queda entre 3 857 y 5 273 MM COP y la planta de vinagre sigue siendo viable hasta unos 8 kg de etanol por tonelada de jugo.
+> El rendimiento en etanol del jugo de hoja se apoya en una sola fuente cuyo balance no cierra. Se fija en el 90 % de su máximo estequiométrico, con un rango que baja hasta el valor compatible con la levadura que reporta la fuente. En todo ese rango el diseño no cambia, el VPN del óptimo queda entre 3 857 y 5 273 MM COP y la planta de vinagre sigue siendo viable al menos hasta unos 8 kg de etanol por tonelada de jugo.
 >
-> Frente a un sitio donde la fruta y las hojas se descomponen, el óptimo emite entre 121 y 558 t CO₂e/año más según el factor de descomposición, y entre 853 y 1 166 t más si las hojas se quemaran. Un diseño que quema pulpa de hoja en una caldera de biomasa alcanza emisión neta nula por 83 MM COP/año, pero solo con un factor igual o mayor al central y con el crédito de las 1 163 t de fruta adicional que compra.
+> Frente a un sitio donde la fruta y las hojas se descomponen, el óptimo emite entre 121 y 558 t CO₂e/año más según el factor de descomposición, y entre 853 y 1 166 t más si las hojas se quemaran. Un diseño que quema pulpa de hoja en una caldera de biomasa alcanza emisión neta nula por 83 MM COP/año, pero solo con un factor igual o mayor al central y con el crédito de las 1 162 t de fruta adicional que compra.
 >
 > El valor de integrar queda dentro de la escala de planta. Ni el hub de azúcares, ni la gasificación, ni la bromelaína, ni el etanol entran. Validar el mercado del vinagre, medir la fermentación del jugo de hoja y asegurar el tratamiento fiscal del vino de fruta, no desarrollar tecnología, son ahora las condiciones del proyecto.»
 
@@ -550,7 +557,7 @@ En el óptimo, la corrección baja el margen en 32 MM COP/año (1,0 %) sin cambi
 >
 > **Value adopted.**
 > - This thesis takes the ethanol figure, which rests on a measured broth concentration, capped at 90 % of the stoichiometric maximum: 20.7 kg/t is the design value.
-> - Its range is 6.5–20.7 kg/t. The lower end is the ethanol compatible with the reported yeast.
+> - Its range is 6.5–20.7 kg/t. The lower end is the most ethanol compatible with the reported yeast (100 % of theory on the residual sugar and the maximum biomass yield; 5.9 kg/t with the 0.90 ceiling). It is not a pessimistic floor.
 > - The yeast figure is flagged; it is used only by the leaf-ethanol route.
 >
 > A fermentation of Chocó leaf juice that measures ethanol, residual sugars and biomass together is the first measurement this thesis asks for (Section 6.7).
@@ -561,7 +568,7 @@ En el óptimo, la corrección baja el margen en 32 MM COP/año (1,0 %) sin cambi
 |---|---|---|
 | `azucar_jugo_hojas` | 27.0 g/L (glucose 10.6 + xylose 16.4) | renamed `azucar_libre_jugo_hojas`, 27.0 g/L, [L], Chen et al. 2020 (C6 0.6 g/L in Liao et al. 2022: [verify]) |
 | `carbohidrato_jugo_hojas` (new) | — | 44.9 g/kg, [L, derived], by difference from Liao et al. 2022, Table 1 |
-| `etanol_jugo_hojas` | 21.8 (18–24.5) kg/t, [L] | 20.7 (6.5–20.7) kg/t, PERT, [L/S]: 90 % of the stoichiometric maximum on carbohydrate. Source value 21.8 (95 %) kept in the notes. Old upper bound 24.5 removed (0.545 g/g, above stoichiometry). Lower bound from closure with the reported yeast. |
+| `etanol_jugo_hojas` | 21.8 (18–24.5) kg/t, [L] | 20.7 (6.5–20.7) kg/t, PERT, [L/S]: 90 % of the stoichiometric maximum on carbohydrate. Source value 21.8 (95 %) kept in the notes. Old upper bound 24.5 removed (0.545 g/g, above stoichiometry). Lower end: the most ethanol compatible with the reported yeast (at most 6.5; 5.9 with the 0.90 ceiling). |
 | `levadura_jugo_hojas` | 16.1 kg DM/t, [L] | 16.1 kg DM/t, [L, flagged]: inconsistent with the source's ethanol (closure test, Section 3.11); used only by the leaf-ethanol route |
 
 ### 2.14 Section 3.10.2 — table rows corrected
@@ -569,12 +576,12 @@ En el óptimo, la corrección baja el margen en 32 MM COP/año (1,0 %) sin cambi
 | Case | Free run | After polishing | Best known | Dual bound | Reported gap |
 |---|---|---|---|---|---|
 | Optimum (at 20.7 kg/t; certified by nesting and monotonicity, Section 5.1.1) | — | — | 3,164 | 3,210 | 1.5 % |
-| Vinegar demand 1,500 m³ (at 21.8 kg/t) | 245 | 592 (v12) | 1,164 (design found at 20.7 kg/t, evaluated at 21.8) | 2,589 | 122 % |
+| Vinegar demand 1,500 m³ (at 21.8 kg/t) | 245 | 592 (v12) | 1,164 (design found at 20.7 kg/t, evaluated at 21.8) | 2,593 (version 13 map) | 123 % |
 | Vinegar demand 6,000 m³ (at 21.8 kg/t) | 5,548 | 6,634 (v12) | 7,086 (version 13 map) | 7,619 | 7.5 % |
 | 1 million bottles (at 21.8 kg/t) | 4,366 | 4,469 (v12) | 4,942 (version 13 map) | 6,757 | 36.7 % |
 
 > *Note for the text.*
-> - The vinegar case of 1,500 m³ was reported as 817 MM COP/year in version 12 and as 926 in the version 13 map. The design found in the re-optimization at 20.7 kg/t earns 1,164 at 21.8 kg/t, which supersedes both values. Its dual bound comes from the version 12 free run.
+> - The vinegar case of 1,500 m³ was reported as 817 MM COP/year in version 12 and as 926 in the version 13 map. The design found in the re-optimization at 20.7 kg/t earns 1,164 at 21.8 kg/t, which supersedes both values. Its dual bound comes from the free run of the version 13 map.
 > - The optimum's former gap of 16.9 % is superseded by the certificate of Section 5.1.1.
 
 ### 2.15 Editorial corrections (exact replacements)
@@ -594,7 +601,7 @@ En el óptimo, la corrección baja el margen en 32 MM COP/año (1,0 %) sin cambi
 | §2.7.3 | «2,675 GJ of recoverable heat (33 %)» | «2,675 GJ of recoverable heat (33 % of the 8,043 GJ drying demand)» |
 | §5.1.1 | «The equivalent purchased-equipment cost entering the capital charge is 12,640 MM COP» | text of §2.2 of this response |
 | Preamble of Chapter 5 | «the kinetics bound (7.1–9.0 % …) applies to every figure» | «the kinetics–train coupling is worth 3.8–12.5 % of the fermentation-train cost at the flow of the optimum (Section 5.11.3), and the kinetic band does not change the plant design (Section 5.11.1)» |
-| New §6.6 item | — | «**Storage outside the MILP.** Storage tanks for vinegar (30 days) and wine ageing (90 days), 930 MM COP of purchased equipment, are costed by the TEA but not sized by the MILP. Its objective therefore omits about 709 MM COP/year of capital charge (AF × 930), 22 % of the margin of the optimum. Every NPV reported includes them. Because their cost grows with the volume stored, and vinegar is stored for a third of the time of wine but in eight times the volume, leaving them out favours vinegar in the MILP's choice. The size of the omission makes adding storage to the catalogue the next model change.» |
+| New §6.6 item | — | «**Storage outside the MILP.** Storage tanks for vinegar (30 days) and wine ageing (90 days), 930 MM COP of purchased equipment, are costed by the TEA but not sized by the MILP. Its objective therefore omits about 709 MM COP/year of capital charge (AF × 930), 22 % of the margin of the optimum. Every NPV reported includes them. Vinegar is produced in eight times the volume of wine and stored a third as long, so its tanks are about 2.7 times larger (620 of the 930 MM COP); leaving storage out therefore favours vinegar in the MILP's choice. The size of the omission makes adding storage to the catalogue the next model change.» |
 | New §6.6 item | — | «**Results at the former leaf-juice yield.** The autonomy sweep (H2), the interior of the margin–GWP front (H3), the price sweeps of Section 5.4 and the multiscale tests of Section 5.11 were computed at 21.8 kg/t, the upper end of the corrected range. At the optimum the correction lowers the margin by 32 MM COP/year (1.0 %) without changing the design.» |
 | New §6.6 item | — | «**MILP contribution and TEA.** The contribution of the MILP before capital charge (6,478 MM COP/year) and the revenue less variable costs of the TEA (6,992 MM COP/year) differ by 514 MM COP/year (7 %). The two accountings use different price and cost conventions (Sections 3.9 and 4.1) and were not built to coincide. An item-by-item reconciliation is pending. Every viability statement uses the TEA.» |
 
@@ -710,4 +717,59 @@ Table 5.1.2a in §2.3 above.
 
 ## 5. Resumen del árbitro adversarial
 
-**[en curso: ronda 3]**
+**Mandato.** El árbitro actuó como el comité. Tenía que verificar uno por uno los seis puntos del listón y cada cifra contra los JSON de `results/respuesta/` y el código. Podía re-ejecutar cualquier corrida, pero no editar el entregable. Hubo tres rondas: 46 defectos en total y cuatro corridas nuevas a raíz de ellos.
+
+| Ronda | Versión revisada | Veredicto | Defectos | Qué obligó a cambiar |
+|---|---|---|---|---|
+| 1 | v1 | Rechazo | 19 (D1–D19) | Valor central de la hoja, certificaciones falsas, atribución de la neutralidad |
+| 2 | v2 | Rechazo («revisión menor») | 13 (N1–N13) | Cierre de la fuente, robustez de la no viabilidad, TEA de la planta sin fruta |
+| 3 | v3 | **Aceptado**, sujeto a 14 correcciones de texto (R1–R14), todas aplicadas | 14 | Calificativos de frontera, cotas por monotonía, precio de equilibrio de la planta de vinagre |
+
+### 5.1 Ronda 1: textos rechazados y correcciones
+
+- **D1. Certificación falsa.** Se rechazó «the vinegar-only plant is certified optimal under the tripled excise». La corrida tenía brecha de 11,9 %. Ahora: «best design found (dual bound 3,312)»; solo los regímenes del decreto y del proyecto quedan certificados (cota = margen).
+- **D3. Los puntos de 100 000 botellas que no construyen nada.** Antes se leían como «no viables», pero su mejor diseño es no construir (VPN 0). Ahora se rotulan «not built».
+- **D5. Valor central de la hoja.** 21,8 kg/t equivale al 95 % del máximo y viola el techo de diseño de 0,90. El central bajó a 20,7 kg/t y se re-ejecutaron el óptimo, el mapa H4, el ACV, el TEA y H1.
+- **D6. «The same design».** Se afirmaba sobre corridas con brecha; ahora dice «best found».
+- **D8. Atribución de la neutralidad.** Se rechazó «buys fruit partly for its crowns»: la caldera quema 198 t de pulpa de hoja y solo 5,7 t de corona. De ahí sale el desglose de la Tabla 5.9.4b.
+- **D11. Cotas del programa estocástico.** El EV y el WS(1,0) de la v12 se habían detenido en 3 193,7. Se sustituyeron por las cotas de anidamiento.
+- **D15, D19. Valores editoriales y referencias.** Corregidos 7 086, 2 317 y 4 942, el denominador del 33 % y el encabezado del vino.
+- **D18. Tanques de almacenamiento.** Están fuera del MILP; se declararon en §6.6.
+
+### 5.2 Ronda 2: textos rechazados y correcciones
+
+- **N1. El valor 20,7 tampoco cierra con la levadura de la fuente** (56,6 > 55,8 kg/t). Se eligió explícitamente el dato de etanol, se marcó la levadura y el rango se amplió hasta 6,5 kg/t. Se corrió el óptimo en ese extremo: 2 803 MM COP/año y VPN 3 857.
+- **N2. Se rechazó «certified not viable» para el mapa H4.** La cota está en margen y la relación margen–VPN es empírica (desviación de hasta 2 706). Ahora cada punto se clasifica por el error que haría falta para voltear el juicio; solo 250 000 y 500 000 botellas sin vinagre son robustamente no viables.
+- **N3. La planta solo de vinagre se juzgaba con la secante sobre corridas con ~100 % de brecha.** Ahora tiene TEA real: VPN +1 393 a 20,7 kg/t, +553 a 13,5, +269 a 11,1 y −154 a 6,5.
+- **N4. El óptimo central se reportaba con 3,7 % de brecha.** Ahora está certificado dentro del 1,45 %, por anidamiento de la oferta y monotonía en el rendimiento de hoja. También se registra el tercer punto mejorado (2M;6 000 = 11 847).
+- **N5. Resumen.** Se rechazó «only at the central factor»; ahora dice «at or above the central value».
+- **N6. Costo de la neutralidad.** El costo de 83 venía de una corrida libre con brecha de 49 %. Ahora: «83 at the solutions found, at most 129 with certainty».
+- **N8. Brecha de compras TEA–MILP.** Se rechazó «slightly». Los 1 199 MM COP se desglosan partida por partida, el cargo omitido por almacenamiento (709 MM COP/año, 22 % del margen) se declara y la brecha de contribución de 514 MM COP/año queda como ítem abierto.
+- **N9. Procedencia.** Las corridas hechas con guiones auxiliares pasaron a funciones de `respuesta_comite.py`.
+- **N10–N13.** Corregidos 0,25 % (antes 0,2 %), el específico ×3 como «best found», la rejilla de §5.4.2 rotulada a 21,8 y la panela +57/+76/+133 sobre el nuevo central.
+
+### 5.3 Ronda 3: correcciones finales (todas aplicadas)
+
+- **R1. Objetivo 3.** Se rechazó «designs without vinegar below about 890,000 bottles are not viable»; ahora queda limitado a 250 000 y 500 000 botellas.
+- **R2. Umbral de la planta de vinagre.** Se rechazó «decides viability below about 8 kg/t». Ahora: «viable at least down to about 8 kg/t». A 6,5 kg/t no queda establecido, porque la cota por monotonía (1 872) no descarta un diseño viable.
+- **R3. Frontera.** Los valores de 1 950, 2 600 y 2 750 m³ pasan a «a lo sumo», porque interpolan desde puntos de 1 500 m³ que no están establecidos.
+- **R4. Tabla 5.1.2a.** Se reemplazaron las cotas propias, más débiles, por 3 210, válida por monotonía. Las brechas quedan en 8,3 %, 10,8 % y 14,5 %.
+- **R5. Bomba de calor en H3.** El frente H3 se corrió con bomba de calor, así que la cota del óptimo es 3 789. El «≤ 129» de la neutralidad vale en la superestructura sin bomba, que el diseño neutro no usa.
+- **R6. TEA sin fruta.** Se rechazó «their cost is zero»: los equipos ociosos sí se costean, así que el VPN es conservador.
+- **R7. Tanques.** Se rechazó «eight times the volume» aplicado al almacenamiento. Los tanques de vinagre son unas 2,7 veces mayores (620 de los 930 MM COP).
+- **R8. Nota en español.** Se alineó con el inglés: «mejor diseño hallado» donde no hay certificado.
+- **R9. Redacción.** «to as little as 3,857».
+- **R10. Fruta adicional.** 2 438,65 − 1 276,50 = 1 162 t, no 1 163.
+- **R11. Puntos que no construyen.** Se corrigió la redacción contradictoria.
+- **R12. Caso de 1 500 m³.** La cota pasa a la del mapa v13 (2 593; 123 %).
+- **R13. Valor de 6,5 kg/t.** Se aclara que es el máximo compatible con la levadura, no un piso pesimista (5,9 kg/t con el techo de 0,90).
+- **R14. Margen de seguridad de la planta de vinagre.** Corrida nueva (`python respuesta_comite.py be_vin`): su precio de equilibrio del vinagre es 2 074 COP/L, 5,7 % bajo el supuesto de 2 200. Se añadió esa salvedad en §0.1, §2.4 y las conclusiones.
+
+### 5.4 Lo que el árbitro verificó por su cuenta en la ronda 3
+
+- Releyó el código del MILP (`dimensionamiento.py`) para confirmar el anidamiento: la fruta sobrante va a una pérdida sin precio y las hojas entran solo como tope.
+- Confirmó la monotonía en el rendimiento de hoja con las corridas `mono` (1 164 > 1 150; 287 > 272; 11 902 > 11 847).
+- Recalculó el desglose de 1 199 MM COP desde los precios del TEA.
+- Verificó todas las cifras de §0–§4 contra los JSON.
+
+**Veredicto final del árbitro:** los seis puntos del listón quedan en PASS y los defectos de las rondas anteriores, cerrados.

@@ -450,6 +450,23 @@ def run_novino():
     dm.WINE_DEMAND_M3, dm.VIN_DEMAND = DT.val("demanda_vino_botellas") * dm.BOTTLE_L / 1000, DT.val("demanda_vinagre_m3")
 
 
+def run_be_vin():
+    """Ronda 3 del árbitro (R14): precio de equilibrio del vinagre de la planta solo de vinagre (100 000 | 3 000; 20,7 kg/t)."""
+    import planta_trl9 as pt, tea_dimensionado as td
+    dm.HP_ON = False; set_leaf(E_of("90 % of theoretical on carbohydrate"))
+    dm.WINE_DEMAND_M3, dm.VIN_DEMAND = 100000 * dm.BOTTLE_L / 1000, 3000
+    d = json.load(open(os.path.join(OUT, "c207_0.json")))["100000|3000"]["best"]
+    r = dm.solve(fix=dict(d["sizes"], turno3=d["turno3"]), time_limit=150, gap=0.002)
+    _d = pt.design
+    pt.design = lambda F, *a, **k: _d(max(F, 1e-3), *a, **k)
+    try:
+        c = td.build_case(r, "bevin", False); be = td.breakeven_vinegar(c)
+    finally:
+        pt.design = _d
+    save("be_vin", dict(margin=r["obj"], breakeven_vinegar=be)); print("BEVIN", round(r["obj"]), be, flush=True)
+    dm.WINE_DEMAND_M3, dm.VIN_DEMAND = DT.val("demanda_vino_botellas") * dm.BOTTLE_L / 1000, DT.val("demanda_vinagre_m3")
+
+
 # ---- funciones de las corridas de la ronda 1 hechas con guiones auxiliares (mismo código; para reproducirlas desde el repositorio)
 def central207():
     c = json.load(open(os.path.join(OUT, "c207_2.json")))["500000|3000"]["best"]
@@ -507,9 +524,9 @@ def run_mono():
 if __name__ == "__main__":
     if sys.argv[1] == "h3full":
         run_h3full(int(sys.argv[2]))
-    elif sys.argv[1] in ("fiscal207", "gwp207", "novino", "nest207", "neutral207", "h1_207", "tea_acv207", "mono"):
+    elif sys.argv[1] in ("fiscal207", "gwp207", "novino", "nest207", "neutral207", "h1_207", "tea_acv207", "mono", "be_vin"):
         dict(fiscal207=run_fiscal207, gwp207=run_gwp207, novino=run_novino, nest207=run_nest207, neutral207=run_neutral207,
-             h1_207=run_h1_207, tea_acv207=run_tea_acv207, mono=run_mono)[sys.argv[1]]()
+             h1_207=run_h1_207, tea_acv207=run_tea_acv207, mono=run_mono, be_vin=run_be_vin)[sys.argv[1]]()
     elif sys.argv[1] == "c207":
         run_c207(sys.argv[2])
     else:
